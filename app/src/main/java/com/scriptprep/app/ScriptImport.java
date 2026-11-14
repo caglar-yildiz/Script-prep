@@ -6,6 +6,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.OpenableColumns;
 
+import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,7 +25,13 @@ final class ScriptImport {
             if (stream == null) {
                 throw new IOException("Missing stream");
             }
-            text = pdf ? PdfScriptReader.read(context, stream, lengthLimit) : readText(stream, lengthLimit);
+            if (pdf) {
+                // The text strip reader initializes PDFBox font resources in its superclass.
+                PDFBoxResourceLoader.init(context);
+                text = PdfScriptReader.read(context, stream, lengthLimit);
+            } else {
+                text = readText(stream, lengthLimit);
+            }
         }
         return new ScriptLibrary.Script(null, readTitle(resolver, uri), text);
     }

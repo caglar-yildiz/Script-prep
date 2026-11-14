@@ -23,6 +23,7 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -206,13 +207,14 @@ public final class MainActivity extends Activity {
         imports.execute(() -> {
             try {
                 ScriptLibrary.Script imported = ScriptImport.read(getApplicationContext(), uri, pdf, MAX_SCRIPT_LENGTH);
+                Scene preview = pdf ? Scene.parse(imported.text) : null;
                 main.post(() -> {
                     if (!isDestroyed() && screen == Screen.HOME && tab == Tab.SCRIPTS) {
                         String title = imported.title.trim();
                         openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
                             : title, imported.text);
-                        if (pdf) {
-                            showParsePreview(Scene.parse(imported.text));
+                        if (preview != null) {
+                            showParsePreview(preview);
                         }
                     }
                 });
@@ -220,7 +222,8 @@ public final class MainActivity extends Activity {
                 main.post(() -> notifyUser(R.string.import_too_long));
             } catch (PdfScriptReader.NoTextException error) {
                 main.post(() -> notifyUser(R.string.pdf_no_text));
-            } catch (IOException | SecurityException error) {
+            } catch (IOException | RuntimeException | LinkageError error) {
+                Log.w("ScriptPrep", "Could not import a script", error);
                 main.post(() -> notifyUser(pdf ? R.string.pdf_import_failed : R.string.import_failed));
             }
         });

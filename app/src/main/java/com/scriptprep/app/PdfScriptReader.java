@@ -2,7 +2,6 @@ package com.scriptprep.app;
 
 import android.content.Context;
 
-import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 import com.tom_roush.pdfbox.io.MemoryUsageSetting;
 import com.tom_roush.pdfbox.pdmodel.PDDocument;
 import com.tom_roush.pdfbox.pdmodel.PDPage;
@@ -46,7 +45,6 @@ final class PdfScriptReader extends PDFTextStripper {
     }
 
     static String read(Context context, InputStream stream, int characterLimit) throws IOException {
-        PDFBoxResourceLoader.init(context.getApplicationContext());
         File file = File.createTempFile("script-import-", ".pdf", context.getCacheDir());
         try {
             try (FileOutputStream output = new FileOutputStream(file)) {
