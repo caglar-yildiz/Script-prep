@@ -1,16 +1,16 @@
 plugins {
-    id("com.android.application") version "8.7.3"
+    id("com.android.application") version "8.13.2"
 }
 
 android {
     namespace = "com.scriptprep.app"
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.scriptprep.app"
         minSdk = 23
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
     }

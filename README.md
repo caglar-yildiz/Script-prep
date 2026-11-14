@@ -35,7 +35,7 @@ Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https:/
 
 ## Android geliştirme
 
-Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri ve Android SDK 35 gerekir.
+Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 36 ve Build Tools 36.0.0 gerekir.
 
 ```sh
 ./gradlew :app:assembleDebug :app:lintDebug
