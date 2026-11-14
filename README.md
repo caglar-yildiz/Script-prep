@@ -1,0 +1,34 @@
+# Script Prep
+
+Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için planlanan bir mobil prova uygulaması. Oyuncu metnini içe aktarır, rolünü seçer ve diğer karakterlerin repliklerini dinleyerek sahneyi prova eder.
+
+## Şimdi yapılacaklar
+
+İlk hedef, Android telefonda örnek bir sahneyi açıp rol seçmek, diğer karakterleri Türkçe cihaz sesiyle dinlemek ve kendi repliğinden sonra düğmeyle devam etmek. Bu akış çalışınca PDF aktarımını aynı metin modeline bağla.
+
+- [ ] **Rakipleri aynı metinlerle dene.** Çok karakterli bir sahne, çok sahneli uzun oyun ve taranmış bir metin seç. İki uygulamada ilk provaya kadar geçen süreyi, yanlış role atanan replikleri, elle düzeltme süresini ve prova sırasındaki hatalı ilerlemeyi kaydet. Kamuya açık test dosyalarında özgün veya paylaşım izni olan metinler kullan.
+- [ ] **Oyun kütüphanesi ve metin modeli.** Oyun, perde/sahne, karakter, replik ve sahne yönergesini cihazda sakla. Uygulama kapanıp açıldığında metin, rol seçimi ve son prova konumu geri gelsin. Hazır bir örnek sahneyle ilk prova dosyasız açılabilsin.
+- [ ] **Metin ve metin katmanlı PDF aktarımı.** Yapıştırılan metni, TXT ve PDF dosyasını destekle. `KARAKTER: replik` ve ayrı satırdaki rol adı biçimlerini, çok satırlı replikleri, Türkçe karakterleri ve parantez içi yönergeleri dene. Taramayı algılayınca metin yapıştırma seçeneğini göster. Önizlemede yanlış rolü, sahne ayrımını ve replik sınırını düzeltmek mümkün olsun.
+- [ ] **Rol seçimi ve çalışan prova döngüsü.** Sahne/seçili aralığı başlat. Dinle modunda tüm rolleri oku. Prova modunda diğer rolleri cihazın Türkçe sesiyle oku ve oyuncunun sırasında bekle. İleri, geri, tekrarla, duraklat ve ipucu kontrolleri olsun. Türkçe çevrimdışı sesi kurulu cihazda uçak modunda prova tamamlanabilsin. Ses yoksa görsel prova kullanılabilsin.
+- [ ] **Ezber görünümü.** Oyuncu sahne içinde tam replik, ilk kelimeler, ilk harfler ve gizli replik arasında geçebilsin. Takıldığı anda o repliği açıp önceki partner repliğinden tekrar başlayabilsin.
+- [ ] **Tiyatro ekibiyle beta.** Önerilen çıkış koşulu 5 oyuncudan en az 4’ünün yönlendirme almadan örnek veya kendi sahnesiyle tam bir prova bitirmesi. İlk provaya kadar geçen süreyi, düzeltme ihtiyacını ve yarıda bırakılan adımı gözlemle.
+
+## Sonradan yapılacaklar
+
+### Prova özellikleri
+
+- [ ] **Türkçe sesle otomatik ilerleme.** Sesli okuma bitince mikrofonu aç. Anlamlı duraklama veya kısa sessizlikte sırayı erkenden geçirme. İzin reddi ve tanıma sorunlarında düğmeyle ilerlemeyi koru. Doğal duraklama, fısıltı ve arka plan gürültüsü içeren 50 denemede erken geçişi, kaçırılan geçişi ve gecikmeyi ayrı ölç. İlk hedef en fazla 2 erken geçiş.
+- [ ] **Script Rehearser tarzı prova seçenekleri.** Ayarlanabilir süreyle otomatik ilerleme, süre sonunda doğru repliği sesli tekrar, karaktere ayrı ses ve tek repliğe kaydedilmiş ses atama.
+- [ ] **Daha fazla kaynak biçimi.** Önce taranmış PDF ve fotoğraf için Türkçe OCR, sonra DOCX, Fountain ve FDX. Düşük güvenli satırları önizlemede işaretle. Kullanıcı kaynak sayfaya bakıp aynı ekranda düzeltebilsin.
+- [ ] **Prova sonucu.** İpucuyla açılan, yeniden denenen ve tanınan replikleri oturum sonunda göster. Konuşma metniyle karşılaştırmanın belirsiz kaldığı satırları belirt.
+- [ ] **Self-tape ve dışa aktarma.** Önde/arkada kamera, sahneye göre ilerleyen teleprompter, partner sesini kapatma, çekim öncesi ses kontrolü ve son replikten sonra kayıt payı. Videoyu yerelde tut ve kullanıcı paylaşınca dışa aktar. Prova dosyasını ses kayıtlarıyla yedekle ve geri yükle.
+- [ ] **Doğal karakter sesleri ve ticari model.** Türkçe sesleri oyuncularla dinleme testinde değerlendir. Sahne başına üretim maliyetini ve önbellek etkisini ölç. Temel cihaz sesiyle prova ücretsiz devam ederken doğal ses paketi modelini değerlendir.
+
+### Uzun oyunlar ve ekip provası
+
+- [ ] **Tam oyun hazırlığını hızlandır.** Uzun Türkçe oyunlarda perde/sahne başlıklarını, lakapları, birden fazla rolü ve sahne yönergelerini tanı. Aynı karakterin farklı adlarını tek işlemle birleştir. Aynı test metinlerinde rakiplerle kıyaslandığında medyan elle düzeltme süresini en az %30 düşürmeyi hedefle.
+- [ ] **Takıldığım yerleri çalış.** İpucu istenen veya yeniden denenen replikleri çağrı repliğiyle birlikte kısa bir prova kuyruğuna al. Oyuncu bütün sahneyi başa sarmadan bu kesitleri tekrar edebilsin.
+- [ ] **Tiyatro ekibiyle ortak çalışma.** Sahne ve rol bazında erişim, metin sürümleri, yönetmen notları ve replik değişikliklerini gösterme. Yeni sürüm geldiğinde oyuncunun kişisel notları ve prova konumu korunabilsin. İhtiyacı doğrulamak için önce tek bir ekipte pilot yap.
+- [ ] **iOS kapsamını beta sonrası belirle.** Android betasında hangi özelliklerin düzenli kullanıldığını ve iOS talebini ölç. Ortak dosya biçimi ve prova kuralları üzerinden port kapsamını çıkar.
+
+Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https://github.com/caglar-yildiz/Script-prep/issues/1) üzerinden yapılır.
