@@ -41,4 +41,14 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 ./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-İlk prova akışını denemek için **Örnek sahneyi aç** düğmesine dokun ve bir rol seç. **Metinler → Oluştur** menüsünden bir UTF-8 TXT dosyası içe aktarabilir veya metni kendin yazabilirsin. Prova için `KARAKTER: replik` biçiminde en az iki rol kullan. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+İlk prova akışını denemek için **Örnek sahneyi aç** düğmesine dokun ve bir rol seç. **Metinler → Oluştur** menüsünden metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir veya metni kendin yazabilirsin. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+
+### Metin ayrıştırma
+
+- `Jack: Replik`, `JACK:` ve bir sonraki satırda replik.
+- `JACK - Replik`, `JACK – Replik`, `JACK — Replik` ve tek başına büyük harfli karakter adı. PDF’de kalın karakter adları da biçim ipucu olarak kullanılır.
+- `I. PERDE`, `1. Sahne`, `MUHÂVERE` veya `EXT. BAHÇE - GECE` gibi bölüm başlıkları.
+- Parantez, köşeli parantez veya yalnızca italik satırla verilen yönergeler provada ayrıca gösterilir.
+- Taranmış PDF için seçilebilir metin katmanı gerekir.
+
+Biçim örnekleri [MEB Karagöz ünitesi](https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/turkdiliveedebiyati/10/unite6/files/basic-html/page9.html), [TDK konuşma çizgisi](https://yazim.tdk.gov.tr/content/09-noktalama-isaretleri.html), [Dramatists Guild](https://www.dramatistsguild.com/sites/default/files/2020-01/General-SFI-Formatting-Guidelines-Complete.pdf) ve [Fountain](https://fountain.io/syntax/) belgeleriyle karşılaştırıldı.

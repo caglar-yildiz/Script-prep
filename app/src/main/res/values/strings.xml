@@ -1,11 +1,11 @@
 <resources>
     <string name="app_name">Script Prep</string>
     <string name="editor_title">Metni düzenle</string>
-    <string name="editor_description">Karakter adını ve repliğini aynı satıra yaz.</string>
+    <string name="editor_description">Metni burada düzeltebilirsin. Örnek: KARAKTER: Replik veya KARAKTER — Replik.</string>
     <string name="sample_button">Örnek sahneyi aç</string>
     <string name="script_label">Sahne metni</string>
     <string name="script_hint">AYŞE: Hazır mısın?\nDENİZ: Bir dakika daha.</string>
-    <string name="invalid_scene">Her repliğe karakter adı ekle ve en az iki farklı rol kullan.</string>
+    <string name="invalid_scene">Konuşan bir karakter bulunamadı. Karakter adından sonra iki nokta veya tire ekle.</string>
     <string name="role_title">Hangi rolü oynuyorsun?</string>
     <string name="edit_scene">Metni düzenle</string>
     <string name="leave_rehearsal">Rol seçimine dön</string>
@@ -42,7 +42,7 @@
     <string name="sample_title">Örnek sahne</string>
     <string name="imported_title">İçe aktarılan metin</string>
     <string name="import_failed">Dosya okunamadı. UTF-8 biçiminde bir TXT dosyası seç.</string>
-    <string name="import_too_long">Bu dosya 20.000 karakterlik metin sınırını aşıyor.</string>
+    <string name="import_too_long">Dosya aktarım sınırını aşıyor. PDF sınırı 25 MB, 200 sayfa ve 150.000 metin karakteri.</string>
     <string name="premium_description">Premium için planlanan özellikler</string>
     <string name="premium_voices">Doğal karakter sesleri</string>
     <string name="premium_voices_description">Her karaktere farklı, daha doğal bir ses ata.</string>
@@ -62,4 +62,13 @@
     <string name="voice_preview_text">Hazırsan sahneyi baştan alalım.</string>
     <string name="voice_no_alternatives">Cihazında ek Türkçe çevrimdışı ses bulunmuyor.</string>
     <string name="voice_change_failed">Bu ses seçilemedi.</string>
+    <string name="import_pdf">İçe aktar · PDF</string>
+    <string name="pdf_no_text">Bu PDF’de seçilebilir metin bulunamadı. Taranmış sayfalar için önce OCR ile metin oluştur.</string>
+    <string name="pdf_import_failed">PDF açılamadı. Dosyanın sağlam ve parolasız olduğunu kontrol et.</string>
+    <string name="parse_preview">Sahneleri ve rolleri kontrol et</string>
+    <string name="parse_preview_counts">%1$d sahne · %2$d replik</string>
+    <string name="parse_preview_roles">Karakterler · %1$s</string>
+    <string name="choose_scene">Sahne seç</string>
+    <string name="entire_script">Tüm metinle prova</string>
+    <string name="untitled_scene">Başlıksız bölüm %1$d</string>
 </resources>

@@ -3,100 +3,390 @@ package com.scriptprep.app;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class Scene {
     private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
-    private static final String ROLE_PATTERN =
-        "[\\p{L}][\\p{L}\\p{M}\\p{N} .’'-]{0,39}";
-    private static final Pattern INLINE_ROLE =
-        Pattern.compile("^(" + ROLE_PATTERN + ")\\s*:\\s*(.*)$");
-    private static final Pattern ROLE_ONLY = Pattern.compile(ROLE_PATTERN);
+    private static final String ROLE_PATTERN = "[\\p{L}][\\p{L}\\p{M}\\p{N} #.’'ʼ-]{0,39}";
+    private static final Pattern ROLE = Pattern.compile(ROLE_PATTERN);
+    private static final Pattern CUE = Pattern.compile(
+        "^(" + ROLE_PATTERN + "?)\\s*(\\([^()]*\\))?(?:\\s*:\\s*|\\s+[-‒–—−]\\s*|\\s*[‒–—−]\\s*)(.*)$"
+    );
+    private static final Pattern BOLD_CUE = Pattern.compile("^\\*\\*(.+?)\\*\\*\\s*(.*)$");
+    private static final Pattern ROLE_NOTE = Pattern.compile("^(.+?)\\s*(\\([^()]*\\))$");
+    private static final String NUMBER =
+        "(?:\\d+|[IVXLCDM]+|BIR|IKI|U[CÇ]|DORT|BES|ALTI|YEDI|SEKIZ|DOKUZ|ON|"
+        + "BIRINCI|IKINCI|UCUNCU|DORDUNCU|BESINCI|ALTINCI|YEDINCI|SEKIZINCI|DOKUZUNCU|ONUNCU|"
+        + "ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)";
+    private static final Pattern ACT = titledHeading("PERDE|ACT");
+    private static final Pattern STAGE = titledHeading("SAHNE|SCENE|TABLO");
+    private static final Pattern TRADITIONAL = Pattern.compile("^(?:MUKADDIME|MUHAVERE|FASIL|BITIS)[.:]?$");
+    private static final Pattern SCREEN = Pattern.compile(
+        "^(?:\\d+[A-Z]?\\s+)?(?:INT\\.?/EXT|I/E|IC\\s*/\\s*DIS|INT|EXT|EST|IC|DIS)[.\\s]+.+$"
+    );
+    private static final Pattern END = Pattern.compile(
+        "^(?:(?:[IVXLCDM]+|\\d+)\\.?\\s+)?(?:PERDE SONU|SAHNE SONU|END OF (?:ACT|SCENE).*|"
+        + "BLACKOUT|CURTAIN|FADE OUT|(?:CUT|DISSOLVE|FADE) TO|SON|END|KARARIR)[.!:]?$"
+    );
+    private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
 
     final List<Line> lines;
     final List<String> roles;
+    final List<Section> sections;
 
-    private Scene(List<Line> lines, List<String> roles) {
-        this.lines = Collections.unmodifiableList(lines);
-        this.roles = Collections.unmodifiableList(roles);
+    private Scene(List<Line> lines, List<Section> sections) {
+        this.lines = Collections.unmodifiableList(new ArrayList<>(lines));
+        Set<String> uniqueRoles = new LinkedHashSet<>();
+        for (Line line : lines) {
+            uniqueRoles.add(line.role);
+        }
+        roles = Collections.unmodifiableList(new ArrayList<>(uniqueRoles));
+        this.sections = Collections.unmodifiableList(new ArrayList<>(sections));
+    }
+
+    Scene forSection(int index) {
+        if (index < 0 || index >= sections.size()) {
+            return this;
+        }
+        Section section = sections.get(index);
+        return new Scene(lines.subList(section.start, section.end), Collections.emptyList());
     }
 
     static Scene parse(String source) {
-        List<Line> lines = new ArrayList<>();
-        Map<String, String> roles = new LinkedHashMap<>();
-        String role = null;
-        StringBuilder dialogue = new StringBuilder();
-
-        String[] rows = source.replace('\u00A0', ' ').split("\r\n|[\r\n]");
-        boolean hasInlineRoles = false;
-        for (String row : rows) {
-            if (INLINE_ROLE.matcher(row.trim()).matches()) {
-                hasInlineRoles = true;
-                break;
+        String[] rows = source.replace('\u00a0', ' ').split("\\r\\n|[\\r\\n]");
+        Map<String, Integer> standaloneCounts = new LinkedHashMap<>();
+        boolean hasExplicitCues = false;
+        for (String raw : rows) {
+            String row = raw.trim();
+            if (heading(row) == null && !isNote(row) && !isPageNumber(row)) {
+                if (explicitCue(row) != null) {
+                    hasExplicitCues = true;
+                } else {
+                    Cue cue = standaloneCue(row);
+                    if (cue != null) {
+                        String key = roleKey(cue.name);
+                        Integer count = standaloneCounts.get(key);
+                        standaloneCounts.put(key, count == null ? 1 : count + 1);
+                    }
+                }
             }
         }
 
-        for (String rawLine : rows) {
-            String row = rawLine.trim();
-            if (row.isEmpty() || (row.startsWith("(") && row.endsWith(")"))) {
+        Parser parser = new Parser();
+        boolean previousBlank = true;
+        for (int i = 0; i < rows.length; i++) {
+            String row = rows[i].trim();
+            if (row.isEmpty()) {
+                previousBlank = true;
+                continue;
+            }
+            if (isPageNumber(row)) {
+                continue;
+            }
+            if (parser.continuesNote()) {
+                parser.addText(row);
+                previousBlank = false;
                 continue;
             }
 
-            Matcher inline = INLINE_ROLE.matcher(row);
-            boolean standaloneRole = !hasInlineRoles
-                && ROLE_ONLY.matcher(row).matches()
-                && row.equals(row.toUpperCase(TURKISH))
-                && !row.equals(row.toLowerCase(TURKISH))
-                && (role == null || dialogue.length() > 0)
-                && !row.endsWith(".");
-
-            if (inline.matches() || standaloneRole) {
-                addLine(lines, role, dialogue);
-                String candidate = (standaloneRole ? row : inline.group(1)).trim();
-                String key = candidate.toLowerCase(TURKISH);
-                if (!roles.containsKey(key)) {
-                    roles.put(key, candidate);
+            String heading = heading(row);
+            if (heading != null) {
+                parser.startSection(heading);
+            } else if (isNote(row)) {
+                parser.addText(row);
+            } else {
+                Cue cue = explicitCue(row);
+                if (cue == null) {
+                    Cue candidate = standaloneCue(row);
+                    if (candidate != null && !parser.awaitingDialogue() && nextIsDialogue(rows, i)
+                        && (!hasExplicitCues || previousBlank
+                            || standaloneCounts.get(roleKey(candidate.name)) > 1
+                            || parser.hasRole(candidate.name))) {
+                        cue = candidate;
+                    }
                 }
-                role = roles.get(key);
-                dialogue.setLength(0);
-                if (!standaloneRole) {
-                    dialogue.append(inline.group(2).trim());
+                if (cue == null) {
+                    parser.addText(row);
+                } else {
+                    parser.startCue(cue);
                 }
-            } else if (role != null) {
-                if (dialogue.length() > 0) {
-                    dialogue.append(' ');
-                }
-                dialogue.append(row);
             }
+            previousBlank = false;
         }
-
-        addLine(lines, role, dialogue);
-        List<String> usedRoles = new ArrayList<>();
-        for (Line line : lines) {
-            if (!usedRoles.contains(line.role)) {
-                usedRoles.add(line.role);
-            }
-        }
-        return new Scene(lines, usedRoles);
+        return parser.finish();
     }
 
-    private static void addLine(List<Line> lines, String role, StringBuilder dialogue) {
-        if (role != null && dialogue.length() > 0) {
-            lines.add(new Line(role, dialogue.toString()));
+    static boolean isHeading(String text) {
+        return heading(text) != null;
+    }
+
+    static boolean isPageNumber(String text) {
+        return PAGE.matcher(fold(text.trim())).matches();
+    }
+
+    static boolean isRoleName(String candidate) {
+        return ROLE.matcher(candidate).matches() && !candidate.endsWith(".")
+            && candidate.split("\\s+").length <= 5;
+    }
+
+    private static Pattern titledHeading(String label) {
+        return Pattern.compile("^(?:(?:" + label + ")(?:\\s+" + NUMBER + ")?|"
+            + NUMBER + "\\.?\\s+(?:" + label + "))(?:\\s*[:.‒–—−-]\\s*.*)?$");
+    }
+
+    private static String heading(String row) {
+        String plain = row;
+        if (plain.startsWith("**") && plain.endsWith("**") && plain.length() > 4) {
+            plain = plain.substring(2, plain.length() - 2).trim();
+        }
+        String folded = fold(plain);
+        if (ACT.matcher(folded).matches() || STAGE.matcher(folded).matches()
+            || TRADITIONAL.matcher(folded).matches() || SCREEN.matcher(folded).matches()
+            || END.matcher(folded).matches()) {
+            return plain;
+        }
+        return null;
+    }
+
+    private static String fold(String value) {
+        return java.text.Normalizer.normalize(value.toUpperCase(Locale.ROOT), java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{M}+", "");
+    }
+
+    private static String roleKey(String value) {
+        return value.toLowerCase(TURKISH).replaceAll("\\s+", " ");
+    }
+
+    private static boolean isNote(String row) {
+        return row.startsWith("(") || row.startsWith("[") || isItalic(row);
+    }
+
+    private static boolean isItalic(String row) {
+        return row.length() > 2 && row.startsWith("*") && !row.startsWith("**")
+            && row.endsWith("*");
+    }
+
+    private static Cue explicitCue(String row) {
+        Matcher bold = BOLD_CUE.matcher(row);
+        if (bold.matches()) {
+            String name = bold.group(1).trim();
+            String remaining = bold.group(2).trim();
+            Matcher marked = CUE.matcher(name);
+            if (marked.matches() && marked.group(3).isEmpty()) {
+                name = marked.group(1).trim();
+                remaining = (marked.group(2) == null ? "" : marked.group(2) + " ") + remaining;
+            }
+            Matcher note = ROLE_NOTE.matcher(name);
+            if (note.matches()) {
+                name = note.group(1).trim();
+                remaining = note.group(2) + " " + remaining;
+            }
+            if (isRoleName(name)) {
+                return new Cue(name, remaining.replaceFirst("^[:‒–—−-]\\s*", ""));
+            }
+        }
+
+        Matcher separated = CUE.matcher(row);
+        if (separated.matches() && isRoleName(separated.group(1).trim())) {
+            String aside = separated.group(2);
+            return new Cue(separated.group(1).trim(), (aside == null ? "" : aside + " ") + separated.group(3));
+        }
+        return null;
+    }
+
+    private static Cue standaloneCue(String row) {
+        Matcher note = ROLE_NOTE.matcher(row);
+        String name = row;
+        String aside = "";
+        if (note.matches()) {
+            name = note.group(1).trim();
+            aside = note.group(2);
+        }
+        if (!isRoleName(name) || !name.equals(name.toUpperCase(TURKISH))
+            || name.equals(name.toLowerCase(TURKISH))) {
+            return null;
+        }
+        return new Cue(name, aside);
+    }
+
+    private static boolean nextIsDialogue(String[] rows, int index) {
+        for (int i = index + 1; i < rows.length; i++) {
+            String next = rows[i].trim();
+            if (next.isEmpty() || isPageNumber(next) || isNote(next)) {
+                continue;
+            }
+            return !isHeading(next) && explicitCue(next) == null && standaloneCue(next) == null;
+        }
+        return false;
+    }
+
+    private static final class Cue {
+        final String name;
+        final String text;
+
+        Cue(String name, String text) {
+            this.name = name;
+            this.text = text;
+        }
+    }
+
+    private static final class Parser {
+        final List<Line> lines = new ArrayList<>();
+        final List<Section> sections = new ArrayList<>();
+        final Map<String, String> names = new LinkedHashMap<>();
+        final List<String> notes = new ArrayList<>();
+        final StringBuilder dialogue = new StringBuilder();
+        final StringBuilder note = new StringBuilder();
+        final StringBuilder noteDelimiters = new StringBuilder();
+        String act = "";
+        String section = "";
+        String role;
+        int sectionStart;
+
+        boolean continuesNote() {
+            return noteDelimiters.length() > 0;
+        }
+
+        boolean awaitingDialogue() {
+            return role != null && dialogue.length() == 0;
+        }
+
+        boolean hasRole(String name) {
+            return names.containsKey(roleKey(name));
+        }
+
+        void startSection(String title) {
+            finishSection();
+            String folded = fold(title);
+            if (ACT.matcher(folded).matches()) {
+                act = title;
+                section = title;
+            } else if (END.matcher(folded).matches()) {
+                section = act;
+            } else {
+                section = act.isEmpty() ? title : act + " · " + title;
+            }
+        }
+
+        void startCue(Cue cue) {
+            flushDialogue();
+            String key = roleKey(cue.name);
+            if (!names.containsKey(key)) {
+                names.put(key, cue.name);
+            }
+            role = names.get(key);
+            addText(cue.text);
+        }
+
+        void addText(String text) {
+            if (isItalic(text) && !continuesNote()) {
+                notes.add(text.substring(1, text.length() - 1));
+                return;
+            }
+            if (role == null && !isNote(text) && !continuesNote()) {
+                if (!section.isEmpty() && !text.isEmpty()) {
+                    notes.add(text);
+                }
+                return;
+            }
+            for (int i = 0; i < text.length(); i++) {
+                char character = text.charAt(i);
+                if (character == '(' || character == '[') {
+                    noteDelimiters.append(character == '(' ? ')' : ']');
+                    note.append(character);
+                } else if (continuesNote()) {
+                    note.append(character);
+                    int last = noteDelimiters.length() - 1;
+                    if (character == noteDelimiters.charAt(last)) {
+                        noteDelimiters.setLength(last);
+                        if (!continuesNote()) {
+                            notes.add(note.toString());
+                            note.setLength(0);
+                            appendSpace(dialogue);
+                        }
+                    }
+                } else if (role != null) {
+                    dialogue.append(character);
+                }
+            }
+            if (continuesNote()) {
+                appendSpace(note);
+            } else {
+                appendSpace(dialogue);
+            }
+        }
+
+        void flushDialogue() {
+            String spoken = dialogue.toString().trim().replaceAll("[ \\t]+", " ");
+            if (role != null && !spoken.isEmpty()) {
+                lines.add(new Line(role, spoken, section, notes));
+                notes.clear();
+            }
+            dialogue.setLength(0);
+        }
+
+        void finishSection() {
+            if (note.length() > 0) {
+                notes.add(note.toString().trim());
+                note.setLength(0);
+                noteDelimiters.setLength(0);
+            }
+            flushDialogue();
+            if (lines.size() > sectionStart) {
+                if (!notes.isEmpty()) {
+                    Line last = lines.get(lines.size() - 1);
+                    List<String> allNotes = new ArrayList<>(last.notes);
+                    allNotes.addAll(notes);
+                    lines.set(lines.size() - 1, new Line(last.role, last.text, last.section, allNotes));
+                }
+                sections.add(new Section(section, sectionStart, lines.size()));
+            }
+            sectionStart = lines.size();
+            role = null;
+            notes.clear();
+        }
+
+        Scene finish() {
+            finishSection();
+            return new Scene(lines, sections);
+        }
+
+        private static void appendSpace(StringBuilder value) {
+            if (value.length() > 0 && value.charAt(value.length() - 1) != ' ') {
+                value.append(' ');
+            }
         }
     }
 
     static final class Line {
         final String role;
         final String text;
+        final String section;
+        final List<String> notes;
 
-        private Line(String role, String text) {
+        private Line(String role, String text, String section, List<String> notes) {
             this.role = role;
             this.text = text;
+            this.section = section;
+            this.notes = Collections.unmodifiableList(new ArrayList<>(notes));
+        }
+    }
+
+    static final class Section {
+        final String title;
+        final int start;
+        final int end;
+
+        private Section(String title, int start, int end) {
+            this.title = title;
+            this.start = start;
+            this.end = end;
         }
     }
 }

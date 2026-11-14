@@ -43,9 +43,10 @@ public final class MainActivity extends Activity {
     private static final int SECONDARY = 0xFF4B5D50;
     private static final int ACCENT = 0xFF36513E;
     private static final int CARD = 0xFFFFFCF6;
-    private static final int MAX_SCRIPT_LENGTH = 20_000;
+    private static final int MAX_SCRIPT_LENGTH = 150_000;
     private static final int MAX_TITLE_LENGTH = 80;
-    private static final int IMPORT_REQUEST = 1;
+    private static final int IMPORT_TEXT = 1;
+    private static final int IMPORT_PDF = 2;
     private static final String VOICE_PREFERENCE = "tts_voice";
     private static final String EXAMPLE =
         "ECE: Prova başlamadan önce ışığı bir kez daha kontrol edelim.\n"
@@ -56,7 +57,7 @@ public final class MainActivity extends Activity {
         + "ECE: Sen. Ben yanına gelene kadar yerinde kal.\n"
         + "MERT: Tamam. Bu sefer baştan alalım.";
 
-    private enum Screen { HOME, EDITOR, ROLES, REHEARSAL }
+    private enum Screen { HOME, EDITOR, SECTIONS, ROLES, REHEARSAL }
     private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
@@ -82,7 +83,9 @@ public final class MainActivity extends Activity {
     private String scriptId;
     private String scriptTitle = "";
     private String script = "";
+    private Scene fullScene;
     private Scene scene;
+    private int sectionIndex = -1;
     private String role;
     private int position;
 
@@ -97,7 +100,9 @@ public final class MainActivity extends Activity {
             scriptId = state.getString("script_id");
             screen = Screen.valueOf(state.getString("screen", Screen.HOME.name()));
             tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
-            scene = Scene.parse(script);
+            fullScene = Scene.parse(script);
+            sectionIndex = state.getInt("section_index", -1);
+            scene = fullScene.forSection(sectionIndex);
             role = state.getString("role");
             position = Math.min(state.getInt("position"), scene.lines.size());
         }
@@ -120,6 +125,7 @@ public final class MainActivity extends Activity {
         state.putString("screen", screen.name());
         state.putString("tab", tab.name());
         state.putString("role", role);
+        state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
     }
 
@@ -150,6 +156,8 @@ public final class MainActivity extends Activity {
     public void onBackPressed() {
         if (screen == Screen.REHEARSAL) {
             show(Screen.ROLES);
+        } else if (screen == Screen.ROLES && hasNamedSections()) {
+            show(Screen.SECTIONS);
         } else if (screen != Screen.HOME || tab != Tab.SCRIPTS) {
             returnToLibrary();
         } else {
@@ -161,27 +169,34 @@ public final class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != IMPORT_REQUEST || resultCode != RESULT_OK || data == null) {
+        if ((requestCode != IMPORT_TEXT && requestCode != IMPORT_PDF)
+            || resultCode != RESULT_OK || data == null) {
             return;
         }
         Uri uri = data.getData();
         if (uri == null) {
             return;
         }
+        boolean pdf = requestCode == IMPORT_PDF;
         imports.execute(() -> {
             try {
-                ScriptLibrary.Script imported = ScriptImport.read(getContentResolver(), uri, MAX_SCRIPT_LENGTH);
+                ScriptLibrary.Script imported = ScriptImport.read(getApplicationContext(), uri, pdf, MAX_SCRIPT_LENGTH);
                 main.post(() -> {
                     if (!isDestroyed() && screen == Screen.HOME && tab == Tab.SCRIPTS) {
                         String title = imported.title.trim();
                         openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
                             : title, imported.text);
+                        if (pdf) {
+                            showParsePreview(Scene.parse(imported.text));
+                        }
                     }
                 });
             } catch (ScriptImport.LengthLimitException error) {
                 main.post(() -> notifyUser(R.string.import_too_long));
+            } catch (PdfScriptReader.NoTextException error) {
+                main.post(() -> notifyUser(R.string.pdf_no_text));
             } catch (IOException | SecurityException error) {
-                main.post(() -> notifyUser(R.string.import_failed));
+                main.post(() -> notifyUser(pdf ? R.string.pdf_import_failed : R.string.import_failed));
             }
         });
     }
@@ -331,6 +346,7 @@ public final class MainActivity extends Activity {
                 }
             }
             case EDITOR -> renderEditor();
+            case SECTIONS -> renderSections();
             case ROLES -> renderRoles();
             case REHEARSAL -> renderRehearsal();
         }
@@ -377,41 +393,40 @@ public final class MainActivity extends Activity {
     private void showCreateOptions() {
         new AlertDialog.Builder(this)
             .setTitle(R.string.create_script_title)
-            .setItems(new CharSequence[] {getString(R.string.import_script), getString(R.string.write_script)},
-                (dialog, choice) -> {
-                    if (choice == 0) {
-                        openImportPicker();
-                    } else {
-                        openEditor(null, "", "");
+            .setItems(new CharSequence[] {getString(R.string.import_pdf), getString(R.string.import_script),
+                getString(R.string.write_script)}, (dialog, choice) -> {
+                    switch (choice) {
+                        case 0 -> openImportPicker(true);
+                        case 1 -> openImportPicker(false);
+                        default -> openEditor(null, "", "");
                     }
                 })
             .show();
     }
 
     @SuppressWarnings("deprecation")
-    private void openImportPicker() {
+    private void openImportPicker(boolean pdf) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("text/plain")
+            .setType(pdf ? "application/pdf" : "text/plain")
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
-            startActivityForResult(intent, IMPORT_REQUEST);
+            startActivityForResult(intent, pdf ? IMPORT_PDF : IMPORT_TEXT);
         } catch (ActivityNotFoundException error) {
-            notifyUser(R.string.import_failed);
+            notifyUser(pdf ? R.string.pdf_import_failed : R.string.import_failed);
         }
     }
 
     private void openSavedScript(ScriptLibrary.Script entry) {
         Scene parsed = Scene.parse(entry.text);
-        if (parsed.roles.size() < 2) {
+        if (parsed.roles.isEmpty()) {
             openEditor(entry.id, entry.title, entry.text);
             return;
         }
         scriptId = entry.id;
         scriptTitle = entry.title;
         script = entry.text;
-        scene = parsed;
-        show(Screen.ROLES);
+        beginScript(parsed);
     }
 
     private void openEditor(String id, String title, String text) {
@@ -436,6 +451,8 @@ public final class MainActivity extends Activity {
         editor.setMaxLines(12);
 
         button(getString(R.string.script_save_and_rehearse), true, view -> saveEditor(true));
+        button(getString(R.string.parse_preview), false,
+            view -> showParsePreview(Scene.parse(editor.getText().toString())));
         button(getString(R.string.script_save), false, view -> saveEditor(false));
         button(getString(R.string.return_to_library), false, view -> returnToLibrary());
         content.requestFocus();
@@ -473,7 +490,7 @@ public final class MainActivity extends Activity {
             return;
         }
         Scene parsed = Scene.parse(candidate);
-        if (rehearse && parsed.roles.size() < 2) {
+        if (rehearse && parsed.roles.isEmpty()) {
             editor.requestFocus();
             editor.setError(getString(R.string.invalid_scene));
             return;
@@ -481,16 +498,72 @@ public final class MainActivity extends Activity {
         scriptId = library.save(scriptId, title, candidate);
         scriptTitle = title;
         script = candidate;
-        scene = parsed;
         InputMethodManager keyboard = getSystemService(InputMethodManager.class);
         if (keyboard != null) {
             keyboard.hideSoftInputFromWindow(editor.getWindowToken(), 0);
         }
         if (rehearse) {
-            show(Screen.ROLES);
+            beginScript(parsed);
         } else {
             returnToLibrary();
         }
+    }
+
+    private void showParsePreview(Scene parsed) {
+        StringBuilder summary = new StringBuilder(getString(
+            R.string.parse_preview_counts, parsed.sections.size(), parsed.lines.size()
+        ));
+        summary.append("\n\n");
+        if (parsed.roles.isEmpty()) {
+            summary.append(getString(R.string.invalid_scene));
+        } else {
+            summary.append(getString(R.string.parse_preview_roles, android.text.TextUtils.join(", ", parsed.roles)));
+        }
+        for (Scene.Section section : parsed.sections) {
+            if (!section.title.isEmpty()) {
+                summary.append("\n").append(section.title);
+            }
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
+            .setMessage(summary).setPositiveButton(android.R.string.ok, null).show();
+    }
+
+    private void beginScript(Scene parsed) {
+        fullScene = parsed;
+        sectionIndex = -1;
+        scene = parsed;
+        show(hasNamedSections() ? Screen.SECTIONS : Screen.ROLES);
+    }
+
+    private boolean hasNamedSections() {
+        if (fullScene != null) {
+            for (Scene.Section section : fullScene.sections) {
+                if (!section.title.isEmpty()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void renderSections() {
+        text(scriptTitle, 16, SECONDARY, false);
+        text(getString(R.string.choose_scene), 34, INK, true);
+        button(getString(R.string.entire_script), true, view -> selectSection(-1));
+        for (int i = 0; i < fullScene.sections.size(); i++) {
+            int index = i;
+            String title = fullScene.sections.get(i).title;
+            button(title.isEmpty() ? getString(R.string.untitled_scene, i + 1) : title, false,
+                view -> selectSection(index));
+        }
+        button(getString(R.string.edit_scene), false, view -> show(Screen.EDITOR));
+        button(getString(R.string.return_to_library), false, view -> returnToLibrary());
+    }
+
+    private void selectSection(int index) {
+        sectionIndex = index;
+        scene = fullScene.forSection(index);
+        show(Screen.ROLES);
     }
 
     private void renderPremium() {
@@ -614,6 +687,9 @@ public final class MainActivity extends Activity {
                 moveTo(0, true);
             });
         }
+        if (hasNamedSections()) {
+            button(getString(R.string.choose_scene), false, view -> show(Screen.SECTIONS));
+        }
         button(getString(R.string.edit_scene), false, view -> show(Screen.EDITOR));
         button(getString(R.string.return_to_library), false, view -> returnToLibrary());
     }
@@ -631,9 +707,16 @@ public final class MainActivity extends Activity {
 
         Scene.Line line = scene.lines.get(position);
         boolean myTurn = line.role.equals(role);
+        if (!line.section.isEmpty()) {
+            text(line.section, 16, SECONDARY, false);
+        }
         text(getString(R.string.line_counter, position + 1, scene.lines.size()), 16, SECONDARY, false);
         int title = myTurn ? R.string.your_turn : R.string.partner_turn;
         text(getString(title, line.role), 29, INK, true);
+        if (!line.notes.isEmpty()) {
+            TextView directions = text(android.text.TextUtils.join("\n", line.notes), 16, SECONDARY, true);
+            directions.setTypeface(Typeface.SERIF, Typeface.ITALIC);
+        }
         TextView dialogue = text(line.text, 25, INK, true);
         dialogue.setBackground(cardBackground(CARD));
         dialogue.setPadding(dp(18), dp(18), dp(18), dp(18));
