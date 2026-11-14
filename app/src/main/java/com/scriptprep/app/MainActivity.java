@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.RippleDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -17,6 +18,11 @@ import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.StyleSpan;
 import android.view.Gravity;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -26,6 +32,9 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.scriptprep.app.RehearsalOptions.Mode;
+import com.scriptprep.app.RehearsalOptions.Visibility;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,11 +47,14 @@ import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
     private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
-    private static final int BACKGROUND = 0xFFF8F3E9;
-    private static final int INK = 0xFF24362A;
-    private static final int SECONDARY = 0xFF4B5D50;
-    private static final int ACCENT = 0xFF36513E;
-    private static final int CARD = 0xFFFFFCF6;
+    private static final int BACKGROUND = 0xFF17131C;
+    private static final int INK = 0xFFF9F1EE;
+    private static final int SECONDARY = 0xFFC5B7C9;
+    private static final int ACCENT = 0xFFF3BDA4;
+    private static final int CARD = 0xFF241D2B;
+    private static final int PANEL = 0xFF34283C;
+    private static final int BORDER = 0xFF58465F;
+    private static final int HIGHLIGHT = 0xFFE9CDFA;
     private static final int MAX_SCRIPT_LENGTH = 150_000;
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
@@ -57,7 +69,7 @@ public final class MainActivity extends Activity {
         + "ECE: Sen. Ben yanına gelene kadar yerinde kal.\n"
         + "MERT: Tamam. Bu sefer baştan alalım.";
 
-    private enum Screen { HOME, EDITOR, SECTIONS, ROLES, REHEARSAL }
+    private enum Screen { HOME, EDITOR, SECTIONS, SETUP, READER, REHEARSAL }
     private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
@@ -88,6 +100,9 @@ public final class MainActivity extends Activity {
     private int sectionIndex = -1;
     private String role;
     private int position;
+    private Mode mode = Mode.PRACTICE;
+    private Visibility lineVisibility = Visibility.FULL;
+    private boolean revealLine;
 
     @Override
     protected void onCreate(Bundle state) {
@@ -98,13 +113,20 @@ public final class MainActivity extends Activity {
             script = state.getString("script", "");
             scriptTitle = state.getString("title", "");
             scriptId = state.getString("script_id");
-            screen = Screen.valueOf(state.getString("screen", Screen.HOME.name()));
+            String restoredScreen = state.getString("screen", Screen.HOME.name());
+            screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
             tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
             fullScene = Scene.parse(script);
             sectionIndex = state.getInt("section_index", -1);
             scene = fullScene.forSection(sectionIndex);
             role = state.getString("role");
             position = Math.min(state.getInt("position"), scene.lines.size());
+            mode = Mode.valueOf(state.getString("mode", Mode.PRACTICE.name()));
+            lineVisibility = Visibility.valueOf(state.getString("line_visibility", Visibility.FULL.name()));
+            revealLine = state.getBoolean("reveal_line");
+            if (screen == Screen.SETUP || screen == Screen.READER || screen == Screen.REHEARSAL) {
+                ensureRole();
+            }
         }
         render();
         speech = new TextToSpeech(this, status -> main.post(() -> prepareSpeech(status)));
@@ -127,6 +149,9 @@ public final class MainActivity extends Activity {
         state.putString("role", role);
         state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
+        state.putString("mode", mode.name());
+        state.putString("line_visibility", lineVisibility.name());
+        state.putBoolean("reveal_line", revealLine);
     }
 
     @Override
@@ -154,9 +179,9 @@ public final class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
-        if (screen == Screen.REHEARSAL) {
-            show(Screen.ROLES);
-        } else if (screen == Screen.ROLES && hasNamedSections()) {
+        if (screen == Screen.REHEARSAL || screen == Screen.READER) {
+            show(Screen.SETUP);
+        } else if (screen == Screen.SETUP && hasNamedSections()) {
             show(Screen.SECTIONS);
         } else if (screen != Screen.HOME || tab != Tab.SCRIPTS) {
             returnToLibrary();
@@ -275,7 +300,7 @@ public final class MainActivity extends Activity {
             return;
         }
         Scene.Line line = scene.lines.get(position);
-        if (line.role.equals(role)) {
+        if (!RehearsalOptions.shouldSpeak(mode, role, line.role)) {
             return;
         }
         if (speechState == SpeechState.LOADING) {
@@ -296,8 +321,10 @@ public final class MainActivity extends Activity {
     private void moveTo(int target, boolean autoPlay) {
         cancelSpeech();
         position = target;
+        revealLine = false;
         playbackFailed = false;
-        if (autoPlay && position < scene.lines.size() && !scene.lines.get(position).role.equals(role)) {
+        if (autoPlay && position < scene.lines.size()
+            && RehearsalOptions.shouldSpeak(mode, role, scene.lines.get(position).role)) {
             playCurrent();
         } else {
             render();
@@ -333,10 +360,14 @@ public final class MainActivity extends Activity {
 
         if (screen == Screen.HOME) {
             root.addView(bottomNavigation());
+        } else if (screen == Screen.SETUP) {
+            root.addView(setupActions());
         }
         setContentView(root);
 
-        text(getString(R.string.app_name), 16, SECONDARY, false);
+        if (screen != Screen.SETUP && screen != Screen.READER) {
+            text(getString(R.string.app_name), 16, HIGHLIGHT, false);
+        }
         switch (screen) {
             case HOME -> {
                 switch (tab) {
@@ -347,7 +378,8 @@ public final class MainActivity extends Activity {
             }
             case EDITOR -> renderEditor();
             case SECTIONS -> renderSections();
-            case ROLES -> renderRoles();
+            case SETUP -> renderSetup();
+            case READER -> renderReader();
             case REHEARSAL -> renderRehearsal();
         }
     }
@@ -517,7 +549,7 @@ public final class MainActivity extends Activity {
         if (parsed.roles.isEmpty()) {
             summary.append(getString(R.string.invalid_scene));
         } else {
-            summary.append(getString(R.string.parse_preview_roles, android.text.TextUtils.join(", ", parsed.roles)));
+            summary.append(getString(R.string.parse_preview_roles, TextUtils.join(", ", parsed.roles)));
         }
         for (Scene.Section section : parsed.sections) {
             if (!section.title.isEmpty()) {
@@ -532,7 +564,8 @@ public final class MainActivity extends Activity {
         fullScene = parsed;
         sectionIndex = -1;
         scene = parsed;
-        show(hasNamedSections() ? Screen.SECTIONS : Screen.ROLES);
+        ensureRole();
+        show(hasNamedSections() ? Screen.SECTIONS : Screen.SETUP);
     }
 
     private boolean hasNamedSections() {
@@ -563,7 +596,8 @@ public final class MainActivity extends Activity {
     private void selectSection(int index) {
         sectionIndex = index;
         scene = fullScene.forSection(index);
-        show(Screen.ROLES);
+        ensureRole();
+        show(Screen.SETUP);
     }
 
     private void renderPremium() {
@@ -677,21 +711,168 @@ public final class MainActivity extends Activity {
         }
     }
 
-    private void renderRoles() {
-        text(scriptTitle, 16, SECONDARY, false);
-        text(getString(R.string.role_title), 34, INK, true);
-        for (String candidate : scene.roles) {
-            button(candidate, true, view -> {
-                role = candidate;
-                screen = Screen.REHEARSAL;
-                moveTo(0, true);
-            });
+    private void ensureRole() {
+        if (!scene.roles.isEmpty() && !scene.roles.contains(role)) {
+            role = scene.roles.get(0);
         }
+    }
+
+    private void renderSetup() {
+        LinearLayout actions = new LinearLayout(this);
+        Button back = addEqualButton(actions, getString(R.string.setup_back), false, view -> onBackPressed());
+        Button reader = addEqualButton(actions, getString(R.string.read_script), false, view -> show(Screen.READER));
+        back.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+        reader.setGravity(Gravity.CENTER_VERTICAL | Gravity.END);
+        for (Button action : new Button[] {back, reader}) {
+            action.setBackground(new RippleDrawable(ColorStateList.valueOf(0x32F3BDA4), null, null));
+            action.setTextColor(ACCENT);
+        }
+        content.addView(actions, row());
+
+        LinearLayout titleCard = new LinearLayout(this);
+        titleCard.setOrientation(LinearLayout.VERTICAL);
+        titleCard.setPadding(dp(24), dp(30), dp(24), dp(28));
+        GradientDrawable wash = new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR, new int[] {0xFF44314A, CARD, BACKGROUND}
+        );
+        wash.setCornerRadius(dp(24));
+        wash.setStroke(dp(1), BORDER);
+        titleCard.setBackground(wash);
+        TextView title = label(scriptTitle, 37, INK, true);
+        titleCard.addView(title);
+        if (sectionIndex >= 0) {
+            String selected = fullScene.sections.get(sectionIndex).title;
+            if (!selected.isEmpty()) {
+                TextView section = label(selected, 15, HIGHLIGHT, false);
+                section.setPadding(0, dp(10), 0, 0);
+                titleCard.addView(section);
+            }
+        }
+        content.addView(titleCard, row());
+
+        if (mode == Mode.PRACTICE) {
+            button(getString(R.string.current_role, role), false, view -> showRoleOptions());
+        }
+
+        LinearLayout modes = new LinearLayout(this);
+        addMode(modes, Mode.LISTEN, R.string.listen_mode);
+        addMode(modes, Mode.PRACTICE, R.string.practice_mode);
+        content.addView(modes, row());
+
+        TextView description = text(getString(mode == Mode.LISTEN
+            ? R.string.listen_description : R.string.practice_description), 16, SECONDARY, false);
+        description.setLineSpacing(dp(4), 1);
+        description.setPadding(dp(16), dp(14), dp(16), dp(14));
+        description.setBackground(cardBackground(CARD));
+        if (mode == Mode.PRACTICE) {
+            button(getString(R.string.visibility_setting, getString(visibilityLabel(lineVisibility))),
+                false, view -> showVisibilityOptions());
+        }
+
+        TextView upcoming = text(getString(R.string.selftape_upcoming), 14, SECONDARY, false);
+        upcoming.setPadding(dp(4), dp(8), dp(4), 0);
         if (hasNamedSections()) {
             button(getString(R.string.choose_scene), false, view -> show(Screen.SECTIONS));
         }
-        button(getString(R.string.edit_scene), false, view -> show(Screen.EDITOR));
-        button(getString(R.string.return_to_library), false, view -> returnToLibrary());
+    }
+
+    private LinearLayout setupActions() {
+        LinearLayout actions = new LinearLayout(this);
+        actions.setOrientation(LinearLayout.VERTICAL);
+        actions.setBackgroundColor(CARD);
+        actions.setPadding(dp(24), dp(6), dp(24), dp(14));
+        actions.addView(makeButton(getString(R.string.edit_scene), false, view -> show(Screen.EDITOR)), row());
+        int startLabel = mode == Mode.LISTEN ? R.string.listen_start : R.string.practice_start;
+        actions.addView(makeButton(getString(startLabel), true, view -> {
+            ensureRole();
+            screen = Screen.REHEARSAL;
+            moveTo(0, true);
+        }), row());
+        return actions;
+    }
+
+    private void addMode(LinearLayout group, Mode destination, int title) {
+        Button choice = addEqualButton(group, getString(title), mode == destination, view -> {
+            if (mode != destination) {
+                mode = destination;
+                render();
+            }
+        });
+        choice.setSelected(mode == destination);
+    }
+
+    private Button addEqualButton(LinearLayout group, String title, boolean selected, View.OnClickListener action) {
+        Button button = makeButton(title, selected, action);
+        LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(0, -2, 1);
+        if (group.getChildCount() > 0) {
+            layout.leftMargin = dp(8);
+        }
+        group.addView(button, layout);
+        return button;
+    }
+
+    private void showRoleOptions() {
+        String[] choices = scene.roles.toArray(new String[0]);
+        new AlertDialog.Builder(this).setTitle(R.string.choose_practice_role)
+            .setSingleChoiceItems(choices, scene.roles.indexOf(role), (dialog, index) -> {
+                role = choices[index];
+                dialog.dismiss();
+                render();
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private void showVisibilityOptions() {
+        Visibility[] values = Visibility.values();
+        String[] choices = new String[values.length];
+        for (int index = 0; index < values.length; index++) {
+            choices[index] = getString(visibilityLabel(values[index]));
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.visibility_choose)
+            .setSingleChoiceItems(choices, lineVisibility.ordinal(), (dialog, index) -> {
+                lineVisibility = values[index];
+                dialog.dismiss();
+                render();
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private int visibilityLabel(Visibility value) {
+        return switch (value) {
+            case FULL -> R.string.visibility_full;
+            case HINT -> R.string.visibility_hint;
+            case INITIALS -> R.string.visibility_initials;
+            case HIDDEN -> R.string.visibility_hidden;
+        };
+    }
+
+    private void renderReader() {
+        button(getString(R.string.setup_back), false, view -> show(Screen.SETUP));
+        text(scriptTitle, 36, INK, true);
+        SpannableStringBuilder transcript = new SpannableStringBuilder();
+        String previousSection = "";
+        for (Scene.Line line : scene.lines) {
+            if (!line.section.isEmpty() && !line.section.equals(previousSection)) {
+                appendStyled(transcript, line.section + "\n\n", Typeface.BOLD, HIGHLIGHT);
+                previousSection = line.section;
+            }
+            for (String note : line.notes) {
+                appendStyled(transcript, note + "\n", Typeface.ITALIC, SECONDARY);
+            }
+            appendStyled(transcript, line.role + "\n", Typeface.BOLD, ACCENT);
+            transcript.append(line.text).append("\n\n");
+        }
+        TextView manuscript = label(transcript, 20, INK, true);
+        manuscript.setLineSpacing(dp(5), 1);
+        manuscript.setTextIsSelectable(true);
+        content.addView(manuscript, row());
+    }
+
+    private void appendStyled(SpannableStringBuilder text, String value, int style, int color) {
+        int start = text.length();
+        text.append(value);
+        text.setSpan(new StyleSpan(style), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        text.setSpan(new ForegroundColorSpan(color), start, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
     private void renderRehearsal() {
@@ -701,25 +882,33 @@ public final class MainActivity extends Activity {
             if (position > 0) {
                 button(getString(R.string.previous_line), false, view -> moveTo(position - 1, false));
             }
-            button(getString(R.string.leave_rehearsal), false, view -> show(Screen.ROLES));
+            button(getString(R.string.back_to_setup), false, view -> show(Screen.SETUP));
             return;
         }
 
         Scene.Line line = scene.lines.get(position);
-        boolean myTurn = line.role.equals(role);
+        boolean myTurn = !RehearsalOptions.shouldSpeak(mode, role, line.role);
         if (!line.section.isEmpty()) {
             text(line.section, 16, SECONDARY, false);
         }
         text(getString(R.string.line_counter, position + 1, scene.lines.size()), 16, SECONDARY, false);
-        int title = myTurn ? R.string.your_turn : R.string.partner_turn;
+        int title = myTurn ? R.string.your_turn
+            : mode == Mode.LISTEN ? R.string.reading_role : R.string.partner_turn;
         text(getString(title, line.role), 29, INK, true);
         if (!line.notes.isEmpty()) {
-            TextView directions = text(android.text.TextUtils.join("\n", line.notes), 16, SECONDARY, true);
+            TextView directions = text(TextUtils.join("\n", line.notes), 16, SECONDARY, true);
             directions.setTypeface(Typeface.SERIF, Typeface.ITALIC);
         }
-        TextView dialogue = text(line.text, 25, INK, true);
+        String shown = myTurn && !revealLine ? lineVisibility.visibleText(line.text) : line.text;
+        TextView dialogue = text(shown.isEmpty() ? getString(R.string.line_hidden) : shown, 25, INK, true);
         dialogue.setBackground(cardBackground(CARD));
         dialogue.setPadding(dp(18), dp(18), dp(18), dp(18));
+        if (myTurn && !revealLine && lineVisibility != Visibility.FULL) {
+            button(getString(R.string.line_reveal), false, view -> {
+                revealLine = true;
+                render();
+            });
+        }
 
         TextView status = text(getString(myTurn ? R.string.speak_then_continue : speechMessage()),
             16, SECONDARY, false);
@@ -739,24 +928,30 @@ public final class MainActivity extends Activity {
         if (position > 0) {
             button(getString(R.string.previous_line), false, view -> moveTo(position - 1, false));
         }
-        button(getString(R.string.leave_rehearsal), false, view -> show(Screen.ROLES));
+        button(getString(R.string.back_to_setup), false, view -> show(Screen.SETUP));
     }
 
     private int speechMessage() {
         if (activeUtterance != null) {
-            return R.string.playing;
+            return mode == Mode.LISTEN ? R.string.reading_playing : R.string.playing;
         }
         if (playbackFailed) {
             return R.string.speech_failed;
         }
         return switch (speechState) {
             case LOADING -> R.string.speech_loading;
-            case READY -> R.string.speech_ready;
+            case READY -> mode == Mode.LISTEN ? R.string.reading_ready : R.string.speech_ready;
             case UNAVAILABLE -> R.string.speech_unavailable;
         };
     }
 
     private TextView text(String value, int size, int color, boolean serif) {
+        TextView view = label(value, size, color, serif);
+        content.addView(view, row());
+        return view;
+    }
+
+    private TextView label(CharSequence value, int size, int color, boolean serif) {
         TextView view = new TextView(this);
         view.setText(value);
         view.setTextSize(size);
@@ -764,7 +959,6 @@ public final class MainActivity extends Activity {
         if (serif) {
             view.setTypeface(Typeface.SERIF);
         }
-        content.addView(view, row());
         return view;
     }
 
@@ -777,9 +971,16 @@ public final class MainActivity extends Activity {
         button.setText(label);
         button.setAllCaps(false);
         button.setTextSize(16);
-        button.setMinHeight(dp(48));
-        button.setBackgroundTintList(ColorStateList.valueOf(primary ? ACCENT : CARD));
-        button.setTextColor(primary ? CARD : INK);
+        button.setMinHeight(dp(52));
+        button.setPadding(dp(12), dp(10), dp(12), dp(10));
+        GradientDrawable surface = cardBackground(primary ? ACCENT : PANEL);
+        if (!primary) {
+            surface.setStroke(dp(1), BORDER);
+        }
+        button.setBackground(new RippleDrawable(
+            ColorStateList.valueOf(primary ? 0x26342131 : 0x32F3BDA4), surface, null
+        ));
+        button.setTextColor(primary ? BACKGROUND : INK);
         button.setOnClickListener(action);
         return button;
     }

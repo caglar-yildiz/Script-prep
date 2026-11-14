@@ -1,11 +1,11 @@
 <resources>
-    <style name="Theme.ScriptPrep" parent="@android:style/Theme.Material.Light.NoActionBar">
+    <style name="Theme.ScriptPrep" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans-serif</item>
-        <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F8F3E9</item>
-        <item name="android:navigationBarColor">#F8F3E9</item>
-        <item name="android:windowBackground">#F8F3E9</item>
-        <item name="android:colorAccent">#36513E</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#17131C</item>
+        <item name="android:navigationBarColor">#17131C</item>
+        <item name="android:windowBackground">#17131C</item>
+        <item name="android:colorAccent">#F3BDA4</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
 </resources>

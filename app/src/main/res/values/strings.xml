@@ -6,9 +6,7 @@
     <string name="script_label">Sahne metni</string>
     <string name="script_hint">AYŞE: Hazır mısın?\nDENİZ: Bir dakika daha.</string>
     <string name="invalid_scene">Konuşan bir karakter bulunamadı. Karakter adından sonra iki nokta veya tire ekle.</string>
-    <string name="role_title">Hangi rolü oynuyorsun?</string>
     <string name="edit_scene">Metni düzenle</string>
-    <string name="leave_rehearsal">Rol seçimine dön</string>
     <string name="line_counter">Replik %1$d / %2$d</string>
     <string name="your_turn">Sıra sende · %1$s</string>
     <string name="partner_turn">Karşı replik · %1$s</string>
@@ -71,4 +69,27 @@
     <string name="choose_scene">Sahne seç</string>
     <string name="entire_script">Tüm metinle prova</string>
     <string name="untitled_scene">Başlıksız bölüm %1$d</string>
+    <string name="setup_back">‹ Geri</string>
+    <string name="read_script">Metni oku</string>
+    <string name="current_role">Rolün · %1$s</string>
+    <string name="choose_practice_role">Rol seç</string>
+    <string name="practice_mode">Çalış</string>
+    <string name="listen_mode">Dinle</string>
+    <string name="listen_description">Sahnenin ritmini duy. Bütün karakterlerin replikleri sırayla okunur.</string>
+    <string name="practice_description">Karşı replikleri dinle. Sıra sana geldiğinde uygulama seni bekler.</string>
+    <string name="selftape_upcoming">Kamera provası · Yakında</string>
+    <string name="practice_start">Provayı başlat</string>
+    <string name="listen_start">Dinlemeyi başlat</string>
+    <string name="visibility_setting">Replik görünümü · %1$s</string>
+    <string name="visibility_choose">Kendi repliğin nasıl görünsün?</string>
+    <string name="visibility_full">Tam replik</string>
+    <string name="visibility_hint">İlk kelime</string>
+    <string name="visibility_initials">İlk harfler</string>
+    <string name="visibility_hidden">Gizli</string>
+    <string name="line_hidden">Repliğin gizli.</string>
+    <string name="line_reveal">Repliği göster</string>
+    <string name="reading_role">Okunuyor · %1$s</string>
+    <string name="reading_ready">Bu repliği dinlemek için Oku’ya dokun.</string>
+    <string name="reading_playing">Replik okunuyor…</string>
+    <string name="back_to_setup">Prova seçeneklerine dön</string>
 </resources>
