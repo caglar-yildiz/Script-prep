@@ -34,6 +34,8 @@ final class Scene {
         "^(?:(?:[IVXLCDM]+|\\d+)\\.?\\s+)?(?:PERDE SONU|SAHNE SONU|END OF (?:ACT|SCENE).*|"
         + "BLACKOUT|CURTAIN|FADE OUT|(?:CUT|DISSOLVE|FADE) TO|SON|END|KARARIR)[.!:]?$"
     );
+    private static final Pattern EXERCISE = Pattern.compile("^ETKINLIK\\s+\\d+\\b");
+    private static final Pattern LINK = Pattern.compile("https?://", Pattern.CASE_INSENSITIVE);
     private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
 
     final List<Line> lines;
@@ -64,7 +66,7 @@ final class Scene {
         boolean hasExplicitCues = false;
         for (String raw : rows) {
             String row = raw.trim();
-            if (heading(row) == null && !isNote(row) && !isPageNumber(row)) {
+            if (heading(row) == null && !isNote(row) && !isPageNumber(row) && !isNonScript(row)) {
                 if (explicitCue(row) != null) {
                     hasExplicitCues = true;
                 } else {
@@ -86,7 +88,7 @@ final class Scene {
                 previousBlank = true;
                 continue;
             }
-            if (isPageNumber(row)) {
+            if (isPageNumber(row) || isNonScript(row)) {
                 continue;
             }
             if (parser.continuesNote()) {
@@ -163,6 +165,19 @@ final class Scene {
         return value.toLowerCase(TURKISH).replaceAll("\\s+", " ");
     }
 
+    private static boolean isNonScript(String row) {
+        String plain = row.replace("**", "");
+        if (EXERCISE.matcher(fold(plain)).find()) {
+            return true;
+        }
+        Matcher link = LINK.matcher(plain);
+        if (!link.find()) {
+            return false;
+        }
+        Matcher role = CUE.matcher(plain);
+        return !role.matches() || role.end(1) > link.start();
+    }
+
     private static boolean isNote(String row) {
         return row.startsWith("(") || row.startsWith("[") || isItalic(row);
     }
@@ -218,7 +233,7 @@ final class Scene {
     private static boolean nextIsDialogue(String[] rows, int index) {
         for (int i = index + 1; i < rows.length; i++) {
             String next = rows[i].trim();
-            if (next.isEmpty() || isPageNumber(next) || isNote(next)) {
+            if (next.isEmpty() || isPageNumber(next) || isNote(next) || isNonScript(next)) {
                 continue;
             }
             return !isHeading(next) && explicitCue(next) == null && standaloneCue(next) == null;
@@ -262,15 +277,22 @@ final class Scene {
         }
 
         void startSection(String title) {
-            finishSection();
             String folded = fold(title);
             if (ACT.matcher(folded).matches()) {
-                act = title;
-                section = title;
+                if (!fold(act).equals(folded)) {
+                    finishSection();
+                    act = title;
+                    section = title;
+                }
             } else if (END.matcher(folded).matches()) {
+                finishSection();
                 section = act;
             } else {
-                section = act.isEmpty() ? title : act + " · " + title;
+                String next = act.isEmpty() ? title : act + " · " + title;
+                if (!fold(section).equals(fold(next))) {
+                    finishSection();
+                    section = next;
+                }
             }
         }
 
