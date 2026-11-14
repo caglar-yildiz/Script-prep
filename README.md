@@ -41,4 +41,4 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 ./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-İlk prova akışını denemek için **Örnek sahneyi yükle** düğmesine dokun ve bir rol seç. Kendi metnini denemek için `KARAKTER: replik` biçiminde, en az iki rol içeren bir sahne yapıştır. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+İlk prova akışını denemek için **Örnek sahneyi aç** düğmesine dokun ve bir rol seç. **Metinler → Oluştur** menüsünden bir UTF-8 TXT dosyası içe aktarabilir veya metni kendin yazabilirsin. Prova için `KARAKTER: replik` biçiminde en az iki rol kullan. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
