@@ -1,0 +1,46 @@
+name: Android APK
+
+on:
+  push:
+    paths:
+      - '.github/workflows/android-apk.yml'
+      - 'app/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'settings.gradle.kts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build debug APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK packages
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Build and verify APK
+        run: |
+          ./gradlew --no-daemon :app:assembleDebug
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Script-Prep-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Script-Prep-debug
+          path: Script-Prep-debug.apk
+          if-no-files-found: error
+          retention-days: 30
