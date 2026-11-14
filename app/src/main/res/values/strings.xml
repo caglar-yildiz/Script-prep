@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Script Prep</string>
+    <string name="editor_title">Tek başına prova</string>
+    <string name="editor_description">Örnek sahneyi dene veya kendi repliklerini yapıştır.</string>
+    <string name="sample_button">Örnek sahneyi yükle</string>
+    <string name="script_label">Sahne metni</string>
+    <string name="script_hint">AYŞE: Hazır mısın?\nDENİZ: Bir dakika daha.</string>
+    <string name="choose_role">Rolünü seç</string>
+    <string name="invalid_scene">Her repliğe karakter adı ekle ve en az iki farklı rol kullan.</string>
+    <string name="role_title">Hangi rolü oynuyorsun?</string>
+    <string name="edit_scene">Metni düzenle</string>
+    <string name="leave_rehearsal">Rol seçimine dön</string>
+    <string name="line_counter">Replik %1$d / %2$d</string>
+    <string name="your_turn">Sıra sende · %1$s</string>
+    <string name="partner_turn">Karşı replik · %1$s</string>
+    <string name="speak_then_continue">Repliğini söyle, ardından devam et.</string>
+    <string name="playing">Karşı replik okunuyor…</string>
+    <string name="speech_ready">Karşı repliği dinlemek için Oku’ya dokun.</string>
+    <string name="speech_loading">Türkçe ses hazırlanıyor…</string>
+    <string name="speech_unavailable">Türkçe ses kullanılamıyor. Repliği ekrandan okuyup devam edebilirsin.</string>
+    <string name="speech_failed">Ses oynatılamadı. Yeniden deneyebilir veya devam edebilirsin.</string>
+    <string name="next_line">Devam et</string>
+    <string name="previous_line">Önceki replik</string>
+    <string name="play_line">Oku</string>
+    <string name="stop_line">Sesi durdur</string>
+    <string name="completed_title">Sahne tamamlandı</string>
+    <string name="restart">Baştan prova et</string>
+</resources>

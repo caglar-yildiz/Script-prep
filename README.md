@@ -32,3 +32,13 @@ Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için 
 - [ ] **iOS kapsamını beta sonrası belirle.** Android betasında hangi özelliklerin düzenli kullanıldığını ve iOS talebini ölç. Ortak dosya biçimi ve prova kuralları üzerinden port kapsamını çıkar.
 
 Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https://github.com/caglar-yildiz/Script-prep/issues/1) üzerinden yapılır.
+
+## Android geliştirme
+
+Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri ve Android SDK 35 gerekir.
+
+```sh
+./gradlew :app:assembleDebug :app:lintDebug
+```
+
+İlk prova akışını denemek için **Örnek sahneyi yükle** düğmesine dokun ve bir rol seç. Kendi metnini denemek için `KARAKTER: replik` biçiminde, en az iki rol içeren bir sahne yapıştır. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
