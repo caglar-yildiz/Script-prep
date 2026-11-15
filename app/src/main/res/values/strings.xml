@@ -2,7 +2,7 @@
     <string name="app_name">Memo Everything</string>
     <string name="editor_title">Metni düzenle</string>
     <string name="editor_description">Metni burada düzeltebilirsin. Örnek: KARAKTER: Replik veya KARAKTER — Replik.</string>
-    <string name="sample_button">Örnek sahneyi aç</string>
+    <string name="sample_button">Open sample scene</string>
     <string name="script_label">Sahne metni</string>
     <string name="script_hint">AYŞE: Hazır mısın?\nDENİZ: Bir dakika daha.</string>
     <string name="invalid_scene">Konuşan bir karakter bulunamadı. Karakter adından sonra iki nokta veya tire ekle.</string>
@@ -22,10 +22,10 @@
     <string name="stop_line">Sesi durdur</string>
     <string name="completed_title">Sahne tamamlandı</string>
     <string name="restart">Baştan prova et</string>
-    <string name="scripts_tab">Metinler</string>
+    <string name="scripts_tab">Texts</string>
     <string name="premium_tab">Premium</string>
-    <string name="settings_tab">Ayarlar</string>
-    <string name="create_script">+ Oluştur</string>
+    <string name="settings_tab">Settings</string>
+    <string name="create_script">+ Create</string>
     <string name="script_title_label">Metin adı</string>
     <string name="script_title_hint">Ör. İkinci perde</string>
     <string name="script_name_required">Metne bir ad ver.</string>

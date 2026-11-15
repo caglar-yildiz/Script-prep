@@ -1,4 +1,4 @@
-# Script Prep
+# Memo Everything
 
 Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için planlanan bir mobil prova uygulaması. Oyuncu metnini içe aktarır, rolünü seçer ve diğer karakterlerin repliklerini dinleyerek sahneyi prova eder.
 
@@ -41,7 +41,7 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 ./gradlew :app:assembleDebug :app:lintDebug
 ```
 
-İlk prova akışını denemek için **Örnek sahneyi aç** düğmesine dokun ve bir rol seç. **Metinler → Oluştur** menüsünden metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir veya metni kendin yazabilirsin. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+İlk açılışta **Create your first text** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler **Texts → Create** ile eklenir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
 
 ### Metin ayrıştırma
 
