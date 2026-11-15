@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Script Prep</string>
+    <string name="app_name">Memo Everything</string>
     <string name="editor_title">Metni düzenle</string>
     <string name="editor_description">Metni burada düzeltebilirsin. Örnek: KARAKTER: Replik veya KARAKTER — Replik.</string>
     <string name="sample_button">Örnek sahneyi aç</string>
@@ -26,10 +26,6 @@
     <string name="premium_tab">Premium</string>
     <string name="settings_tab">Ayarlar</string>
     <string name="create_script">+ Oluştur</string>
-    <string name="create_script_title">Metin oluştur</string>
-    <string name="import_script">İçe aktar · TXT</string>
-    <string name="write_script">Kendin yaz</string>
-    <string name="empty_library">Henüz kayıtlı metin yok.</string>
     <string name="script_title_label">Metin adı</string>
     <string name="script_title_hint">Ör. İkinci perde</string>
     <string name="script_name_required">Metne bir ad ver.</string>
@@ -60,7 +56,6 @@
     <string name="voice_preview_text">Hazırsan sahneyi baştan alalım.</string>
     <string name="voice_no_alternatives">Cihazında ek Türkçe çevrimdışı ses bulunmuyor.</string>
     <string name="voice_change_failed">Bu ses seçilemedi.</string>
-    <string name="import_pdf">İçe aktar · PDF</string>
     <string name="pdf_no_text">Bu PDF’de seçilebilir metin bulunamadı. Taranmış sayfalar için önce OCR ile metin oluştur.</string>
     <string name="pdf_import_failed">PDF açılamadı. Dosyanın sağlam ve parolasız olduğunu kontrol et.</string>
     <string name="parse_preview">Sahneleri ve rolleri kontrol et</string>
@@ -92,4 +87,29 @@
     <string name="reading_ready">Bu repliği dinlemek için Oku’ya dokun.</string>
     <string name="reading_playing">Replik okunuyor…</string>
     <string name="back_to_setup">Prova seçeneklerine dön</string>
+    <string name="memo_tagline">Learn it by heart.</string>
+    <string name="create_first_text">+ Create your first text</string>
+    <string name="choose_text_category">What are you practicing?</string>
+    <string name="category_role">Role rehearsal</string>
+    <string name="category_role_details">Practice your lines with a scene partner.</string>
+    <string name="category_speech">Speech or presentation</string>
+    <string name="category_speech_details">Rehearse one paragraph at a time.</string>
+    <string name="category_poem">Poem or monologue</string>
+    <string name="category_poem_details">Learn your text line by line.</string>
+    <string name="choose_text_source">Add your text</string>
+    <string name="create_back">Back</string>
+    <string name="create_import_pdf">Import PDF</string>
+    <string name="create_import_txt">Import TXT</string>
+    <string name="create_paste">Paste text</string>
+    <string name="create_write">Write your own</string>
+    <string name="empty_clipboard">No text to paste.</string>
+    <string name="solo_role">You</string>
+    <string name="solo_description">Paste or write the words you want to practice.</string>
+    <string name="solo_hint">Your text…</string>
+    <string name="solo_save_and_rehearse">Save and practice</string>
+    <string name="solo_preview_title">Review practice sections</string>
+    <string name="solo_preview_count">%1$d practice sections</string>
+    <string name="solo_listen_description">Listen to your entire text, one section at a time.</string>
+    <string name="solo_practice_description">Say each section out loud, then continue at your pace.</string>
+    <string name="solo_your_turn">Your turn</string>
 </resources>

@@ -60,6 +60,39 @@ final class Scene {
         return new Scene(lines.subList(section.start, section.end), Collections.emptyList());
     }
 
+    static Scene parseSolo(String source, String narrator, boolean byLine) {
+        String[] rows = source.replace('\u00a0', ' ').split("\\r\\n|[\\r\\n]", -1);
+        List<Line> lines = new ArrayList<>();
+        StringBuilder paragraph = new StringBuilder();
+        for (String raw : rows) {
+            String text = raw.replace("**", "").trim();
+            if (text.length() > 2 && text.startsWith("*") && text.endsWith("*")) {
+                text = text.substring(1, text.length() - 1).trim();
+            }
+            if (!text.isEmpty()) {
+                if (paragraph.length() > 0) {
+                    paragraph.append(' ');
+                }
+                paragraph.append(text);
+            }
+            if (byLine || text.isEmpty()) {
+                addSoloLine(lines, narrator, paragraph);
+            }
+        }
+        addSoloLine(lines, narrator, paragraph);
+        if (lines.isEmpty()) {
+            return new Scene(lines, Collections.emptyList());
+        }
+        return new Scene(lines, Collections.singletonList(new Section("", 0, lines.size())));
+    }
+
+    private static void addSoloLine(List<Line> lines, String narrator, StringBuilder paragraph) {
+        if (paragraph.length() > 0) {
+            lines.add(new Line(narrator, paragraph.toString(), "", Collections.emptyList()));
+            paragraph.setLength(0);
+        }
+    }
+
     static Scene parse(String source) {
         String[] rows = source.replace('\u00a0', ' ').split("\\r\\n|[\\r\\n]");
         Map<String, Integer> standaloneCounts = new LinkedHashMap<>();

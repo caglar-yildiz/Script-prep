@@ -26,7 +26,8 @@ final class ScriptLibrary {
                 JSONObject entry = entries.optJSONObject(i);
                 if (entry != null && !entry.optString("id").isEmpty()) {
                     scripts.add(new Script(
-                        entry.optString("id"), entry.optString("title"), entry.optString("text")
+                        entry.optString("id"), entry.optString("title"), entry.optString("text"),
+                        TextCategory.fromSavedValue(entry.optString("category"))
                     ));
                 }
             }
@@ -36,7 +37,7 @@ final class ScriptLibrary {
         return scripts;
     }
 
-    String save(String id, String title, String text) {
+    String save(String id, String title, String text, TextCategory category) {
         String scriptId = id == null ? UUID.randomUUID().toString() : id;
         List<Script> scripts = list();
         for (int i = 0; i < scripts.size(); i++) {
@@ -45,7 +46,7 @@ final class ScriptLibrary {
                 break;
             }
         }
-        scripts.add(0, new Script(scriptId, title, text));
+        scripts.add(0, new Script(scriptId, title, text, category));
 
         JSONArray entries = new JSONArray();
         for (Script script : scripts) {
@@ -54,6 +55,7 @@ final class ScriptLibrary {
                 entry.put("id", script.id);
                 entry.put("title", script.title);
                 entry.put("text", script.text);
+                entry.put("category", script.category.name());
             } catch (JSONException error) {
                 throw new IllegalStateException("Could not serialize script", error);
             }
@@ -67,11 +69,17 @@ final class ScriptLibrary {
         final String id;
         final String title;
         final String text;
+        final TextCategory category;
 
         Script(String id, String title, String text) {
+            this(id, title, text, TextCategory.ROLE_REHEARSAL);
+        }
+
+        Script(String id, String title, String text, TextCategory category) {
             this.id = id;
             this.title = title;
             this.text = text;
+            this.category = category;
         }
     }
 }

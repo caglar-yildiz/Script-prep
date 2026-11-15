@@ -1,0 +1,9 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#241D2B" />
+            <corners android:radius="26dp" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/memo_mark" />
+</layer-list>

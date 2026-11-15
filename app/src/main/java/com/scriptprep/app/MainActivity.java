@@ -3,6 +3,8 @@ package com.scriptprep.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -29,6 +31,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -70,7 +73,7 @@ public final class MainActivity extends Activity {
         + "ECE: Sen. Ben yanına gelene kadar yerinde kal.\n"
         + "MERT: Tamam. Bu sefer baştan alalım.";
 
-    private enum Screen { HOME, EDITOR, SECTIONS, SETUP, READER, REHEARSAL }
+    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL }
     private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
@@ -93,6 +96,7 @@ public final class MainActivity extends Activity {
 
     private Screen screen = Screen.HOME;
     private Tab tab = Tab.SCRIPTS;
+    private TextCategory category = TextCategory.ROLE_REHEARSAL;
     private String scriptId;
     private String scriptTitle = "";
     private String script = "";
@@ -117,7 +121,8 @@ public final class MainActivity extends Activity {
             String restoredScreen = state.getString("screen", Screen.HOME.name());
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
             tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
-            fullScene = Scene.parse(script);
+            category = TextCategory.fromSavedValue(state.getString("category"));
+            fullScene = parseScript(script);
             sectionIndex = state.getInt("section_index", -1);
             scene = fullScene.forSection(sectionIndex);
             role = state.getString("role");
@@ -145,6 +150,7 @@ public final class MainActivity extends Activity {
         state.putString("script", screen == Screen.EDITOR ? editor.getText().toString() : script);
         state.putString("title", screen == Screen.EDITOR ? titleField.getText().toString() : scriptTitle);
         state.putString("script_id", scriptId);
+        state.putString("category", category.name());
         state.putString("screen", screen.name());
         state.putString("tab", tab.name());
         state.putString("role", role);
@@ -182,6 +188,8 @@ public final class MainActivity extends Activity {
     public void onBackPressed() {
         if (screen == Screen.REHEARSAL || screen == Screen.READER) {
             show(Screen.SETUP);
+        } else if (screen == Screen.SOURCE) {
+            show(Screen.CATEGORIES);
         } else if (screen == Screen.SETUP && hasNamedSections()) {
             show(Screen.SECTIONS);
         } else if (screen != Screen.HOME || tab != Tab.SCRIPTS) {
@@ -204,12 +212,14 @@ public final class MainActivity extends Activity {
             return;
         }
         boolean pdf = requestCode == IMPORT_PDF;
+        TextCategory selectedCategory = category;
+        String narrator = getString(R.string.solo_role);
         imports.execute(() -> {
             try {
                 ScriptLibrary.Script imported = ScriptImport.read(getApplicationContext(), uri, pdf, MAX_SCRIPT_LENGTH);
-                Scene preview = pdf ? Scene.parse(imported.text) : null;
+                Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
                 main.post(() -> {
-                    if (!isDestroyed() && screen == Screen.HOME && tab == Tab.SCRIPTS) {
+                    if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
                         String title = imported.title.trim();
                         openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
                             : title, imported.text);
@@ -368,7 +378,9 @@ public final class MainActivity extends Activity {
         }
         setContentView(root);
 
-        if (screen != Screen.SETUP && screen != Screen.READER) {
+        if (screen != Screen.SETUP && screen != Screen.READER
+            && screen != Screen.CATEGORIES && screen != Screen.SOURCE
+            && (screen != Screen.HOME || tab != Tab.SCRIPTS)) {
             text(getString(R.string.app_name), 16, HIGHLIGHT, false);
         }
         switch (screen) {
@@ -379,6 +391,8 @@ public final class MainActivity extends Activity {
                     case SETTINGS -> renderSettings();
                 }
             }
+            case CATEGORIES -> renderCategories();
+            case SOURCE -> renderSource();
             case EDITOR -> renderEditor();
             case SECTIONS -> renderSections();
             case SETUP -> renderSetup();
@@ -412,12 +426,15 @@ public final class MainActivity extends Activity {
     }
 
     private void renderLibrary() {
-        text(getString(R.string.scripts_tab), 34, INK, true);
-        button(getString(R.string.create_script), true, view -> showCreateOptions());
         List<ScriptLibrary.Script> scripts = library.list();
         if (scripts.isEmpty()) {
-            text(getString(R.string.empty_library), 16, SECONDARY, false);
+            renderEmptyLibrary();
+            return;
         }
+
+        text(getString(R.string.app_name), 16, HIGHLIGHT, false);
+        text(getString(R.string.scripts_tab), 34, INK, true);
+        button(getString(R.string.create_script), true, view -> show(Screen.CATEGORIES));
         for (ScriptLibrary.Script entry : scripts) {
             button(entry.title, false, view -> openSavedScript(entry));
         }
@@ -425,18 +442,82 @@ public final class MainActivity extends Activity {
             view -> openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title), EXAMPLE)));
     }
 
-    private void showCreateOptions() {
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.create_script_title)
-            .setItems(new CharSequence[] {getString(R.string.import_pdf), getString(R.string.import_script),
-                getString(R.string.write_script)}, (dialog, choice) -> {
-                    switch (choice) {
-                        case 0 -> openImportPicker(true);
-                        case 1 -> openImportPicker(false);
-                        default -> openEditor(null, "", "");
-                    }
-                })
-            .show();
+    private void renderEmptyLibrary() {
+        content.setGravity(Gravity.CENTER);
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.memo_badge);
+        logo.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        content.addView(logo, new LinearLayout.LayoutParams(dp(120), dp(120)));
+
+        TextView title = text(getString(R.string.app_name), 40, INK, true);
+        title.setGravity(Gravity.CENTER);
+        title.setPadding(0, dp(12), 0, 0);
+
+        TextView tagline = text(getString(R.string.memo_tagline), 20, SECONDARY, true);
+        tagline.setGravity(Gravity.CENTER);
+        tagline.setTypeface(Typeface.SERIF, Typeface.ITALIC);
+
+        Button create = makeButton(getString(R.string.create_first_text), true, view -> show(Screen.CATEGORIES));
+        LinearLayout.LayoutParams layout = new LinearLayout.LayoutParams(-2, -2);
+        layout.topMargin = dp(24);
+        content.addView(create, layout);
+    }
+
+    private void renderCategories() {
+        newTextHeader(R.string.choose_text_category, this::returnToLibrary);
+        categoryOption(TextCategory.ROLE_REHEARSAL, R.string.category_role_details);
+        categoryOption(TextCategory.SPEECH, R.string.category_speech_details);
+        categoryOption(TextCategory.POEM_OR_MONOLOGUE, R.string.category_poem_details);
+    }
+
+    private void categoryOption(TextCategory value, int detail) {
+        button(getString(categoryTitle(value)), false, view -> {
+            category = value;
+            show(Screen.SOURCE);
+        });
+        TextView caption = text(getString(detail), 14, SECONDARY, false);
+        caption.setPadding(dp(12), 0, dp(12), dp(8));
+    }
+
+    private void renderSource() {
+        newTextHeader(R.string.choose_text_source, () -> show(Screen.CATEGORIES));
+        text(getString(categoryTitle(category)), 16, HIGHLIGHT, false);
+        button(getString(R.string.create_import_pdf), false, view -> openImportPicker(true));
+        button(getString(R.string.create_import_txt), false, view -> openImportPicker(false));
+        button(getString(R.string.create_paste), false, view -> pasteFromClipboard());
+        button(getString(R.string.create_write), false, view -> openEditor(null, "", ""));
+    }
+
+    private void newTextHeader(int title, Runnable goBack) {
+        Button back = makeButton(getString(R.string.create_back), false, view -> goBack.run());
+        content.addView(back, new LinearLayout.LayoutParams(-2, -2));
+        text(getString(title), 34, INK, true);
+    }
+
+    private int categoryTitle(TextCategory selected) {
+        return switch (selected) {
+            case ROLE_REHEARSAL -> R.string.category_role;
+            case SPEECH -> R.string.category_speech;
+            case POEM_OR_MONOLOGUE -> R.string.category_poem;
+        };
+    }
+
+    private void pasteFromClipboard() {
+        ClipboardManager clipboard = getSystemService(ClipboardManager.class);
+        ClipData clip = clipboard == null ? null : clipboard.getPrimaryClip();
+        CharSequence value = clip == null || clip.getItemCount() == 0 ? null : clip.getItemAt(0).getText();
+        if (value != null && value.length() > MAX_SCRIPT_LENGTH) {
+            notifyUser(R.string.import_too_long);
+            return;
+        }
+        openEditor(null, "", value == null ? "" : value.toString());
+        if (value == null || value.length() == 0) {
+            notifyUser(R.string.empty_clipboard);
+        }
+    }
+
+    private Scene parseScript(String value) {
+        return category.parse(value, getString(R.string.solo_role));
     }
 
     @SuppressWarnings("deprecation")
@@ -453,7 +534,8 @@ public final class MainActivity extends Activity {
     }
 
     private void openSavedScript(ScriptLibrary.Script entry) {
-        Scene parsed = Scene.parse(entry.text);
+        category = entry.category;
+        Scene parsed = parseScript(entry.text);
         if (parsed.roles.isEmpty()) {
             openEditor(entry.id, entry.title, entry.text);
             return;
@@ -477,17 +559,20 @@ public final class MainActivity extends Activity {
             InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, MAX_TITLE_LENGTH);
         titleField.setSingleLine(true);
 
-        text(getString(R.string.editor_description), 16, SECONDARY, false);
-        editor = editorField(R.string.script_label, R.string.script_hint, script,
+        int description = category.hasRoles() ? R.string.editor_description : R.string.solo_description;
+        int hint = category.hasRoles() ? R.string.script_hint : R.string.solo_hint;
+        text(getString(description), 16, SECONDARY, false);
+        editor = editorField(R.string.script_label, hint, script,
             InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE
                 | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, MAX_SCRIPT_LENGTH);
         editor.setGravity(Gravity.TOP | Gravity.START);
         editor.setMinLines(7);
         editor.setMaxLines(12);
 
-        button(getString(R.string.script_save_and_rehearse), true, view -> saveEditor(true));
-        button(getString(R.string.parse_preview), false,
-            view -> showParsePreview(Scene.parse(editor.getText().toString())));
+        int start = category.hasRoles() ? R.string.script_save_and_rehearse : R.string.solo_save_and_rehearse;
+        button(getString(start), true, view -> saveEditor(true));
+        button(getString(category.hasRoles() ? R.string.parse_preview : R.string.solo_preview_title), false,
+            view -> showParsePreview(parseScript(editor.getText().toString())));
         button(getString(R.string.script_save), false, view -> saveEditor(false));
         button(getString(R.string.return_to_library), false, view -> returnToLibrary());
         content.requestFocus();
@@ -524,13 +609,13 @@ public final class MainActivity extends Activity {
             editor.setError(getString(R.string.script_text_required));
             return;
         }
-        Scene parsed = Scene.parse(candidate);
+        Scene parsed = parseScript(candidate);
         if (rehearse && parsed.roles.isEmpty()) {
             editor.requestFocus();
-            editor.setError(getString(R.string.invalid_scene));
+            editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
         }
-        scriptId = library.save(scriptId, title, candidate);
+        scriptId = library.save(scriptId, title, candidate, category);
         scriptTitle = title;
         script = candidate;
         InputMethodManager keyboard = getSystemService(InputMethodManager.class);
@@ -545,6 +630,12 @@ public final class MainActivity extends Activity {
     }
 
     private void showParsePreview(Scene parsed) {
+        if (!category.hasRoles()) {
+            new AlertDialog.Builder(this).setTitle(R.string.solo_preview_title)
+                .setMessage(getString(R.string.solo_preview_count, parsed.lines.size()))
+                .setPositiveButton(android.R.string.ok, null).show();
+            return;
+        }
         StringBuilder summary = new StringBuilder(getString(
             R.string.parse_preview_counts, parsed.sections.size(), parsed.lines.size()
         ));
@@ -753,7 +844,7 @@ public final class MainActivity extends Activity {
         }
         content.addView(titleCard, row());
 
-        if (mode == Mode.PRACTICE) {
+        if (mode == Mode.PRACTICE && category.hasRoles()) {
             button(getString(R.string.current_role, role), false, view -> showRoleOptions());
         }
 
@@ -762,8 +853,13 @@ public final class MainActivity extends Activity {
         addMode(modes, Mode.PRACTICE, R.string.practice_mode);
         content.addView(modes, row());
 
-        TextView description = text(getString(mode == Mode.LISTEN
-            ? R.string.listen_description : R.string.practice_description), 16, SECONDARY, false);
+        int modeDescription;
+        if (category.hasRoles()) {
+            modeDescription = mode == Mode.LISTEN ? R.string.listen_description : R.string.practice_description;
+        } else {
+            modeDescription = mode == Mode.LISTEN ? R.string.solo_listen_description : R.string.solo_practice_description;
+        }
+        TextView description = text(getString(modeDescription), 16, SECONDARY, false);
         description.setLineSpacing(dp(4), 1);
         description.setPadding(dp(16), dp(14), dp(16), dp(14));
         description.setBackground(cardBackground(CARD));
@@ -862,7 +958,9 @@ public final class MainActivity extends Activity {
             for (String note : line.notes) {
                 appendStyled(transcript, note + "\n", Typeface.ITALIC, SECONDARY);
             }
-            appendStyled(transcript, line.role + "\n", Typeface.BOLD, ACCENT);
+            if (category.hasRoles()) {
+                appendStyled(transcript, line.role + "\n", Typeface.BOLD, ACCENT);
+            }
             transcript.append(line.text).append("\n\n");
         }
         TextView manuscript = label(transcript, 20, INK, true);
@@ -897,7 +995,9 @@ public final class MainActivity extends Activity {
         text(getString(R.string.line_counter, position + 1, scene.lines.size()), 16, SECONDARY, false);
         int title = myTurn ? R.string.your_turn
             : mode == Mode.LISTEN ? R.string.reading_role : R.string.partner_turn;
-        text(getString(title, line.role), 29, INK, true);
+        String turn = category.hasRoles() ? getString(title, line.role)
+            : getString(myTurn ? R.string.solo_your_turn : R.string.listen_mode);
+        text(turn, 29, INK, true);
         if (!line.notes.isEmpty()) {
             TextView directions = text(TextUtils.join("\n", line.notes), 16, SECONDARY, true);
             directions.setTypeface(Typeface.SERIF, Typeface.ITALIC);
