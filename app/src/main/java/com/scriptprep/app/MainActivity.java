@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -64,15 +65,6 @@ public final class MainActivity extends Activity {
     private static final int IMPORT_TEXT = 1;
     private static final int IMPORT_PDF = 2;
     private static final String VOICE_PREFERENCE = "tts_voice";
-    private static final String EXAMPLE =
-        "ECE: Prova başlamadan önce ışığı bir kez daha kontrol edelim.\n"
-        + "MERT: Ben hazırım. Sahneye nereden giriyorum?\n"
-        + "(Ece, sahnenin solunu gösterir.)\n"
-        + "ECE: Soldan. Ben perdeyi kapattığımda içeri gir.\n"
-        + "MERT: Peki ilk repliği kim söylüyor?\n"
-        + "ECE: Sen. Ben yanına gelene kadar yerinde kal.\n"
-        + "MERT: Tamam. Bu sefer baştan alalım.";
-
     private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL }
     private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
@@ -110,8 +102,14 @@ public final class MainActivity extends Activity {
     private boolean revealLine;
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(AppLanguage.wrapLegacyContext(base));
+    }
+
+    @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
+        AppLanguage.migrateLegacyChoice(this);
         preferences = getSharedPreferences("script_prep", MODE_PRIVATE);
         library = new ScriptLibrary(preferences);
         if (state != null) {
@@ -439,7 +437,7 @@ public final class MainActivity extends Activity {
             button(entry.title, false, view -> openSavedScript(entry));
         }
         button(getString(R.string.sample_button), false,
-            view -> openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title), EXAMPLE)));
+            view -> openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title), getString(R.string.sample_script))));
     }
 
     private void renderEmptyLibrary() {
@@ -740,6 +738,8 @@ public final class MainActivity extends Activity {
 
     private void renderSettings() {
         text(getString(R.string.settings_tab), 34, INK, true);
+        text(getString(R.string.language_title), 22, INK, true);
+        button(getString(AppLanguage.current(this).label), false, view -> showLanguageOptions());
         text(getString(R.string.voice_settings), 22, INK, true);
         text(getString(R.string.voice_settings_description), 16, SECONDARY, false);
         if (speechState != SpeechState.READY) {
@@ -766,6 +766,20 @@ public final class MainActivity extends Activity {
                 notifyUser(R.string.speech_failed);
             }
         });
+    }
+
+    private void showLanguageOptions() {
+        AppLanguage[] available = AppLanguage.values();
+        String[] labels = new String[available.length];
+        for (int i = 0; i < available.length; i++) {
+            labels[i] = getString(available[i].label);
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.language_title)
+            .setSingleChoiceItems(labels, AppLanguage.current(this).ordinal(), (dialog, index) -> {
+                dialog.dismiss();
+                available[index].apply(this);
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
     }
 
     private void showVoiceOptions() {
