@@ -1,4 +1,4 @@
-# Script Prep
+# Memo Everything
 
 Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için planlanan bir mobil prova uygulaması. Oyuncu metnini içe aktarır, rolünü seçer ve diğer karakterlerin repliklerini dinleyerek sahneyi prova eder.
 
@@ -32,3 +32,23 @@ Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için 
 - [ ] **iOS kapsamını beta sonrası belirle.** Android betasında hangi özelliklerin düzenli kullanıldığını ve iOS talebini ölç. Ortak dosya biçimi ve prova kuralları üzerinden port kapsamını çıkar.
 
 Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https://github.com/caglar-yildiz/Script-prep/issues/1) üzerinden yapılır.
+
+## Android geliştirme
+
+Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 36 ve Build Tools 36.0.0 gerekir.
+
+```sh
+./gradlew :app:assembleDebug :app:lintDebug
+```
+
+İlk açılışta **Create your first text** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler **Texts → Create** ile eklenir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+
+### Metin ayrıştırma
+
+- `Jack: Replik`, `JACK:` ve bir sonraki satırda replik.
+- `JACK - Replik`, `JACK – Replik`, `JACK — Replik` ve tek başına büyük harfli karakter adı. PDF’de kalın karakter adları da biçim ipucu olarak kullanılır.
+- `I. PERDE`, `1. Sahne`, `MUHÂVERE` veya `EXT. BAHÇE - GECE` gibi bölüm başlıkları.
+- Parantez, köşeli parantez veya yalnızca italik satırla verilen yönergeler provada ayrıca gösterilir.
+- Taranmış PDF için seçilebilir metin katmanı gerekir.
+
+Biçim örnekleri [MEB Karagöz ünitesi](https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/turkdiliveedebiyati/10/unite6/files/basic-html/page9.html), [TDK konuşma çizgisi](https://yazim.tdk.gov.tr/content/09-noktalama-isaretleri.html), [Dramatists Guild](https://www.dramatistsguild.com/sites/default/files/2020-01/General-SFI-Formatting-Guidelines-Complete.pdf) ve [Fountain](https://fountain.io/syntax/) belgeleriyle karşılaştırıldı.
