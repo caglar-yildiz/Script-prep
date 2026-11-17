@@ -47,7 +47,36 @@ final class ScriptLibrary {
             }
         }
         scripts.add(0, new Script(scriptId, title, text, category));
+        write(scripts);
+        return scriptId;
+    }
 
+    /** Removes a saved text and returns its former position, or -1 if it was not found. */
+    int delete(String id) {
+        List<Script> scripts = list();
+        for (int i = 0; i < scripts.size(); i++) {
+            if (scripts.get(i).id.equals(id)) {
+                scripts.remove(i);
+                write(scripts);
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Puts a deleted text back at its former position. */
+    void restore(Script script, int index) {
+        List<Script> scripts = list();
+        for (Script existing : scripts) {
+            if (existing.id.equals(script.id)) {
+                return;
+            }
+        }
+        scripts.add(Math.max(0, Math.min(index, scripts.size())), script);
+        write(scripts);
+    }
+
+    private void write(List<Script> scripts) {
         JSONArray entries = new JSONArray();
         for (Script script : scripts) {
             JSONObject entry = new JSONObject();
@@ -62,7 +91,6 @@ final class ScriptLibrary {
             entries.put(entry);
         }
         preferences.edit().putString(SCRIPTS, entries.toString()).apply();
-        return scriptId;
     }
 
     static final class Script {
