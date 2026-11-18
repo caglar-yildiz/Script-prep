@@ -13,8 +13,8 @@
     <string name="speak_then_continue">Say your line, then tap Continue.</string>
     <string name="playing">Playing the partner’s line…</string>
     <string name="speech_ready">Tap Play to hear the partner’s line.</string>
-    <string name="speech_loading">Loading the Turkish rehearsal voice…</string>
-    <string name="speech_unavailable">The Turkish rehearsal voice is unavailable. You can keep reading from the screen.</string>
+    <string name="speech_loading">Loading the rehearsal voice…</string>
+    <string name="speech_unavailable">No device voice is available for this language. You can keep reading from the screen.</string>
     <string name="speech_failed">Couldn’t play the audio. Try again or continue.</string>
     <string name="next_line">Continue</string>
     <string name="previous_line">Previous line</string>
@@ -25,19 +25,18 @@
     <string name="scripts_tab">Texts</string>
     <string name="premium_tab">Premium</string>
     <string name="settings_tab">Settings</string>
-    <string name="create_script">+ Create</string>
+    <string name="create_script">New text</string>
     <string name="script_title_label">Title</string>
     <string name="script_title_hint">e.g. Act Two</string>
     <string name="script_name_required">Give your text a title.</string>
     <string name="script_text_required">Enter some text before saving.</string>
     <string name="script_save">Save</string>
     <string name="script_save_and_rehearse">Save and choose a role</string>
-    <string name="return_to_library">Back to texts</string>
     <string name="sample_title">Sample scene</string>
     <string name="imported_title">Imported text</string>
     <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT file.</string>
     <string name="import_too_long">This file exceeds the import limit. The PDF limits are 25 MB, 200 pages and 150,000 text characters.</string>
-    <string name="premium_description">Planned Premium features</string>
+    <string name="premium_description">Natural character voices, hands-free cues, detailed results and video practice.</string>
     <string name="premium_voices">Natural character voices</string>
     <string name="premium_voices_description">Choose a distinct, natural-sounding voice for each character.</string>
     <string name="premium_voice_cue">Hands-free cues</string>
@@ -47,14 +46,12 @@
     <string name="premium_video">Video practice</string>
     <string name="premium_video_description">Record a practice video with a teleprompter.</string>
     <string name="voice_settings">Rehearsal voice</string>
-    <string name="voice_settings_description">Choose the Turkish device voice for the other characters’ lines.</string>
-    <string name="voice_option">Turkish voice %1$d</string>
+    <string name="voice_settings_description">Choose the device voice that reads the other characters’ lines in each language.</string>
+    <string name="voice_option">Voice %1$d</string>
     <string name="voice_default">Default device voice</string>
-    <string name="voice_current">Selected voice · %1$s</string>
     <string name="voice_choose">Choose a voice</string>
     <string name="voice_preview">Preview voice</string>
-    <string name="voice_preview_text" translatable="false">Hazırsan sahneyi baştan alalım.</string>
-    <string name="voice_no_alternatives">No additional offline Turkish voices are installed.</string>
+    <string name="voice_no_alternatives">No additional offline voices are installed for this language.</string>
     <string name="voice_change_failed">Couldn’t select this voice.</string>
     <string name="pdf_no_text">This PDF has no selectable text. Run OCR on scanned pages before importing.</string>
     <string name="pdf_import_failed">Couldn’t open the PDF. Make sure the file is readable and password-free.</string>
@@ -64,18 +61,14 @@
     <string name="choose_scene">Choose a scene</string>
     <string name="entire_script">Practice the whole text</string>
     <string name="untitled_scene">Untitled section %1$d</string>
-    <string name="setup_back">‹ Back</string>
     <string name="read_script">Read text</string>
-    <string name="current_role">Your role · %1$s</string>
     <string name="choose_practice_role">Choose a role</string>
     <string name="practice_mode">Practice</string>
     <string name="listen_mode">Listen</string>
     <string name="listen_description">Hear the rhythm of the scene. Each character’s lines are read in order.</string>
     <string name="practice_description">Listen to the other characters. The app waits when it’s your turn.</string>
-    <string name="selftape_upcoming">Camera practice · Coming soon</string>
     <string name="practice_start">Start practice</string>
     <string name="listen_start">Start listening</string>
-    <string name="visibility_setting">Show my lines · %1$s</string>
     <string name="visibility_choose">How should your lines appear?</string>
     <string name="visibility_full">Full line</string>
     <string name="visibility_hint">First word</string>
@@ -86,9 +79,8 @@
     <string name="reading_role">Reading · %1$s</string>
     <string name="reading_ready">Tap Play to hear this line.</string>
     <string name="reading_playing">Playing the line…</string>
-    <string name="back_to_setup">Back to practice options</string>
     <string name="memo_tagline">Learn it by heart.</string>
-    <string name="create_first_text">+ Create your first text</string>
+    <string name="create_first_text">Create your first text</string>
     <string name="choose_text_category">What are you practicing?</string>
     <string name="category_role">Role rehearsal</string>
     <string name="category_role_details">Practice your lines with a scene partner.</string>
@@ -97,7 +89,6 @@
     <string name="category_poem">Poem or monologue</string>
     <string name="category_poem_details">Learn your text line by line.</string>
     <string name="choose_text_source">Add your text</string>
-    <string name="create_back">Back</string>
     <string name="create_import_pdf">Import PDF</string>
     <string name="create_import_txt">Import TXT</string>
     <string name="create_paste">Paste text</string>
@@ -117,4 +108,237 @@
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
     <string name="sample_script">ECE: Let’s check the lights once more before rehearsal.\nMERT: I’m ready. Where do I enter?\n(Ece points to the left side of the stage.)\nECE: From the left. Come in when I close the curtain.\nMERT: Who has the first line?\nECE: You do. Stay there until I come over.\nMERT: All right. Let’s take it from the top.</string>
+    <string name="action_back">Back</string>
+    <string name="action_close">Close</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_practice">Practice</string>
+    <string name="text_actions">More options for %1$s</string>
+    <string name="sample_details">Try the app with a ready-made two-person scene.</string>
+    <string name="onboarding_add">Add a script, speech or poem</string>
+    <string name="onboarding_role">Pick the part you’re learning</string>
+    <string name="onboarding_rehearse">Rehearse with a voice partner</string>
+    <string name="premium_headline">Rehearse like you have a full cast</string>
+    <string name="premium_features">What’s included</string>
+    <string name="settings_general">General</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="step_counter">Step %1$d of %2$d</string>
+    <string name="importing">Importing your text…</string>
+    <string name="source_pdf_details">PDF with selectable text</string>
+    <string name="source_txt_details">Plain UTF-8 text file</string>
+    <string name="source_paste_details">Use the text you copied</string>
+    <string name="source_write_details">Start from a blank page</string>
+    <string name="editor_new_title">New text</string>
+    <string name="clear_text">Clear</string>
+    <string name="text_cleared">Text cleared</string>
+    <string name="undo">Undo</string>
+    <string name="parse_preview_short">Check roles</string>
+    <string name="solo_preview_short">Check sections</string>
+    <string name="character_counter">%1$s / %2$s</string>
+    <string name="discard_title">Discard changes?</string>
+    <string name="discard_message">Your unsaved edits to this text will be lost.</string>
+    <string name="discard_confirm">Discard</string>
+    <string name="keep_editing">Keep editing</string>
+    <string name="saved">Saved</string>
+    <string name="delete_title">Delete “%1$s”?</string>
+    <string name="delete_message">This text will be removed from this device.</string>
+    <string name="text_deleted">“%1$s” deleted</string>
+    <string name="sections_label">Scenes</string>
+    <string name="mode_label">Mode</string>
+    <string name="options_label">Options</string>
+    <string name="your_role">Your role</string>
+    <string name="visibility_title">Show my lines</string>
+    <string name="scene_title">Scene</string>
+    <string name="selftape_title">Camera practice</string>
+    <string name="line_progress">%1$d / %2$d</string>
+    <string name="cue_label">Cue · %1$s</string>
+    <string name="completed_detail">You went through %1$d lines. Nice work.</string>
+    <string name="back_to_setup_short">Options</string>
+    <plurals name="library_count">
+        <item quantity="one">%d text</item>
+        <item quantity="other">%d texts</item>
+    </plurals>
+    <plurals name="line_count">
+        <item quantity="one">%d line</item>
+        <item quantity="other">%d lines</item>
+    </plurals>
+    <plurals name="role_count">
+        <item quantity="one">%d character</item>
+        <item quantity="other">%d characters</item>
+    </plurals>
+    <plurals name="part_count">
+        <item quantity="one">%d section</item>
+        <item quantity="other">%d sections</item>
+    </plurals>
+    <string name="premium_active_chip">Active</string>
+    <string name="premium_active_title">Premium is active</string>
+    <string name="premium_active_description">Every Premium feature is unlocked on this device.</string>
+    <string name="premium_where">You’ll find these in the practice options of any text.</string>
+    <string name="premium_test_title">Test mode</string>
+    <string name="premium_test_description">Purchases aren’t connected to Google Play yet. In this development build you can switch plans here to try both experiences.</string>
+    <string name="premium_switch_on">Switch to Premium</string>
+    <string name="premium_switch_off">Back to Free</string>
+    <string name="premium_now_on">Premium enabled</string>
+    <string name="premium_now_off">Back on the Free plan</string>
+    <string name="plan_title">Plan</string>
+    <string name="plan_free">Free</string>
+    <string name="plan_premium">Premium</string>
+    <string name="paywall_message">%1$s is part of Premium.</string>
+    <string name="paywall_open">See Premium</string>
+    <string name="cast_title">Character voices</string>
+    <string name="cast_value">Give each character their own voice</string>
+    <string name="cast_intro">Pick a voice, tone and pace for each character. Installed voices work offline; online voices need an internet connection.</string>
+    <string name="cast_auto">Assign automatically</string>
+    <string name="cast_voice">Voice</string>
+    <string name="cast_tone">Tone</string>
+    <string name="cast_pace">Pace</string>
+    <string name="cast_you">You</string>
+    <string name="cast_preview">Hear %1$s</string>
+    <string name="cast_voice_for">Voice for %1$s</string>
+    <string name="tone_low">Deep</string>
+    <string name="tone_normal">Normal</string>
+    <string name="tone_high">Bright</string>
+    <string name="pace_slow">Slow</string>
+    <string name="pace_normal">Normal</string>
+    <string name="pace_fast">Fast</string>
+    <string name="voice_online">%1$s · online</string>
+    <string name="hands_free_on">Moves on when you finish your line</string>
+    <string name="hands_free_off">Off · tap Continue after your line</string>
+    <string name="hands_free_enable">Turn on hands-free cues</string>
+    <string name="hands_free_disable">Turn off hands-free cues</string>
+    <string name="hands_free_unavailable">Speech recognition isn’t available on this device.</string>
+    <string name="hands_free_permission">Hands-free cues need microphone access.</string>
+    <string name="listening">Listening… say your line.</string>
+    <string name="heard">Heard: “%1$s”</string>
+    <string name="listening_paused">Microphone paused. Tap Continue or listen again.</string>
+    <string name="listen_again">Listen again</string>
+    <string name="video_value">Record a self-tape with a teleprompter</string>
+    <string name="results_title">Practice results</string>
+    <string name="results_clean">No stumbles this time. Well done!</string>
+    <string name="results_struggled">Lines to work on</string>
+    <string name="results_practice">Practise these lines (%1$d)</string>
+    <string name="reason_hint">Hint</string>
+    <string name="reason_retry">Retried</string>
+    <string name="reason_missed">Missed</string>
+    <string name="video_next_line">Next line</string>
+    <string name="video_hint">Partners are read aloud. After your line, tap the prompter or Next line.</string>
+    <string name="video_hint_recording">Recording · tap the prompter to move on</string>
+    <string name="video_switch_camera">Switch camera</string>
+    <string name="video_record">Start recording</string>
+    <string name="video_stop">Stop recording</string>
+    <string name="video_partner_on">Partner voice on</string>
+    <string name="video_partner_off">Partner voice off</string>
+    <string name="video_permission">Camera and microphone access are needed to record your self-tape.</string>
+    <string name="video_allow">Allow access</string>
+    <string name="video_finished_role">End</string>
+    <string name="video_finished_line">That was the last line. Recording stops in a moment.</string>
+    <string name="video_up_next">Next · %1$s</string>
+    <string name="video_camera_failed">Couldn’t open the camera.</string>
+    <string name="video_record_failed">Couldn’t record the video. Try again.</string>
+    <string name="video_saved_title">Video saved</string>
+    <string name="video_saved_message">You’ll find it in Movies › Memo Everything.</string>
+    <string name="video_share">Share</string>
+    <string name="video_retake">Record again</string>
+    <plurals name="hint_count">
+        <item quantity="one">%d hint</item>
+        <item quantity="other">%d hints</item>
+    </plurals>
+    <plurals name="retry_count">
+        <item quantity="one">%d retry</item>
+        <item quantity="other">%d retries</item>
+    </plurals>
+    <plurals name="missed_count">
+        <item quantity="one">%d missed</item>
+        <item quantity="other">%d missed</item>
+    </plurals>
+    <string name="turn_cue_title">Beep on my turn</string>
+    <string name="turn_cue_on">A short beep plays when it’s your line</string>
+    <string name="turn_cue_off">Off</string>
+    <string name="ai_voice_title">AI voice</string>
+    <string name="ai_voice_description">Natural voices generated on your phone with Supertonic 3, in all the text languages the app supports. After a one-time download it works offline and gives you 10 different voices for your characters.</string>
+    <string name="ai_voice_size">One-time download · about %1$d MB</string>
+    <string name="ai_voice_unsupported">This device’s processor isn’t supported.</string>
+    <string name="ai_voice_download">Download the AI voice</string>
+    <string name="ai_voice_download_message">The voice model is about %1$d MB. Use Wi-Fi if you can. It downloads in the background, so you can keep using the app or close it.</string>
+    <string name="ai_voice_download_confirm">Download</string>
+    <string name="ai_voice_downloading">Downloading… %1$d%%</string>
+    <string name="ai_voice_keep_open">You can leave the app; the download continues in the background</string>
+    <string name="ai_voice_failed">The AI voice couldn’t be set up</string>
+    <string name="ai_voice_retry">Tap to try again. The device voice is used in the meantime.</string>
+    <string name="ai_voice_use">Use the AI voice</string>
+    <string name="ai_voice_on">Partner lines are read by the AI voice</string>
+    <string name="ai_voice_off">Off · the device voice reads the lines</string>
+    <string name="ai_voice_loading">Preparing the AI voice…</string>
+    <string name="ai_voice_preview_detail">Hear %1$s</string>
+    <string name="ai_voice_delete">Remove the AI voice</string>
+    <string name="ai_voice_delete_message">The voice model will be deleted from this device. You can download it again later.</string>
+    <string name="cast_intro_ai">Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.</string>
+    <string name="licenses_title">Licenses</string>
+    <string name="licenses_value">Open-source software and voice model</string>
+    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
+    <string name="ai_voice_tap_download">Off · tap to download (about %1$d MB)</string>
+    <string name="ai_voice_failed_detail">Reason: %1$s</string>
+    <string name="ai_voice_playing">The AI voice is reading the line…</string>
+    <string name="text_language">Text language</string>
+    <string name="voice_language">Voice language</string>
+    <string name="language_spanish" translatable="false">Español</string>
+    <string name="language_german" translatable="false">Deutsch</string>
+    <string name="language_french" translatable="false">Français</string>
+    <string name="language_portuguese" translatable="false">Português</string>
+    <string name="language_italian" translatable="false">Italiano</string>
+    <string name="premium_choose_plan">Choose your plan</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_yearly">Yearly</string>
+    <string name="plan_best_value">Best value</string>
+    <string name="price_per_week">%1$s / week</string>
+    <string name="price_per_month">%1$s / month</string>
+    <string name="price_per_year">%1$s / year</string>
+    <string name="billing_loading">Loading plans from Google Play…</string>
+    <string name="billing_unavailable">Plans couldn’t be loaded. Make sure you’re signed in to Google Play and online.</string>
+    <string name="billing_retry">Try again</string>
+    <string name="billing_pending">Your payment is pending. Premium unlocks as soon as Google Play confirms it.</string>
+    <string name="billing_restore">Restore purchases</string>
+    <string name="billing_manage">Manage subscription</string>
+    <string name="billing_terms">The subscription renews automatically until you cancel. You can cancel anytime in Google Play.</string>
+    <string name="billing_failed">Couldn’t open Google Play. Try again.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d-day free trial</item>
+        <item quantity="other">%d-day free trial</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d-week free trial</item>
+        <item quantity="other">%d-week free trial</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d-month free trial</item>
+        <item quantity="other">%d-month free trial</item>
+    </plurals>
+    <string name="ai_voice_notification">Memo Everything AI voice</string>
+    <string name="ai_voice_waiting">Waiting for a connection…</string>
+    <string-array name="ai_voice_names">
+        <item>Grace</item>
+        <item>Lily</item>
+        <item>Claire</item>
+        <item>Sophie</item>
+        <item>Hannah</item>
+        <item>Jack</item>
+        <item>Henry</item>
+        <item>James</item>
+        <item>Leo</item>
+        <item>Arthur</item>
+    </string-array>
+    <string-array name="ai_voice_traits">
+        <item>calm, slightly low</item>
+        <item>bright and cheerful</item>
+        <item>clear announcer</item>
+        <item>crisp and confident</item>
+        <item>kind and gentle</item>
+        <item>lively and upbeat</item>
+        <item>deep and serious</item>
+        <item>polished, authoritative</item>
+        <item>soft and youthful</item>
+        <item>warm storyteller</item>
+    </string-array>
+    <string name="voice_female">Female</string>
+    <string name="voice_male">Male</string>
 </resources>

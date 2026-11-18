@@ -12,31 +12,30 @@
     <string name="speak_then_continue">Repliğini söyle, ardından devam et.</string>
     <string name="playing">Karşı replik okunuyor…</string>
     <string name="speech_ready">Karşı repliği dinlemek için Oku’ya dokun.</string>
-    <string name="speech_loading">Türkçe ses hazırlanıyor…</string>
-    <string name="speech_unavailable">Türkçe ses kullanılamıyor. Repliği ekrandan okuyup devam edebilirsin.</string>
+    <string name="speech_loading">Prova sesi hazırlanıyor…</string>
+    <string name="speech_unavailable">Bu dil için cihaz sesi bulunamadı. Repliği ekrandan okuyup devam edebilirsin.</string>
     <string name="speech_failed">Ses oynatılamadı. Yeniden deneyebilir veya devam edebilirsin.</string>
     <string name="next_line">Devam et</string>
     <string name="previous_line">Önceki replik</string>
     <string name="play_line">Oku</string>
     <string name="stop_line">Sesi durdur</string>
     <string name="completed_title">Sahne tamamlandı</string>
-    <string name="restart">Baştan prova et</string>
+    <string name="restart">Baştan prova yap</string>
     <string name="scripts_tab">Metinler</string>
     <string name="premium_tab">Premium</string>
     <string name="settings_tab">Ayarlar</string>
-    <string name="create_script">+ Oluştur</string>
+    <string name="create_script">Yeni metin</string>
     <string name="script_title_label">Metin adı</string>
     <string name="script_title_hint">Ör. İkinci perde</string>
     <string name="script_name_required">Metne bir ad ver.</string>
     <string name="script_text_required">Kaydetmek için bir metin gir.</string>
     <string name="script_save">Kaydet</string>
     <string name="script_save_and_rehearse">Kaydet ve rol seç</string>
-    <string name="return_to_library">Metinlere dön</string>
     <string name="sample_title">Örnek sahne</string>
     <string name="imported_title">İçe aktarılan metin</string>
     <string name="import_failed">Dosya okunamadı. UTF-8 biçiminde bir TXT dosyası seç.</string>
     <string name="import_too_long">Dosya aktarım sınırını aşıyor. PDF sınırı 25 MB, 200 sayfa ve 150.000 metin karakteri.</string>
-    <string name="premium_description">Premium için planlanan özellikler</string>
+    <string name="premium_description">Doğal karakter sesleri, sesle ilerleme, ayrıntılı sonuçlar ve videolu prova.</string>
     <string name="premium_voices">Doğal karakter sesleri</string>
     <string name="premium_voices_description">Her karaktere farklı, daha doğal bir ses ata.</string>
     <string name="premium_voice_cue">Sesle otomatik ilerleme</string>
@@ -46,13 +45,12 @@
     <string name="premium_video">Videolu prova</string>
     <string name="premium_video_description">Teleprompter ile kendi prova videonu çek.</string>
     <string name="voice_settings">Prova sesi</string>
-    <string name="voice_settings_description">Diğer karakterlerin replikleri için Türkçe cihaz sesini seç.</string>
-    <string name="voice_option">Türkçe ses %1$d</string>
+    <string name="voice_settings_description">Her dilde diğer karakterlerin repliklerini okuyacak cihaz sesini seç.</string>
+    <string name="voice_option">Ses %1$d</string>
     <string name="voice_default">Varsayılan cihaz sesi</string>
-    <string name="voice_current">Seçili ses · %1$s</string>
     <string name="voice_choose">Ses seç</string>
     <string name="voice_preview">Sesi dinle</string>
-    <string name="voice_no_alternatives">Cihazında ek Türkçe çevrimdışı ses bulunmuyor.</string>
+    <string name="voice_no_alternatives">Bu dil için cihazında ek çevrimdışı ses yüklü değil.</string>
     <string name="voice_change_failed">Bu ses seçilemedi.</string>
     <string name="pdf_no_text">Bu PDF’de seçilebilir metin bulunamadı. Taranmış sayfalar için önce OCR ile metin oluştur.</string>
     <string name="pdf_import_failed">PDF açılamadı. Dosyanın sağlam ve parolasız olduğunu kontrol et.</string>
@@ -62,18 +60,14 @@
     <string name="choose_scene">Sahne seç</string>
     <string name="entire_script">Tüm metinle prova</string>
     <string name="untitled_scene">Başlıksız bölüm %1$d</string>
-    <string name="setup_back">‹ Geri</string>
     <string name="read_script">Metni oku</string>
-    <string name="current_role">Rolün · %1$s</string>
     <string name="choose_practice_role">Rol seç</string>
     <string name="practice_mode">Çalış</string>
     <string name="listen_mode">Dinle</string>
     <string name="listen_description">Sahnenin ritmini duy. Bütün karakterlerin replikleri sırayla okunur.</string>
     <string name="practice_description">Karşı replikleri dinle. Sıra sana geldiğinde uygulama seni bekler.</string>
-    <string name="selftape_upcoming">Kamera provası · Yakında</string>
     <string name="practice_start">Provayı başlat</string>
     <string name="listen_start">Dinlemeyi başlat</string>
-    <string name="visibility_setting">Replik görünümü · %1$s</string>
     <string name="visibility_choose">Kendi repliğin nasıl görünsün?</string>
     <string name="visibility_full">Tam replik</string>
     <string name="visibility_hint">İlk kelime</string>
@@ -84,18 +78,16 @@
     <string name="reading_role">Okunuyor · %1$s</string>
     <string name="reading_ready">Bu repliği dinlemek için Oku’ya dokun.</string>
     <string name="reading_playing">Replik okunuyor…</string>
-    <string name="back_to_setup">Prova seçeneklerine dön</string>
     <string name="memo_tagline">Sesli çalış, aklında kalsın.</string>
-    <string name="create_first_text">+ İlk metnini oluştur</string>
+    <string name="create_first_text">İlk metnini oluştur</string>
     <string name="choose_text_category">Ne çalışmak istiyorsun?</string>
     <string name="category_role">Rol provası</string>
     <string name="category_role_details">Repliklerini bir sahne partneriyle çalış.</string>
     <string name="category_speech">Sunum veya konuşma</string>
-    <string name="category_speech_details">Her paragrafı ayrı ayrı prova et.</string>
+    <string name="category_speech_details">Her paragrafı ayrı ayrı prova yap.</string>
     <string name="category_poem">Şiir veya monolog</string>
     <string name="category_poem_details">Metnini satır satır ezberle.</string>
     <string name="choose_text_source">Metnini ekle</string>
-    <string name="create_back">Geri</string>
     <string name="create_import_pdf">PDF içe aktar</string>
     <string name="create_import_txt">TXT içe aktar</string>
     <string name="create_paste">Metin yapıştır</string>
@@ -115,4 +107,232 @@
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
     <string name="sample_script">ECE: Prova başlamadan önce ışığı bir kez daha kontrol edelim.\nMERT: Ben hazırım. Sahneye nereden giriyorum?\n(Ece, sahnenin solunu gösterir.)\nECE: Soldan. Ben perdeyi kapattığımda içeri gir.\nMERT: Peki ilk repliği kim söylüyor?\nECE: Sen. Ben yanına gelene kadar yerinde kal.\nMERT: Tamam. Bu sefer baştan alalım.</string>
+    <string name="action_back">Geri</string>
+    <string name="action_close">Kapat</string>
+    <string name="action_delete">Sil</string>
+    <string name="action_practice">Prova yap</string>
+    <string name="text_actions">%1$s için diğer seçenekler</string>
+    <string name="sample_details">Uygulamayı hazır, iki kişilik bir sahneyle dene.</string>
+    <string name="onboarding_add">Oyun, konuşma veya şiir metni ekle</string>
+    <string name="onboarding_role">Çalışacağın rolü seç</string>
+    <string name="onboarding_rehearse">Sesli bir partnerle prova yap</string>
+    <string name="premium_headline">Tüm oyuncu kadrosu yanındaymış gibi çalış</string>
+    <string name="premium_features">Neler var</string>
+    <string name="settings_general">Genel</string>
+    <string name="settings_about">Hakkında</string>
+    <string name="settings_version">Sürüm</string>
+    <string name="step_counter">Adım %1$d / %2$d</string>
+    <string name="importing">Metnin içe aktarılıyor…</string>
+    <string name="source_pdf_details">Seçilebilir metin içeren PDF</string>
+    <string name="source_txt_details">UTF-8 düz metin dosyası</string>
+    <string name="source_paste_details">Kopyaladığın metni kullan</string>
+    <string name="source_write_details">Boş bir sayfayla başla</string>
+    <string name="editor_new_title">Yeni metin</string>
+    <string name="clear_text">Temizle</string>
+    <string name="text_cleared">Metin temizlendi</string>
+    <string name="undo">Geri al</string>
+    <string name="parse_preview_short">Rolleri kontrol et</string>
+    <string name="solo_preview_short">Bölümleri kontrol et</string>
+    <string name="character_counter">%1$s / %2$s</string>
+    <string name="discard_title">Değişiklikler silinsin mi?</string>
+    <string name="discard_message">Bu metinde kaydedilmemiş düzenlemelerin kaybolacak.</string>
+    <string name="discard_confirm">Sil ve çık</string>
+    <string name="keep_editing">Düzenlemeye devam et</string>
+    <string name="saved">Kaydedildi</string>
+    <string name="delete_title">“%1$s” silinsin mi?</string>
+    <string name="delete_message">Bu metin cihazından kaldırılacak.</string>
+    <string name="text_deleted">“%1$s” silindi</string>
+    <string name="sections_label">Sahneler</string>
+    <string name="mode_label">Mod</string>
+    <string name="options_label">Seçenekler</string>
+    <string name="your_role">Rolün</string>
+    <string name="visibility_title">Replik görünümü</string>
+    <string name="scene_title">Sahne</string>
+    <string name="selftape_title">Kamera provası</string>
+    <string name="line_progress">%1$d / %2$d</string>
+    <string name="cue_label">Önceki replik · %1$s</string>
+    <string name="completed_detail">%1$d repliğin hepsinden geçtin. Harika iş.</string>
+    <string name="back_to_setup_short">Seçenekler</string>
+    <plurals name="library_count">
+        <item quantity="one">%d metin</item>
+        <item quantity="other">%d metin</item>
+    </plurals>
+    <plurals name="line_count">
+        <item quantity="one">%d replik</item>
+        <item quantity="other">%d replik</item>
+    </plurals>
+    <plurals name="role_count">
+        <item quantity="one">%d karakter</item>
+        <item quantity="other">%d karakter</item>
+    </plurals>
+    <plurals name="part_count">
+        <item quantity="one">%d bölüm</item>
+        <item quantity="other">%d bölüm</item>
+    </plurals>
+    <string name="premium_active_chip">Aktif</string>
+    <string name="premium_active_title">Premium aktif</string>
+    <string name="premium_active_description">Tüm Premium özellikler bu cihazda açık.</string>
+    <string name="premium_where">Bunları her metnin prova seçeneklerinde bulabilirsin.</string>
+    <string name="premium_test_title">Test modu</string>
+    <string name="premium_test_description">Satın alma henüz Google Play’e bağlı değil. Bu geliştirme sürümünde planı buradan değiştirerek iki deneyimi de deneyebilirsin.</string>
+    <string name="premium_switch_on">Premium’a geç</string>
+    <string name="premium_switch_off">Ücretsiz plana dön</string>
+    <string name="premium_now_on">Premium açıldı</string>
+    <string name="premium_now_off">Ücretsiz plana dönüldü</string>
+    <string name="plan_title">Plan</string>
+    <string name="plan_free">Ücretsiz</string>
+    <string name="plan_premium">Premium</string>
+    <string name="paywall_message">%1$s, Premium’a dahil bir özellik.</string>
+    <string name="paywall_open">Premium’u gör</string>
+    <string name="cast_title">Karakter sesleri</string>
+    <string name="cast_value">Her karaktere kendi sesini ver</string>
+    <string name="cast_intro">Her karakter için ses, ton ve hız seç. Yüklü sesler çevrimdışı çalışır; çevrimiçi sesler internet bağlantısı ister.</string>
+    <string name="cast_auto">Otomatik dağıt</string>
+    <string name="cast_voice">Ses</string>
+    <string name="cast_tone">Ton</string>
+    <string name="cast_pace">Hız</string>
+    <string name="cast_you">Sen</string>
+    <string name="cast_preview">%1$s sesini dinle</string>
+    <string name="cast_voice_for">%1$s için ses</string>
+    <string name="tone_low">Kalın</string>
+    <string name="tone_normal">Normal</string>
+    <string name="tone_high">İnce</string>
+    <string name="pace_slow">Yavaş</string>
+    <string name="pace_normal">Normal</string>
+    <string name="pace_fast">Hızlı</string>
+    <string name="voice_online">%1$s · çevrimiçi</string>
+    <string name="hands_free_on">Repliğini bitirince kendiliğinden ilerler</string>
+    <string name="hands_free_off">Kapalı · repliğinden sonra Devam et’e dokun</string>
+    <string name="hands_free_enable">Sesle ilerlemeyi aç</string>
+    <string name="hands_free_disable">Sesle ilerlemeyi kapat</string>
+    <string name="hands_free_unavailable">Bu cihazda konuşma tanıma kullanılamıyor.</string>
+    <string name="hands_free_permission">Sesle ilerleme için mikrofon izni gerekiyor.</string>
+    <string name="listening">Dinliyorum… repliğini söyle.</string>
+    <string name="heard">Duyulan: “%1$s”</string>
+    <string name="listening_paused">Mikrofon duraklatıldı. Devam et’e dokun ya da yeniden dinlet.</string>
+    <string name="listen_again">Yeniden dinle</string>
+    <string name="video_value">Teleprompter ile self-tape çek</string>
+    <string name="results_title">Prova sonuçları</string>
+    <string name="results_clean">Bu sefer hiç takılmadın. Tebrikler!</string>
+    <string name="results_struggled">Çalışman gereken replikler</string>
+    <string name="results_practice">Bu replikleri çalış (%1$d)</string>
+    <string name="reason_hint">İpucu</string>
+    <string name="reason_retry">Tekrar</string>
+    <string name="reason_missed">Kaçırıldı</string>
+    <string name="video_next_line">Sonraki replik</string>
+    <string name="video_hint">Partner replikleri sesli okunur. Kendi repliğinden sonra metne ya da Sonraki replik’e dokun.</string>
+    <string name="video_hint_recording">Kaydediliyor · ilerlemek için metne dokun</string>
+    <string name="video_switch_camera">Kamerayı değiştir</string>
+    <string name="video_record">Kaydı başlat</string>
+    <string name="video_stop">Kaydı durdur</string>
+    <string name="video_partner_on">Partner sesi açık</string>
+    <string name="video_partner_off">Partner sesi kapalı</string>
+    <string name="video_permission">Self-tape çekmek için kamera ve mikrofon izni gerekiyor.</string>
+    <string name="video_allow">İzin ver</string>
+    <string name="video_finished_role">Son</string>
+    <string name="video_finished_line">Son replik buydu. Kayıt birazdan duracak.</string>
+    <string name="video_up_next">Sıradaki · %1$s</string>
+    <string name="video_camera_failed">Kamera açılamadı.</string>
+    <string name="video_record_failed">Video kaydedilemedi. Yeniden dene.</string>
+    <string name="video_saved_title">Video kaydedildi</string>
+    <string name="video_saved_message">Videoyu Filmler › Memo Everything klasöründe bulabilirsin.</string>
+    <string name="video_share">Paylaş</string>
+    <string name="video_retake">Yeniden çek</string>
+    <plurals name="hint_count">
+        <item quantity="one">%d ipucu</item>
+        <item quantity="other">%d ipucu</item>
+    </plurals>
+    <plurals name="retry_count">
+        <item quantity="one">%d tekrar</item>
+        <item quantity="other">%d tekrar</item>
+    </plurals>
+    <plurals name="missed_count">
+        <item quantity="one">%d kaçırılan</item>
+        <item quantity="other">%d kaçırılan</item>
+    </plurals>
+    <string name="turn_cue_title">Sıra bende bip sesi</string>
+    <string name="turn_cue_on">Sıra sana geldiğinde kısa bir bip çalar</string>
+    <string name="turn_cue_off">Kapalı</string>
+    <string name="ai_voice_title">Yapay zekâ sesi</string>
+    <string name="ai_voice_description">Supertonic 3 ile telefonunda üretilen doğal sesler; uygulamanın desteklediği tüm metin dillerinde çalışır. Bir kez indirdikten sonra internetsiz çalışır ve karakterlerin için 10 farklı ses sunar.</string>
+    <string name="ai_voice_size">Tek seferlik indirme · yaklaşık %1$d MB</string>
+    <string name="ai_voice_unsupported">Bu cihazın işlemcisi desteklenmiyor.</string>
+    <string name="ai_voice_download">Yapay zekâ sesini indir</string>
+    <string name="ai_voice_download_message">Ses modeli yaklaşık %1$d MB. Mümkünse Wi-Fi kullan. İndirme arka planda sürer; uygulamayı kullanmaya devam edebilir ya da kapatabilirsin.</string>
+    <string name="ai_voice_download_confirm">İndir</string>
+    <string name="ai_voice_downloading">İndiriliyor… %%%1$d</string>
+    <string name="ai_voice_keep_open">Uygulamadan çıkabilirsin; indirme arka planda sürer</string>
+    <string name="ai_voice_failed">Yapay zekâ sesi kurulamadı</string>
+    <string name="ai_voice_retry">Yeniden denemek için dokun. Bu arada cihaz sesi kullanılır.</string>
+    <string name="ai_voice_use">Yapay zekâ sesini kullan</string>
+    <string name="ai_voice_on">Partner replikleri yapay zekâ sesiyle okunur</string>
+    <string name="ai_voice_off">Kapalı · replikleri cihaz sesi okur</string>
+    <string name="ai_voice_loading">Yapay zekâ sesi hazırlanıyor…</string>
+    <string name="ai_voice_preview_detail">Dinle: %1$s</string>
+    <string name="ai_voice_delete">Yapay zekâ sesini kaldır</string>
+    <string name="ai_voice_delete_message">Ses modeli bu cihazdan silinecek. İstediğinde yeniden indirebilirsin.</string>
+    <string name="cast_intro_ai">Her karakter için 10 yapay zekâ sesinden birini ve hızını seç. Dinlemek için oynat düğmesine dokun.</string>
+    <string name="licenses_title">Lisanslar</string>
+    <string name="licenses_value">Açık kaynak yazılımlar ve ses modeli</string>
+    <string name="licenses_text">Yapay zekâ sesi: Supertone Inc. tarafından geliştirilen Supertonic 3, OpenRAIL-M lisansıyla kullanılır. Yapay zekâ sesini kullanarak onu bu lisansta sayılan kısıtlı amaçlar için kullanmamayı kabul edersin: yasaları çiğnemek, reşit olmayanlara zarar vermek, yanlış veya zararlı bilgi yaymak, taciz etmek, gerçek kişileri izinsiz taklit etmek ya da üretilen sesi makine üretimi olduğunu belirtmeden insan sesi gibi sunmak bunlara dahildir.\n\nsherpa-onnx (k2-fsa), Apache Lisansı 2.0.\nONNX Runtime (Microsoft), MIT Lisansı.\nPdfBox-Android (Tom Roush), Apache Lisansı 2.0.\nKotlin standart kütüphanesi (JetBrains), Apache Lisansı 2.0.</string>
+    <string name="ai_voice_tap_download">Kapalı · indirmek için dokun (yaklaşık %1$d MB)</string>
+    <string name="ai_voice_failed_detail">Neden: %1$s</string>
+    <string name="ai_voice_playing">Replik yapay zekâ sesiyle okunuyor…</string>
+    <string name="text_language">Metin dili</string>
+    <string name="voice_language">Ses dili</string>
+    <string name="premium_choose_plan">Planını seç</string>
+    <string name="plan_monthly">Aylık</string>
+    <string name="plan_yearly">Yıllık</string>
+    <string name="plan_best_value">En avantajlı</string>
+    <string name="price_per_week">%1$s / hafta</string>
+    <string name="price_per_month">%1$s / ay</string>
+    <string name="price_per_year">%1$s / yıl</string>
+    <string name="billing_loading">Planlar Google Play’den yükleniyor…</string>
+    <string name="billing_unavailable">Planlar yüklenemedi. Google Play’de oturum açtığından ve internete bağlı olduğundan emin ol.</string>
+    <string name="billing_retry">Yeniden dene</string>
+    <string name="billing_pending">Ödemen bekleniyor. Google Play onayladığı anda Premium açılır.</string>
+    <string name="billing_restore">Satın alımları geri yükle</string>
+    <string name="billing_manage">Aboneliği yönet</string>
+    <string name="billing_terms">Abonelik sen iptal edene kadar otomatik yenilenir. İstediğin zaman Google Play’den iptal edebilirsin.</string>
+    <string name="billing_failed">Google Play açılamadı. Yeniden dene.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d gün ücretsiz deneme</item>
+        <item quantity="other">%d gün ücretsiz deneme</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d hafta ücretsiz deneme</item>
+        <item quantity="other">%d hafta ücretsiz deneme</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d ay ücretsiz deneme</item>
+        <item quantity="other">%d ay ücretsiz deneme</item>
+    </plurals>
+    <string name="ai_voice_notification">Memo Everything yapay zekâ sesi</string>
+    <string name="ai_voice_waiting">Bağlantı bekleniyor…</string>
+    <string-array name="ai_voice_names">
+        <item>Elif</item>
+        <item>Zeynep</item>
+        <item>Selin</item>
+        <item>Defne</item>
+        <item>Ayla</item>
+        <item>Emre</item>
+        <item>Kerem</item>
+        <item>Murat</item>
+        <item>Can</item>
+        <item>Orhan</item>
+    </string-array>
+    <string-array name="ai_voice_traits">
+        <item>sakin, hafif kalın</item>
+        <item>neşeli, genç</item>
+        <item>net, spiker sesi</item>
+        <item>kendinden emin, etkileyici</item>
+        <item>nazik, yumuşak</item>
+        <item>enerjik, canlı</item>
+        <item>kalın, ciddi</item>
+        <item>otoriter, güven veren</item>
+        <item>yumuşak, genç</item>
+        <item>sıcak, anlatıcı</item>
+    </string-array>
+    <string name="voice_female">Kadın</string>
+    <string name="voice_male">Erkek</string>
 </resources>

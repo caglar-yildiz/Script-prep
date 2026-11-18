@@ -2,10 +2,29 @@
     <style name="Theme.ScriptPrep" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#17131C</item>
-        <item name="android:navigationBarColor">#17131C</item>
-        <item name="android:windowBackground">#17131C</item>
-        <item name="android:colorAccent">#F3BDA4</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/memo_background</item>
+        <item name="android:colorBackground">@color/memo_background</item>
+        <item name="android:colorAccent">@color/memo_accent</item>
+        <item name="android:colorPrimary">@color/memo_accent</item>
+        <item name="android:colorControlActivated">@color/memo_accent</item>
+        <item name="android:textColorHighlight">#66F4A98A</item>
+        <item name="android:textCursorDrawable">@null</item>
         <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:alertDialogTheme">@style/Theme.ScriptPrep.Dialog</item>
+        <item name="android:popupMenuStyle">@style/Widget.ScriptPrep.PopupMenu</item>
+    </style>
+
+    <style name="Theme.ScriptPrep.Dialog" parent="@android:style/Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/dialog_background</item>
+        <item name="android:colorAccent">@color/memo_accent</item>
+        <item name="android:colorControlActivated">@color/memo_accent</item>
+        <item name="android:textColorPrimary">#F5F2F8</item>
+        <item name="android:textColorSecondary">#B4ADBF</item>
+    </style>
+
+    <style name="Widget.ScriptPrep.PopupMenu" parent="@android:style/Widget.Material.PopupMenu">
+        <item name="android:popupBackground">@drawable/popup_background</item>
     </style>
 </resources>

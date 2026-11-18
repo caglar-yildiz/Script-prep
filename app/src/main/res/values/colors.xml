@@ -1,3 +1,6 @@
 <resources>
     <color name="memo_icon_background">#241D2B</color>
+    <color name="memo_background">#111015</color>
+    <color name="memo_surface">#25232D</color>
+    <color name="memo_accent">#F4A98A</color>
 </resources>

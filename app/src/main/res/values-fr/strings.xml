@@ -1,0 +1,348 @@
+<resources>
+    <string name="editor_title">Modifier le texte</string>
+    <string name="editor_description">Modifie ton texte ici. Exemple : PERSONNAGE : Réplique ou PERSONNAGE — Réplique.</string>
+    <string name="sample_button">Ouvrir la scène d’exemple</string>
+    <string name="script_label">Texte</string>
+    <string name="script_hint">CLAIRE : Tu es prêt ?\nHUGO : Encore une minute.</string>
+    <string name="invalid_scene">Aucun personnage qui parle n’a été trouvé. Mets deux-points ou un tiret après chaque nom de personnage.</string>
+    <string name="edit_scene">Modifier le texte</string>
+    <string name="line_counter">Réplique %1$d sur %2$d</string>
+    <string name="your_turn">À toi · %1$s</string>
+    <string name="partner_turn">Réplique du partenaire · %1$s</string>
+    <string name="speak_then_continue">Dis ta réplique, puis touche Continuer.</string>
+    <string name="playing">Lecture de la réplique du partenaire…</string>
+    <string name="speech_ready">Touche Lire pour entendre la réplique du partenaire.</string>
+    <string name="speech_loading">Préparation de la voix de répétition…</string>
+    <string name="speech_unavailable">Aucune voix de l’appareil n’est disponible pour cette langue. Tu peux continuer à lire à l’écran.</string>
+    <string name="speech_failed">Impossible de lire l’audio. Réessaie ou continue.</string>
+    <string name="next_line">Continuer</string>
+    <string name="previous_line">Réplique précédente</string>
+    <string name="play_line">Lire</string>
+    <string name="stop_line">Arrêter l’audio</string>
+    <string name="completed_title">Répétition terminée</string>
+    <string name="restart">Recommencer</string>
+    <string name="scripts_tab">Textes</string>
+    <string name="premium_tab">Premium</string>
+    <string name="settings_tab">Réglages</string>
+    <string name="create_script">Nouveau texte</string>
+    <string name="script_title_label">Titre</string>
+    <string name="script_title_hint">ex. Acte II</string>
+    <string name="script_name_required">Donne un titre à ton texte.</string>
+    <string name="script_text_required">Saisis du texte avant d’enregistrer.</string>
+    <string name="script_save">Enregistrer</string>
+    <string name="script_save_and_rehearse">Enregistrer et choisir un rôle</string>
+    <string name="sample_title">Scène d’exemple</string>
+    <string name="imported_title">Texte importé</string>
+    <string name="import_failed">Impossible de lire le fichier. Choisis un fichier TXT en UTF-8.</string>
+    <string name="import_too_long">Ce fichier dépasse la limite d’importation. Pour les PDF : 25 Mo, 200 pages et 150 000 caractères de texte.</string>
+    <string name="premium_description">Voix naturelles pour les personnages, avance à la voix, résultats détaillés et répétition vidéo.</string>
+    <string name="premium_voices">Voix naturelles pour les personnages</string>
+    <string name="premium_voices_description">Choisis une voix distincte et naturelle pour chaque personnage.</string>
+    <string name="premium_voice_cue">Avance à la voix</string>
+    <string name="premium_voice_cue_description">Entends automatiquement la réplique suivante quand tu as fini de parler.</string>
+    <string name="premium_review">Résultats détaillés</string>
+    <string name="premium_review_description">Repère les répliques qui t’ont posé problème et travaille-les à part.</string>
+    <string name="premium_video">Répétition vidéo</string>
+    <string name="premium_video_description">Enregistre une vidéo de répétition avec un téléprompteur.</string>
+    <string name="voice_settings">Voix de répétition</string>
+    <string name="voice_settings_description">Choisis, pour chaque langue, la voix de l’appareil qui lit les répliques des autres personnages.</string>
+    <string name="voice_option">Voix %1$d</string>
+    <string name="voice_default">Voix par défaut de l’appareil</string>
+    <string name="voice_choose">Choisir une voix</string>
+    <string name="voice_preview">Écouter la voix</string>
+    <string name="voice_no_alternatives">Aucune autre voix hors ligne n’est installée pour cette langue.</string>
+    <string name="voice_change_failed">Impossible de sélectionner cette voix.</string>
+    <string name="pdf_no_text">Ce PDF ne contient pas de texte sélectionnable. Passe les pages numérisées à l’OCR avant de l’importer.</string>
+    <string name="pdf_import_failed">Impossible d’ouvrir le PDF. Vérifie qu’il est lisible et sans mot de passe.</string>
+    <string name="parse_preview">Vérifier les scènes et les rôles</string>
+    <string name="parse_preview_counts">%1$d scènes · %2$d répliques</string>
+    <string name="parse_preview_roles">Personnages · %1$s</string>
+    <string name="choose_scene">Choisir une scène</string>
+    <string name="entire_script">Répéter tout le texte</string>
+    <string name="untitled_scene">Section sans titre %1$d</string>
+    <string name="read_script">Lire le texte</string>
+    <string name="choose_practice_role">Choisir un rôle</string>
+    <string name="practice_mode">Répéter</string>
+    <string name="listen_mode">Écouter</string>
+    <string name="listen_description">Entends le rythme de la scène. Les répliques de chaque personnage sont lues dans l’ordre.</string>
+    <string name="practice_description">Écoute les autres personnages. L’app attend quand c’est ton tour.</string>
+    <string name="practice_start">Lancer la répétition</string>
+    <string name="listen_start">Lancer l’écoute</string>
+    <string name="visibility_choose">Comment afficher tes répliques ?</string>
+    <string name="visibility_full">Réplique entière</string>
+    <string name="visibility_hint">Premier mot</string>
+    <string name="visibility_initials">Premières lettres</string>
+    <string name="visibility_hidden">Masquée</string>
+    <string name="line_hidden">Ta réplique est masquée.</string>
+    <string name="line_reveal">Afficher la réplique</string>
+    <string name="reading_role">Lecture · %1$s</string>
+    <string name="reading_ready">Touche Lire pour entendre cette réplique.</string>
+    <string name="reading_playing">Lecture de la réplique…</string>
+    <string name="memo_tagline">Apprends-le par cœur.</string>
+    <string name="create_first_text">Crée ton premier texte</string>
+    <string name="choose_text_category">Que veux-tu travailler ?</string>
+    <string name="category_role">Répétition de rôle</string>
+    <string name="category_role_details">Travaille tes répliques avec un partenaire de scène.</string>
+    <string name="category_speech">Discours ou présentation</string>
+    <string name="category_speech_details">Répète un paragraphe à la fois.</string>
+    <string name="category_poem">Poème ou monologue</string>
+    <string name="category_poem_details">Apprends ton texte vers par vers.</string>
+    <string name="choose_text_source">Ajoute ton texte</string>
+    <string name="create_import_pdf">Importer un PDF</string>
+    <string name="create_import_txt">Importer un TXT</string>
+    <string name="create_paste">Coller le texte</string>
+    <string name="create_write">L’écrire toi-même</string>
+    <string name="empty_clipboard">Aucun texte à coller.</string>
+    <string name="solo_role">Toi</string>
+    <string name="solo_description">Colle ou écris les mots que tu veux travailler.</string>
+    <string name="solo_hint">Ton texte…</string>
+    <string name="solo_save_and_rehearse">Enregistrer et répéter</string>
+    <string name="solo_preview_title">Vérifier les sections</string>
+    <string name="solo_preview_count">%1$d sections de répétition</string>
+    <string name="solo_listen_description">Écoute tout ton texte, section par section.</string>
+    <string name="solo_practice_description">Dis chaque section à voix haute, puis continue à ton rythme.</string>
+    <string name="solo_your_turn">À toi</string>
+    <string name="language_title">Langue de l’app</string>
+    <string name="language_system">Langue du téléphone</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_english">English</string>
+    <string name="sample_script">CLAIRE : Vérifions encore une fois les lumières avant la répétition.\nHUGO : Je suis prêt. Par où j’entre ?\n(Claire montre le côté gauche de la scène.)\nCLAIRE : Par la gauche. Entre quand je ferme le rideau.\nHUGO : Qui a la première réplique ?\nCLAIRE : Toi. Reste là jusqu’à ce que je te rejoigne.\nHUGO : D’accord. On reprend depuis le début.</string>
+    <string name="action_back">Retour</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="action_practice">Répéter</string>
+    <string name="text_actions">Plus d’options pour %1$s</string>
+    <string name="sample_details">Essaie l’app avec une scène à deux personnages toute prête.</string>
+    <string name="onboarding_add">Ajoute un texte, un discours ou un poème</string>
+    <string name="onboarding_role">Choisis le rôle que tu apprends</string>
+    <string name="onboarding_rehearse">Répète avec un partenaire vocal</string>
+    <string name="premium_headline">Répète comme avec toute la troupe</string>
+    <string name="premium_features">Ce qui est inclus</string>
+    <string name="settings_general">Général</string>
+    <string name="settings_about">À propos</string>
+    <string name="settings_version">Version</string>
+    <string name="step_counter">Étape %1$d sur %2$d</string>
+    <string name="importing">Importation de ton texte…</string>
+    <string name="source_pdf_details">PDF avec texte sélectionnable</string>
+    <string name="source_txt_details">Fichier texte UTF-8</string>
+    <string name="source_paste_details">Utilise le texte copié</string>
+    <string name="source_write_details">Commence avec une page vierge</string>
+    <string name="editor_new_title">Nouveau texte</string>
+    <string name="clear_text">Effacer</string>
+    <string name="text_cleared">Texte effacé</string>
+    <string name="undo">Annuler</string>
+    <string name="parse_preview_short">Vérifier les rôles</string>
+    <string name="solo_preview_short">Vérifier les sections</string>
+    <string name="character_counter">%1$s / %2$s</string>
+    <string name="discard_title">Abandonner les modifications ?</string>
+    <string name="discard_message">Les modifications non enregistrées de ce texte seront perdues.</string>
+    <string name="discard_confirm">Abandonner</string>
+    <string name="keep_editing">Continuer à modifier</string>
+    <string name="saved">Enregistré</string>
+    <string name="delete_title">Supprimer « %1$s » ?</string>
+    <string name="delete_message">Ce texte sera supprimé de cet appareil.</string>
+    <string name="text_deleted">« %1$s » supprimé</string>
+    <string name="sections_label">Scènes</string>
+    <string name="mode_label">Mode</string>
+    <string name="options_label">Options</string>
+    <string name="your_role">Ton rôle</string>
+    <string name="visibility_title">Afficher mes répliques</string>
+    <string name="scene_title">Scène</string>
+    <string name="selftape_title">Répétition caméra</string>
+    <string name="line_progress">%1$d / %2$d</string>
+    <string name="cue_label">Réplique d’appel · %1$s</string>
+    <string name="completed_detail">Tu as parcouru %1$d répliques. Bravo !</string>
+    <string name="back_to_setup_short">Options</string>
+    <plurals name="library_count">
+        <item quantity="one">%d texte</item>
+        <item quantity="many">%d textes</item>
+        <item quantity="other">%d textes</item>
+    </plurals>
+    <plurals name="line_count">
+        <item quantity="one">%d réplique</item>
+        <item quantity="many">%d répliques</item>
+        <item quantity="other">%d répliques</item>
+    </plurals>
+    <plurals name="role_count">
+        <item quantity="one">%d personnage</item>
+        <item quantity="many">%d personnages</item>
+        <item quantity="other">%d personnages</item>
+    </plurals>
+    <plurals name="part_count">
+        <item quantity="one">%d section</item>
+        <item quantity="many">%d sections</item>
+        <item quantity="other">%d sections</item>
+    </plurals>
+    <string name="premium_active_chip">Actif</string>
+    <string name="premium_active_title">Premium est actif</string>
+    <string name="premium_active_description">Toutes les fonctionnalités Premium sont débloquées sur cet appareil.</string>
+    <string name="premium_where">Tu les trouveras dans les options de répétition de chaque texte.</string>
+    <string name="premium_test_title">Mode test</string>
+    <string name="premium_test_description">Les achats ne sont pas encore reliés à Google Play. Dans cette version de développement, tu peux changer d’offre ici pour essayer les deux expériences.</string>
+    <string name="premium_switch_on">Passer à Premium</string>
+    <string name="premium_switch_off">Revenir à Gratuit</string>
+    <string name="premium_now_on">Premium activé</string>
+    <string name="premium_now_off">Retour à l’offre gratuite</string>
+    <string name="plan_title">Offre</string>
+    <string name="plan_free">Gratuit</string>
+    <string name="plan_premium">Premium</string>
+    <string name="paywall_message">%1$s fait partie de Premium.</string>
+    <string name="paywall_open">Voir Premium</string>
+    <string name="cast_title">Voix des personnages</string>
+    <string name="cast_value">Donne à chaque personnage sa propre voix</string>
+    <string name="cast_intro">Choisis une voix, un ton et un débit pour chaque personnage. Les voix installées fonctionnent hors ligne ; les voix en ligne ont besoin d’Internet.</string>
+    <string name="cast_auto">Attribuer automatiquement</string>
+    <string name="cast_voice">Voix</string>
+    <string name="cast_tone">Ton</string>
+    <string name="cast_pace">Débit</string>
+    <string name="cast_you">Toi</string>
+    <string name="cast_preview">Écouter %1$s</string>
+    <string name="cast_voice_for">Voix de %1$s</string>
+    <string name="tone_low">Grave</string>
+    <string name="tone_normal">Normal</string>
+    <string name="tone_high">Aigu</string>
+    <string name="pace_slow">Lent</string>
+    <string name="pace_normal">Normal</string>
+    <string name="pace_fast">Rapide</string>
+    <string name="voice_online">%1$s · en ligne</string>
+    <string name="hands_free_on">Avance quand tu termines ta réplique</string>
+    <string name="hands_free_off">Désactivé · touche Continuer après ta réplique</string>
+    <string name="hands_free_enable">Activer l’avance à la voix</string>
+    <string name="hands_free_disable">Désactiver l’avance à la voix</string>
+    <string name="hands_free_unavailable">La reconnaissance vocale n’est pas disponible sur cet appareil.</string>
+    <string name="hands_free_permission">L’avance à la voix a besoin d’accéder au micro.</string>
+    <string name="listening">J’écoute… dis ta réplique.</string>
+    <string name="heard">Entendu : « %1$s »</string>
+    <string name="listening_paused">Micro en pause. Touche Continuer ou écoute à nouveau.</string>
+    <string name="listen_again">Écouter à nouveau</string>
+    <string name="video_value">Enregistre une self-tape avec téléprompteur</string>
+    <string name="results_title">Résultats de la répétition</string>
+    <string name="results_clean">Aucun accroc cette fois. Bravo !</string>
+    <string name="results_struggled">Répliques à travailler</string>
+    <string name="results_practice">Travailler ces répliques (%1$d)</string>
+    <string name="reason_hint">Indice</string>
+    <string name="reason_retry">Reprise</string>
+    <string name="reason_missed">Manquée</string>
+    <string name="video_next_line">Réplique suivante</string>
+    <string name="video_hint">Les répliques du partenaire sont lues à voix haute. Après la tienne, touche le texte ou Réplique suivante.</string>
+    <string name="video_hint_recording">Enregistrement · touche le texte pour avancer</string>
+    <string name="video_switch_camera">Changer de caméra</string>
+    <string name="video_record">Lancer l’enregistrement</string>
+    <string name="video_stop">Arrêter l’enregistrement</string>
+    <string name="video_partner_on">Voix du partenaire activée</string>
+    <string name="video_partner_off">Voix du partenaire désactivée</string>
+    <string name="video_permission">L’accès à la caméra et au micro est nécessaire pour enregistrer ta self-tape.</string>
+    <string name="video_allow">Autoriser l’accès</string>
+    <string name="video_finished_role">Fin</string>
+    <string name="video_finished_line">C’était la dernière réplique. L’enregistrement s’arrête dans un instant.</string>
+    <string name="video_up_next">Ensuite · %1$s</string>
+    <string name="video_camera_failed">Impossible d’ouvrir la caméra.</string>
+    <string name="video_record_failed">Impossible d’enregistrer la vidéo. Réessaie.</string>
+    <string name="video_saved_title">Vidéo enregistrée</string>
+    <string name="video_saved_message">Tu la trouveras dans Films › Memo Everything.</string>
+    <string name="video_share">Partager</string>
+    <string name="video_retake">Refaire une prise</string>
+    <plurals name="hint_count">
+        <item quantity="one">%d indice</item>
+        <item quantity="many">%d indices</item>
+        <item quantity="other">%d indices</item>
+    </plurals>
+    <plurals name="retry_count">
+        <item quantity="one">%d reprise</item>
+        <item quantity="many">%d reprises</item>
+        <item quantity="other">%d reprises</item>
+    </plurals>
+    <plurals name="missed_count">
+        <item quantity="one">%d manquée</item>
+        <item quantity="many">%d manquées</item>
+        <item quantity="other">%d manquées</item>
+    </plurals>
+    <string name="turn_cue_title">Bip quand c’est mon tour</string>
+    <string name="turn_cue_on">Un bip court retentit quand c’est ta réplique</string>
+    <string name="turn_cue_off">Désactivé</string>
+    <string name="ai_voice_title">Voix IA</string>
+    <string name="ai_voice_description">Des voix naturelles générées sur ton téléphone avec Supertonic 3, dans toutes les langues de texte prises en charge par l’app. Après un téléchargement unique, elle fonctionne hors ligne et offre 10 voix différentes pour tes personnages.</string>
+    <string name="ai_voice_size">Téléchargement unique · environ %1$d Mo</string>
+    <string name="ai_voice_unsupported">Le processeur de cet appareil n’est pas pris en charge.</string>
+    <string name="ai_voice_download">Télécharger la voix IA</string>
+    <string name="ai_voice_download_message">Le modèle de voix pèse environ %1$d Mo. Utilise le Wi-Fi si possible. Le téléchargement se fait en arrière-plan : tu peux continuer à utiliser l’app ou la fermer.</string>
+    <string name="ai_voice_download_confirm">Télécharger</string>
+    <string name="ai_voice_downloading">Téléchargement… %1$d %%</string>
+    <string name="ai_voice_keep_open">Tu peux quitter l’app ; le téléchargement continue en arrière-plan</string>
+    <string name="ai_voice_failed">Impossible de configurer la voix IA</string>
+    <string name="ai_voice_retry">Touche pour réessayer. En attendant, la voix de l’appareil est utilisée.</string>
+    <string name="ai_voice_use">Utiliser la voix IA</string>
+    <string name="ai_voice_on">La voix IA lit les répliques du partenaire</string>
+    <string name="ai_voice_off">Désactivée · la voix de l’appareil lit les répliques</string>
+    <string name="ai_voice_loading">Préparation de la voix IA…</string>
+    <string name="ai_voice_preview_detail">Écouter %1$s</string>
+    <string name="ai_voice_delete">Supprimer la voix IA</string>
+    <string name="ai_voice_delete_message">Le modèle de voix sera supprimé de cet appareil. Tu pourras le télécharger à nouveau plus tard.</string>
+    <string name="cast_intro_ai">Choisis l’une des 10 voix IA et un débit pour chaque personnage. Touche lire pour les écouter.</string>
+    <string name="licenses_title">Licences</string>
+    <string name="licenses_value">Logiciels open source et modèle de voix</string>
+    <string name="licenses_text">Voix IA : Supertonic 3 de Supertone Inc., utilisé sous licence OpenRAIL-M. En utilisant la voix IA, tu t’engages à ne pas l’employer pour les usages restreints énumérés dans cette licence, notamment enfreindre la loi, nuire à des mineurs, diffuser des informations fausses ou nuisibles, harceler, usurper l’identité de personnes réelles sans leur consentement ou présenter une voix générée comme humaine sans indiquer qu’elle est générée par une machine.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nBibliothèque standard Kotlin (JetBrains), Apache License 2.0.</string>
+    <string name="ai_voice_tap_download">Désactivée · touche pour télécharger (environ %1$d Mo)</string>
+    <string name="ai_voice_failed_detail">Raison : %1$s</string>
+    <string name="ai_voice_playing">La voix IA lit la réplique…</string>
+    <string name="text_language">Langue du texte</string>
+    <string name="voice_language">Langue de la voix</string>
+    <string name="premium_choose_plan">Choisis ton offre</string>
+    <string name="plan_monthly">Mensuel</string>
+    <string name="plan_yearly">Annuel</string>
+    <string name="plan_best_value">Meilleur prix</string>
+    <string name="price_per_week">%1$s / semaine</string>
+    <string name="price_per_month">%1$s / mois</string>
+    <string name="price_per_year">%1$s / an</string>
+    <string name="billing_loading">Chargement des offres Google Play…</string>
+    <string name="billing_unavailable">Impossible de charger les offres. Vérifie que tu es connecté à Google Play et à Internet.</string>
+    <string name="billing_retry">Réessayer</string>
+    <string name="billing_pending">Ton paiement est en attente. Premium sera débloqué dès que Google Play l’aura confirmé.</string>
+    <string name="billing_restore">Restaurer les achats</string>
+    <string name="billing_manage">Gérer l’abonnement</string>
+    <string name="billing_terms">L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies. Tu peux le résilier à tout moment dans Google Play.</string>
+    <string name="billing_failed">Impossible d’ouvrir Google Play. Réessaie.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d jour d’essai gratuit</item>
+        <item quantity="many">%d jours d’essai gratuit</item>
+        <item quantity="other">%d jours d’essai gratuit</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d semaine d’essai gratuit</item>
+        <item quantity="many">%d semaines d’essai gratuit</item>
+        <item quantity="other">%d semaines d’essai gratuit</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d mois d’essai gratuit</item>
+        <item quantity="many">%d mois d’essai gratuit</item>
+        <item quantity="other">%d mois d’essai gratuit</item>
+    </plurals>
+    <string name="ai_voice_notification">Voix IA de Memo Everything</string>
+    <string name="ai_voice_waiting">En attente de connexion…</string>
+    <string-array name="ai_voice_names">
+        <item>Élise</item>
+        <item>Chloé</item>
+        <item>Camille</item>
+        <item>Manon</item>
+        <item>Juliette</item>
+        <item>Hugo</item>
+        <item>Louis</item>
+        <item>Antoine</item>
+        <item>Théo</item>
+        <item>Bernard</item>
+    </string-array>
+    <string-array name="ai_voice_traits">
+        <item>calme, un peu grave</item>
+        <item>vive et enjouée</item>
+        <item>claire, voix d’annonce</item>
+        <item>nette et assurée</item>
+        <item>douce et bienveillante</item>
+        <item>vif et enjoué</item>
+        <item>grave et sérieux</item>
+        <item>posé, plein d’autorité</item>
+        <item>doux et jeune</item>
+        <item>chaleureux, conteur</item>
+    </string-array>
+    <string name="voice_female">Femme</string>
+    <string name="voice_male">Homme</string>
+</resources>
