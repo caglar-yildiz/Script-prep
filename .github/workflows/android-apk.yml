@@ -39,7 +39,7 @@ jobs:
 
       - name: Build and verify APK
         run: |
-          ./gradlew --no-daemon :app:assembleDebug
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -Fx "targetSdkVersion:'36'"
           cp app/build/outputs/apk/debug/app-debug.apk Script-Prep-debug.apk
