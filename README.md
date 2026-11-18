@@ -41,6 +41,8 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 ./gradlew :app:assembleDebug :app:lintDebug
 ```
 
+İlk derlemede sherpa-onnx AAR dosyası (~50 MB) GitHub sürümünden `app/libs/` klasörüne indirilir ve SHA-256 ile doğrulanır; bu klasör depoya eklenmez.
+
 İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler **Metinler → Yeni metin** ile eklenir. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
 
 ### Premium
@@ -50,6 +52,7 @@ Satın alma henüz Google Play'e bağlı değil. Debug derlemelerinde **Premium*
 - **Karakter sesleri:** Her karaktere ayrı Türkçe ses, ton (kalın/normal/ince) ve hız. Varsayılan dağıtım otomatik; seçimler metin başına kaydedilir.
 - **Sesle otomatik ilerleme:** Sıra sendeyken mikrofon dinler; repliğin en az %60'ı duyulunca prova kendiliğinden ilerler. Mikrofon izni gerekir; tanıma yoksa **Devam et** düğmesi çalışmaya devam eder.
 - **Ayrıntılı prova sonuçları:** İpucu açılan, geri dönülen ve eksik söylenen replikler sahne sonunda listelenir; **Bu replikleri çalış** yalnızca onları ipucu replikleriyle birlikte prova ettirir.
+- **Yapay zekâ sesi:** [Supertonic 3](https://huggingface.co/Supertone/supertonic-3) (OpenRAIL-M) modeli [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) ile cihazda çalışır. **Ayarlar → Yapay zekâ sesi** ile bir kez indirilir (~145 MB, SHA-256 ile doğrulanır), sonra çevrimdışıdır. 10 farklı Türkçe ses karakterlere dağıtılır; sıradaki partner replikleri önceden üretilir. Model yüklenemezse cihaz sesine geri dönülür.
 - **Kamera provası:** Ön/arka kamerayla self-tape; üstte teleprompter, partner replikleri sesli okunur (kapatılabilir), son replikten sonra 2 sn kayıt payı. Videolar **Filmler › Memo Everything** klasörüne kaydedilir.
 
 ### Metin ayrıştırma

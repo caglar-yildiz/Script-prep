@@ -98,6 +98,7 @@ public final class MainActivity extends Activity {
     private static final String VOICE_PREFERENCE = "tts_voice";
     private static final String HANDS_FREE_PREFERENCE = "hands_free";
     private static final String TURN_CUE_PREFERENCE = "turn_cue";
+    private static final String AI_VOICE_PREFERENCE = "ai_voice";
     private static final int TURN_CUE_MILLIS = 180;
     private static final int REQUEST_MICROPHONE = 11;
     private static final double LINE_SAID = 0.6;
@@ -118,6 +119,7 @@ public final class MainActivity extends Activity {
     private ArrayList<Integer> reviewBase;
     private HandsFree handsFree;
     private ToneGenerator turnCue;
+    private NeuralVoice neural;
     private boolean listening;
     private boolean listeningPaused;
     private String heardSoFar = "";
@@ -181,6 +183,8 @@ public final class MainActivity extends Activity {
         ui = new Ui(this);
         preferences = getSharedPreferences("script_prep", MODE_PRIVATE);
         library = new ScriptLibrary(preferences);
+        neural = NeuralVoice.get(this);
+        neural.setListener(this::onNeuralVoiceChanged);
         drawBehindSystemBars();
         if (state != null) {
             script = state.getString("script", "");
@@ -288,6 +292,10 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         cancelSpeech();
+        neural.setListener(null);
+        if (isFinishing()) {
+            neural.unload();
+        }
         if (handsFree != null) {
             handsFree.destroy();
         }
@@ -447,6 +455,7 @@ public final class MainActivity extends Activity {
             activeUtterance = null;
             activePreview = null;
             speech.stop();
+            neural.stop();
         }
     }
 
@@ -456,6 +465,10 @@ public final class MainActivity extends Activity {
         }
         Scene.Line line = scene.lines.get(position);
         if (!RehearsalOptions.shouldSpeak(mode, role, line.role)) {
+            return;
+        }
+        if (useAiVoice() && neural.state() != NeuralVoice.State.FAILED) {
+            playWithAiVoice(line);
             return;
         }
         if (speechState == SpeechState.LOADING) {
@@ -487,6 +500,7 @@ public final class MainActivity extends Activity {
             playCurrent();
         } else {
             render();
+            prefetchAhead();
             if (cueTurn()) {
                 // Let the beep finish before the microphone starts listening.
                 main.postDelayed(this::listenIfNeeded, TURN_CUE_MILLIS + 150);
@@ -1022,6 +1036,8 @@ public final class MainActivity extends Activity {
         }
         content.addView(voice, ui.spaced(12));
 
+        renderAiVoiceSettings();
+
         sectionLabel(R.string.plan_title);
         LinearLayout plan = ui.card(SURFACE, null);
         plan.setPadding(0, ui.dp(4), 0, ui.dp(4));
@@ -1037,6 +1053,9 @@ public final class MainActivity extends Activity {
         about.setPadding(0, ui.dp(4), 0, ui.dp(4));
         about.addView(ui.listRow(R.drawable.ic_info, getString(R.string.settings_version), appVersion(), null),
             Ui.matchWidth());
+        about.addView(ui.divider(70));
+        about.addView(ui.listRow(R.drawable.ic_book, getString(R.string.licenses_title),
+            getString(R.string.licenses_value), view -> showLicenses()), Ui.matchWidth());
         content.addView(about, ui.spaced(10));
     }
 
@@ -2039,7 +2058,7 @@ public final class MainActivity extends Activity {
         previous.setEnabled(position > 0);
         previous.setAlpha(position > 0 ? 1f : 0.5f);
         row.addView(previous);
-        if (!myTurn && speechState == SpeechState.READY) {
+        if (!myTurn && (speechState == SpeechState.READY || useAiVoice())) {
             boolean playing = activeUtterance != null;
             FrameLayout play = ui.iconButton(playing ? R.drawable.ic_stop : R.drawable.ic_play,
                 getString(playing ? R.string.stop_line : R.string.play_line), ACCENT, ACCENT_CONTAINER, 56, view -> {
@@ -2330,8 +2349,10 @@ public final class MainActivity extends Activity {
             VoiceCast.reset(preferences, castKey());
             render();
         });
-        content.addView(ui.text(getString(R.string.cast_intro), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
-        if (speechState != SpeechState.READY) {
+        boolean ai = useAiVoice();
+        content.addView(ui.text(getString(ai ? R.string.cast_intro_ai : R.string.cast_intro), Type.BODY,
+            TEXT_SECONDARY), ui.spaced(8));
+        if (!ai && speechState != SpeechState.READY) {
             content.addView(ui.text(getString(speechState == SpeechState.LOADING ? R.string.speech_loading
                 : R.string.speech_unavailable), Type.BODY_LARGE, TEXT), ui.spaced(20));
             return;
@@ -2357,16 +2378,19 @@ public final class MainActivity extends Activity {
             voiceRow.setPadding(0, ui.dp(4), ui.dp(8), 0);
             voiceRow.addView(ui.text(getString(R.string.cast_voice), Type.LABEL, TEXT_SECONDARY),
                 new LinearLayout.LayoutParams(ui.dp(56), -2));
-            LinearLayout picker = ui.button(voiceLabel(part.voice), R.drawable.ic_volume, Kind.TONAL,
+            LinearLayout picker = ui.button(ai ? getString(R.string.ai_voice_option, part.speaker + 1)
+                : voiceLabel(part.voice), ai ? R.drawable.ic_star : R.drawable.ic_volume, Kind.TONAL,
                 view -> chooseCharacterVoice(character));
             picker.setMinimumHeight(ui.dp(44));
             voiceRow.addView(picker, new LinearLayout.LayoutParams(0, -2, 1));
             card.addView(voiceRow, ui.spaced(4));
 
-            VoiceCast.Tone[] tones = VoiceCast.Tone.values();
-            card.addView(optionRow(R.string.cast_tone, new int[] {R.string.tone_low, R.string.tone_normal,
-                R.string.tone_high}, part.tone.ordinal(), index -> updateCast(character,
-                    cast.get(character).withTone(tones[index]))), ui.spaced(12));
+            if (!ai) {
+                VoiceCast.Tone[] tones = VoiceCast.Tone.values();
+                card.addView(optionRow(R.string.cast_tone, new int[] {R.string.tone_low, R.string.tone_normal,
+                    R.string.tone_high}, part.tone.ordinal(), index -> updateCast(character,
+                        cast.get(character).withTone(tones[index]))), ui.spaced(12));
+            }
             VoiceCast.Pace[] paces = VoiceCast.Pace.values();
             card.addView(optionRow(R.string.cast_pace, new int[] {R.string.pace_slow, R.string.pace_normal,
                 R.string.pace_fast}, part.pace.ordinal(), index -> updateCast(character,
@@ -2414,6 +2438,20 @@ public final class MainActivity extends Activity {
     }
 
     private void chooseCharacterVoice(String character) {
+        if (useAiVoice()) {
+            String[] speakers = new String[NeuralVoice.SPEAKERS];
+            for (int i = 0; i < speakers.length; i++) {
+                speakers[i] = getString(R.string.ai_voice_option, i + 1);
+            }
+            new AlertDialog.Builder(this).setTitle(getString(R.string.cast_voice_for, character))
+                .setSingleChoiceItems(speakers, currentCast().get(character).speaker, (dialog, index) -> {
+                    dialog.dismiss();
+                    updateCast(character, currentCast().get(character).withSpeaker(index));
+                    previewCharacter(character);
+                })
+                .setNegativeButton(android.R.string.cancel, null).show();
+            return;
+        }
         String[] labels = new String[castVoices.size() + 1];
         labels[0] = getString(R.string.voice_default);
         int selected = 0;
@@ -2435,7 +2473,7 @@ public final class MainActivity extends Activity {
     }
 
     private void previewCharacter(String character) {
-        if (speechState != SpeechState.READY) {
+        if (speechState != SpeechState.READY && !useAiVoice()) {
             return;
         }
         String sample = getString(R.string.voice_preview_text);
@@ -2444,6 +2482,11 @@ public final class MainActivity extends Activity {
                 sample = line.text;
                 break;
             }
+        }
+        if (useAiVoice()) {
+            VoiceCast.Part part = currentCast().get(character);
+            previewAiVoice(part.speaker, part.pace.rate, sample);
+            return;
         }
         cancelSpeech();
         VoiceCast.apply(speech, currentCast().get(character), castVoices, defaultVoice(), TURKISH);
@@ -2454,13 +2497,208 @@ public final class MainActivity extends Activity {
         }
     }
 
+    // ---------------------------------------------------------------- AI voice
+
+    /** Whether lines are read by the on-device AI voice instead of the Android voice. */
+    private boolean useAiVoice() {
+        if (!premium() || !NeuralVoice.isSupported() || !preferences.getBoolean(AI_VOICE_PREFERENCE, false)) {
+            return false;
+        }
+        NeuralVoice.State state = neural.state();
+        return state == NeuralVoice.State.INSTALLED || state == NeuralVoice.State.LOADING
+            || state == NeuralVoice.State.READY || state == NeuralVoice.State.FAILED;
+    }
+
+    private void onNeuralVoiceChanged() {
+        NeuralVoice.State state = neural.state();
+        if (screen == Screen.REHEARSAL && autoPlayPending
+            && (state == NeuralVoice.State.READY || state == NeuralVoice.State.FAILED)) {
+            autoPlayPending = false;
+            if (state == NeuralVoice.State.FAILED) {
+                notifyUser(R.string.ai_voice_failed);
+            }
+            playCurrent();
+            return;
+        }
+        if (state == NeuralVoice.State.READY && screen == Screen.REHEARSAL) {
+            prefetchAhead();
+        }
+        if ((screen == Screen.HOME && tab == Tab.SETTINGS) || screen == Screen.VOICES
+            || (screen == Screen.REHEARSAL && activeUtterance == null)) {
+            render();
+        }
+    }
+
+    private void playWithAiVoice(Scene.Line line) {
+        if (!neural.isReady()) {
+            autoPlayPending = true;
+            neural.load();
+            render();
+            return;
+        }
+        cancelSpeech();
+        stopListening();
+        playbackFailed = false;
+        String id = "line-" + ++utteranceNumber;
+        activeUtterance = id;
+        VoiceCast.Part part = currentCast().get(line.role);
+        neural.speak(line.text, part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate, 1f,
+            new NeuralVoice.Playback() {
+                @Override
+                public void onDone() {
+                    finishSpeech(id, false);
+                }
+
+                @Override
+                public void onError() {
+                    finishSpeech(id, true);
+                }
+            });
+        render();
+        prefetchAhead();
+    }
+
+    /** Prepares the next partner lines while the current one plays or the actor speaks. */
+    private void prefetchAhead() {
+        if (!useAiVoice() || !neural.isReady() || screen != Screen.REHEARSAL) {
+            return;
+        }
+        Map<String, VoiceCast.Part> cast = currentCast();
+        int found = 0;
+        for (int i = position + 1; i < scene.lines.size() && found < 2; i++) {
+            Scene.Line line = scene.lines.get(i);
+            if (RehearsalOptions.shouldSpeak(mode, role, line.role)) {
+                VoiceCast.Part part = cast.get(line.role);
+                neural.prefetch(line.text, part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate);
+                found++;
+            }
+        }
+    }
+
+    private void renderAiVoiceSettings() {
+        sectionLabel(R.string.ai_voice_title);
+        content.addView(ui.text(getString(R.string.ai_voice_description), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout card = ui.card(SURFACE, null);
+        card.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        String size = getString(R.string.ai_voice_size, Math.round(NeuralVoice.downloadBytes() / 1_000_000.0));
+        if (!NeuralVoice.isSupported()) {
+            card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+                getString(R.string.ai_voice_unsupported), null), Ui.matchWidth());
+        } else if (!premium()) {
+            card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title), size,
+                ui.premiumBadge(), view -> showPaywall(R.string.ai_voice_title)), Ui.matchWidth());
+        } else {
+            switch (neural.state()) {
+                case NOT_INSTALLED -> card.addView(ui.listRow(R.drawable.ic_star,
+                    getString(R.string.ai_voice_download), size, view -> confirmAiDownload()), Ui.matchWidth());
+                case DOWNLOADING -> {
+                    LinearLayout row = ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_downloading,
+                        neural.progress()), getString(R.string.ai_voice_keep_open),
+                        ui.button(getString(android.R.string.cancel), 0, Kind.TEXT, view -> neural.cancelDownload()),
+                        null);
+                    card.addView(row, Ui.matchWidth());
+                    LinearLayout bar = ui.progress(neural.progress(), 100);
+                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, ui.dp(4));
+                    params.setMargins(ui.dp(16), 0, ui.dp(16), ui.dp(12));
+                    card.addView(bar, params);
+                }
+                case FAILED -> {
+                    card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
+                        getString(R.string.ai_voice_retry), view -> {
+                            neural.delete();
+                            neural.download();
+                        }), Ui.matchWidth());
+                }
+                default -> {
+                    boolean on = preferences.getBoolean(AI_VOICE_PREFERENCE, false);
+                    card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_use),
+                        getString(on ? R.string.ai_voice_on : R.string.ai_voice_off), ui.toggle(on), view -> {
+                            preferences.edit().putBoolean(AI_VOICE_PREFERENCE, !on).apply();
+                            if (!on) {
+                                neural.load();
+                            }
+                            render();
+                        }), Ui.matchWidth());
+                    card.addView(ui.divider(70));
+                    String status = neural.isReady() ? getString(R.string.ai_voice_preview_detail)
+                        : getString(R.string.ai_voice_loading);
+                    card.addView(ui.listRow(R.drawable.ic_play, getString(R.string.voice_preview), status,
+                        view -> previewAiVoice(0)), Ui.matchWidth());
+                    card.addView(ui.divider(70));
+                    card.addView(ui.listRow(R.drawable.ic_delete, getString(R.string.ai_voice_delete), size,
+                        view -> confirmAiDelete()), Ui.matchWidth());
+                }
+            }
+        }
+        content.addView(card, ui.spaced(12));
+    }
+
+    private void confirmAiDownload() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.ai_voice_download)
+            .setMessage(getString(R.string.ai_voice_download_message,
+                Math.round(NeuralVoice.downloadBytes() / 1_000_000.0)))
+            .setPositiveButton(R.string.ai_voice_download_confirm, (dialog, which) -> {
+                preferences.edit().putBoolean(AI_VOICE_PREFERENCE, true).apply();
+                neural.download();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    private void confirmAiDelete() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.ai_voice_delete)
+            .setMessage(R.string.ai_voice_delete_message)
+            .setPositiveButton(R.string.action_delete, (dialog, which) -> {
+                preferences.edit().putBoolean(AI_VOICE_PREFERENCE, false).apply();
+                neural.delete();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    private void previewAiVoice(int speaker) {
+        previewAiVoice(speaker, 1f, getString(R.string.voice_preview_text));
+    }
+
+    private void previewAiVoice(int speaker, float speed, String text) {
+        if (!neural.isReady()) {
+            neural.load();
+            notifyUser(R.string.ai_voice_loading);
+            return;
+        }
+        cancelSpeech();
+        String id = "preview-" + ++utteranceNumber;
+        activePreview = id;
+        neural.speak(text, speaker, speed, 1f, new NeuralVoice.Playback() {
+            @Override
+            public void onDone() {
+                finishSpeech(id, false);
+            }
+
+            @Override
+            public void onError() {
+                finishSpeech(id, true);
+            }
+        });
+    }
+
+    private void showLicenses() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.licenses_title)
+            .setMessage(R.string.licenses_text)
+            .setPositiveButton(android.R.string.ok, null)
+            .show();
+    }
+
     // ---------------------------------------------------------------- Video practice
 
     private void openVideo() {
         Map<String, VoiceCast.Part> cast = category.hasRoles() ? currentCast() : null;
         Voice fallback = defaultVoice();
         startActivity(VideoActivity.intent(this, scriptTitle, scene, role, category.hasRoles(), cast,
-            fallback == null ? "" : fallback.getName()));
+            fallback == null ? "" : fallback.getName(), useAiVoice()));
     }
 
     // ---------------------------------------------------------------- Hands-free cues
@@ -2690,6 +2928,10 @@ public final class MainActivity extends Activity {
     }
 
     private int speechMessage() {
+        if (activeUtterance == null && useAiVoice() && !neural.isReady()
+            && neural.state() != NeuralVoice.State.FAILED) {
+            return R.string.ai_voice_loading;
+        }
         if (activeUtterance != null) {
             return mode == Mode.LISTEN ? R.string.reading_playing : R.string.playing;
         }

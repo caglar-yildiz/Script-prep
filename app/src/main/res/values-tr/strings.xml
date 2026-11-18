@@ -254,4 +254,27 @@
     <string name="turn_cue_title">Sıra bende bip sesi</string>
     <string name="turn_cue_on">Sıra sana geldiğinde kısa bir bip çalar</string>
     <string name="turn_cue_off">Kapalı</string>
+    <string name="ai_voice_title">Yapay zekâ sesi</string>
+    <string name="ai_voice_description">Supertonic 3 ile telefonunda üretilen doğal Türkçe sesler. Bir kez indirdikten sonra internetsiz çalışır ve karakterlerin için 10 farklı ses sunar.</string>
+    <string name="ai_voice_size">Tek seferlik indirme · yaklaşık %1$d MB</string>
+    <string name="ai_voice_unsupported">Bu cihazın işlemcisi desteklenmiyor.</string>
+    <string name="ai_voice_download">Yapay zekâ sesini indir</string>
+    <string name="ai_voice_download_message">Ses modeli yaklaşık %1$d MB. Mümkünse Wi-Fi kullan ve indirme bitene kadar uygulamayı açık tut. İndirme sırasında bunun yaklaşık iki katı boş alan gerekir.</string>
+    <string name="ai_voice_download_confirm">İndir</string>
+    <string name="ai_voice_downloading">İndiriliyor… %%%1$d</string>
+    <string name="ai_voice_keep_open">Bitene kadar uygulamayı açık tut</string>
+    <string name="ai_voice_failed">Yapay zekâ sesi kurulamadı</string>
+    <string name="ai_voice_retry">Yeniden denemek için dokun. Bu arada cihaz sesi kullanılır.</string>
+    <string name="ai_voice_use">Yapay zekâ sesini kullan</string>
+    <string name="ai_voice_on">Partner replikleri yapay zekâ sesiyle okunur</string>
+    <string name="ai_voice_off">Kapalı · replikleri cihaz sesi okur</string>
+    <string name="ai_voice_loading">Yapay zekâ sesi hazırlanıyor…</string>
+    <string name="ai_voice_preview_detail">Yapay zekâ sesi 1’i dinle</string>
+    <string name="ai_voice_delete">Yapay zekâ sesini kaldır</string>
+    <string name="ai_voice_delete_message">Ses modeli bu cihazdan silinecek. İstediğinde yeniden indirebilirsin.</string>
+    <string name="ai_voice_option">Yapay zekâ sesi %1$d</string>
+    <string name="cast_intro_ai">Her karakter için 10 yapay zekâ sesinden birini ve hızını seç. Dinlemek için oynat düğmesine dokun.</string>
+    <string name="licenses_title">Lisanslar</string>
+    <string name="licenses_value">Açık kaynak yazılımlar ve ses modeli</string>
+    <string name="licenses_text">Yapay zekâ sesi: Supertone Inc. tarafından geliştirilen Supertonic 3, OpenRAIL-M lisansıyla kullanılır. Yapay zekâ sesini kullanarak onu bu lisansta sayılan kısıtlı amaçlar için kullanmamayı kabul edersin: yasaları çiğnemek, reşit olmayanlara zarar vermek, yanlış veya zararlı bilgi yaymak, taciz etmek, gerçek kişileri izinsiz taklit etmek ya da üretilen sesi makine üretimi olduğunu belirtmeden insan sesi gibi sunmak bunlara dahildir.\n\nsherpa-onnx (k2-fsa), Apache Lisansı 2.0.\nONNX Runtime (Microsoft), MIT Lisansı.\nPdfBox-Android (Tom Roush), Apache Lisansı 2.0.\nKotlin standart kütüphanesi (JetBrains), Apache Lisansı 2.0.</string>
 </resources>

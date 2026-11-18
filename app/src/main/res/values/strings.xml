@@ -256,4 +256,27 @@
     <string name="turn_cue_title">Beep on my turn</string>
     <string name="turn_cue_on">A short beep plays when it’s your line</string>
     <string name="turn_cue_off">Off</string>
+    <string name="ai_voice_title">AI voice</string>
+    <string name="ai_voice_description">Natural Turkish voices generated on your phone with Supertonic 3. After a one-time download it works offline and gives you 10 different voices for your characters.</string>
+    <string name="ai_voice_size">One-time download · about %1$d MB</string>
+    <string name="ai_voice_unsupported">This device’s processor isn’t supported.</string>
+    <string name="ai_voice_download">Download the AI voice</string>
+    <string name="ai_voice_download_message">The voice model is about %1$d MB. Use Wi-Fi if you can and keep the app open until the download finishes. You need about twice as much free space while it downloads.</string>
+    <string name="ai_voice_download_confirm">Download</string>
+    <string name="ai_voice_downloading">Downloading… %1$d%%</string>
+    <string name="ai_voice_keep_open">Keep the app open until it finishes</string>
+    <string name="ai_voice_failed">The AI voice couldn’t be set up</string>
+    <string name="ai_voice_retry">Tap to try again. The device voice is used in the meantime.</string>
+    <string name="ai_voice_use">Use the AI voice</string>
+    <string name="ai_voice_on">Partner lines are read by the AI voice</string>
+    <string name="ai_voice_off">Off · the device voice reads the lines</string>
+    <string name="ai_voice_loading">Preparing the AI voice…</string>
+    <string name="ai_voice_preview_detail">Hear AI voice 1</string>
+    <string name="ai_voice_delete">Remove the AI voice</string>
+    <string name="ai_voice_delete_message">The voice model will be deleted from this device. You can download it again later.</string>
+    <string name="ai_voice_option">AI voice %1$d</string>
+    <string name="cast_intro_ai">Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.</string>
+    <string name="licenses_title">Licenses</string>
+    <string name="licenses_value">Open-source software and voice model</string>
+    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
 </resources>

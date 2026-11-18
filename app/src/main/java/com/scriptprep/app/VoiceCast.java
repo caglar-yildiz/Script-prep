@@ -35,28 +35,37 @@ final class VoiceCast {
         }
     }
 
-    /** How one character sounds. An empty voice name means the default rehearsal voice. */
+    /**
+     * How one character sounds. An empty voice name means the default device voice; the speaker
+     * is the character's voice when the on-device AI voice is used.
+     */
     static final class Part {
         final String voice;
+        final int speaker;
         final Tone tone;
         final Pace pace;
 
-        Part(String voice, Tone tone, Pace pace) {
+        Part(String voice, int speaker, Tone tone, Pace pace) {
             this.voice = voice == null ? "" : voice;
+            this.speaker = speaker;
             this.tone = tone;
             this.pace = pace;
         }
 
         Part withVoice(String value) {
-            return new Part(value, tone, pace);
+            return new Part(value, speaker, tone, pace);
+        }
+
+        Part withSpeaker(int value) {
+            return new Part(voice, value, tone, pace);
         }
 
         Part withTone(Tone value) {
-            return new Part(voice, value, pace);
+            return new Part(voice, speaker, value, pace);
         }
 
         Part withPace(Pace value) {
-            return new Part(voice, tone, value);
+            return new Part(voice, speaker, tone, value);
         }
     }
 
@@ -74,7 +83,9 @@ final class VoiceCast {
         for (int i = 0; i < roles.size(); i++) {
             String voice = voices.isEmpty() || i == 0 ? "" : voices.get((i - 1) % voices.size());
             int round = voices.isEmpty() ? i : i / (voices.size() + 1);
-            cast.put(roles.get(i), new Part(voice, TONE_CYCLE[round % TONE_CYCLE.length], Pace.NORMAL));
+            // Tone only shapes device voices; the AI voice has ten distinct speakers instead.
+            cast.put(roles.get(i), new Part(voice, i % NeuralVoice.SPEAKERS,
+                TONE_CYCLE[round % TONE_CYCLE.length], Pace.NORMAL));
         }
         return cast;
     }
@@ -127,6 +138,7 @@ final class VoiceCast {
             for (Map.Entry<String, Part> entry : cast.entrySet()) {
                 JSONObject part = new JSONObject();
                 part.put("voice", entry.getValue().voice);
+                part.put("speaker", entry.getValue().speaker);
                 part.put("tone", entry.getValue().tone.name());
                 part.put("pace", entry.getValue().pace.name());
                 json.put(entry.getKey(), part);
@@ -150,6 +162,8 @@ final class VoiceCast {
                 JSONObject part = json.optJSONObject(role);
                 if (part != null) {
                     cast.put(role, new Part(part.optString("voice"),
+                        Math.max(0, Math.min(NeuralVoice.SPEAKERS - 1, part.optInt("speaker", cast.size()
+                            % NeuralVoice.SPEAKERS))),
                         parse(Tone.class, part.optString("tone"), Tone.NORMAL),
                         parse(Pace.class, part.optString("pace"), Pace.NORMAL)));
                 }

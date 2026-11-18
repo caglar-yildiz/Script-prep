@@ -76,6 +76,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private static final String EXTRA_HAS_ROLES = "has_roles";
     private static final String EXTRA_CAST = "cast";
     private static final String EXTRA_VOICE = "voice";
+    private static final String EXTRA_AI_VOICE = "ai_voice";
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private Ui ui;
@@ -85,6 +86,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private boolean hasRoles;
     private Map<String, VoiceCast.Part> cast;
     private String defaultVoiceName;
+    private NeuralVoice neural;
 
     private FrameLayout previewFrame;
     private TextureView preview;
@@ -130,7 +132,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private int position;
 
     static Intent intent(Context context, String title, Scene scene, String role, boolean hasRoles,
-                         Map<String, VoiceCast.Part> cast, String defaultVoice) {
+                         Map<String, VoiceCast.Part> cast, String defaultVoice, boolean aiVoice) {
         String[] lineRoles = new String[scene.lines.size()];
         String[] lineTexts = new String[scene.lines.size()];
         for (int i = 0; i < lineRoles.length; i++) {
@@ -144,7 +146,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             .putExtra(EXTRA_ROLE, role)
             .putExtra(EXTRA_HAS_ROLES, hasRoles)
             .putExtra(EXTRA_CAST, cast == null ? "" : VoiceCast.toJson(cast))
-            .putExtra(EXTRA_VOICE, defaultVoice);
+            .putExtra(EXTRA_VOICE, defaultVoice)
+            .putExtra(EXTRA_AI_VOICE, aiVoice);
     }
 
     @Override
@@ -167,6 +170,10 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         hasRoles = intent.getBooleanExtra(EXTRA_HAS_ROLES, true);
         cast = VoiceCast.fromJson(intent.getStringExtra(EXTRA_CAST));
         defaultVoiceName = intent.getStringExtra(EXTRA_VOICE);
+        if (intent.getBooleanExtra(EXTRA_AI_VOICE, false)) {
+            neural = NeuralVoice.get(this);
+            neural.load();
+        }
         if (state != null) {
             front = state.getBoolean("front", true);
             partnerAudio = state.getBoolean("partner_audio", true);
@@ -516,7 +523,34 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     }
 
     private void readIfPartner() {
-        if (!recording || position >= texts.length || isMine(position) || !partnerAudio || !speechReady) {
+        if (!recording || position >= texts.length || isMine(position) || !partnerAudio) {
+            return;
+        }
+        if (neural != null && neural.isReady()) {
+            VoiceCast.Part part = cast.get(roles[position]);
+            String id = "video-" + ++utteranceNumber;
+            activeUtterance = id;
+            neural.speak(texts[position], part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate, 1f,
+                new NeuralVoice.Playback() {
+                    @Override
+                    public void onDone() {
+                        if (id.equals(activeUtterance)) {
+                            activeUtterance = null;
+                            advance();
+                        }
+                    }
+
+                    @Override
+                    public void onError() {
+                        if (id.equals(activeUtterance)) {
+                            activeUtterance = null;
+                        }
+                    }
+                });
+            prefetchNext();
+            return;
+        }
+        if (!speechReady) {
             return;
         }
         VoiceCast.apply(speech, cast.get(roles[position]), voices, defaultVoice, TURKISH);
@@ -527,9 +561,28 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     }
 
     private void stopSpeech() {
-        if (activeUtterance != null && speech != null) {
+        if (activeUtterance != null) {
             activeUtterance = null;
-            speech.stop();
+            if (speech != null) {
+                speech.stop();
+            }
+            if (neural != null) {
+                neural.stop();
+            }
+        }
+    }
+
+    /** Prepares the next partner line with the AI voice so it starts without a pause. */
+    private void prefetchNext() {
+        if (neural == null || !neural.isReady()) {
+            return;
+        }
+        for (int i = position + 1; i < texts.length; i++) {
+            if (!isMine(i)) {
+                VoiceCast.Part part = cast.get(roles[i]);
+                neural.prefetch(texts[i], part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate);
+                return;
+            }
         }
     }
 
@@ -549,6 +602,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             }, TAIL_MILLIS);
         } else {
             readIfPartner();
+            prefetchNext();
         }
     }
 
@@ -885,6 +939,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         setRecordingUi(true);
         main.post(tick);
         readIfPartner();
+        prefetchNext();
     }
 
     private void abortRecording(Exception error) {
