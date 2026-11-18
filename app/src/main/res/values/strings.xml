@@ -279,4 +279,7 @@
     <string name="licenses_title">Licenses</string>
     <string name="licenses_value">Open-source software and voice model</string>
     <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
+    <string name="ai_voice_tap_download">Off · tap to download (about %1$d MB)</string>
+    <string name="ai_voice_failed_detail">Reason: %1$s</string>
+    <string name="ai_voice_playing">The AI voice is reading the line…</string>
 </resources>

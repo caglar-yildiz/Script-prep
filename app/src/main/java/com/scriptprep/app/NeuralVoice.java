@@ -96,6 +96,7 @@ final class NeuralVoice {
         });
 
     private volatile State state;
+    private volatile String lastError = "";
     private volatile long downloaded;
     private volatile boolean cancelDownload;
     private volatile int sampleRate = 44_100;
@@ -142,6 +143,11 @@ final class NeuralVoice {
         return state;
     }
 
+    /** A short technical reason for the last failure, shown so problems can be reported. */
+    String lastError() {
+        return lastError;
+    }
+
     boolean isReady() {
         return state == State.READY;
     }
@@ -186,6 +192,7 @@ final class NeuralVoice {
                 setState(State.INSTALLED);
             } catch (IOException | RuntimeException error) {
                 Log.w(TAG, "Neural voice download failed", error);
+                lastError = describe(error);
                 setState(cancelDownload ? State.NOT_INSTALLED : State.FAILED);
             }
         });
@@ -283,6 +290,11 @@ final class NeuralVoice {
         }
     }
 
+    private static String describe(Throwable error) {
+        String message = error.getMessage();
+        return error.getClass().getSimpleName() + (message == null ? "" : ": " + message);
+    }
+
     private static String sha256(File file) throws IOException {
         MessageDigest digest;
         try {
@@ -353,6 +365,7 @@ final class NeuralVoice {
                 setState(State.READY);
             } catch (RuntimeException | LinkageError error) {
                 Log.w(TAG, "Could not load the neural voice", error);
+                lastError = describe(error);
                 engine = null;
                 setState(State.FAILED);
             }

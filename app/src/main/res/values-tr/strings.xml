@@ -277,4 +277,7 @@
     <string name="licenses_title">Lisanslar</string>
     <string name="licenses_value">Açık kaynak yazılımlar ve ses modeli</string>
     <string name="licenses_text">Yapay zekâ sesi: Supertone Inc. tarafından geliştirilen Supertonic 3, OpenRAIL-M lisansıyla kullanılır. Yapay zekâ sesini kullanarak onu bu lisansta sayılan kısıtlı amaçlar için kullanmamayı kabul edersin: yasaları çiğnemek, reşit olmayanlara zarar vermek, yanlış veya zararlı bilgi yaymak, taciz etmek, gerçek kişileri izinsiz taklit etmek ya da üretilen sesi makine üretimi olduğunu belirtmeden insan sesi gibi sunmak bunlara dahildir.\n\nsherpa-onnx (k2-fsa), Apache Lisansı 2.0.\nONNX Runtime (Microsoft), MIT Lisansı.\nPdfBox-Android (Tom Roush), Apache Lisansı 2.0.\nKotlin standart kütüphanesi (JetBrains), Apache Lisansı 2.0.</string>
+    <string name="ai_voice_tap_download">Kapalı · indirmek için dokun (yaklaşık %1$d MB)</string>
+    <string name="ai_voice_failed_detail">Neden: %1$s</string>
+    <string name="ai_voice_playing">Replik yapay zekâ sesiyle okunuyor…</string>
 </resources>

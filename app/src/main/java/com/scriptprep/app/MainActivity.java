@@ -165,6 +165,8 @@ public final class MainActivity extends Activity {
     private Mode mode = Mode.PRACTICE;
     private Visibility lineVisibility = Visibility.FULL;
     private boolean revealLine;
+    /** Whether the line being read now uses the AI voice. */
+    private boolean aiSpeaking;
 
     private String snackbarMessage;
     private String snackbarActionLabel;
@@ -477,6 +479,7 @@ public final class MainActivity extends Activity {
             cancelSpeech();
             stopListening();
             playbackFailed = false;
+            aiSpeaking = false;
             VoiceCast.apply(speech, premium() ? currentCast().get(line.role) : null, castVoices,
                 defaultVoice(), TURKISH);
             activeUtterance = "line-" + ++utteranceNumber;
@@ -1814,6 +1817,8 @@ public final class MainActivity extends Activity {
         LinearLayout extras = ui.card(SURFACE, null);
         extras.setPadding(0, ui.dp(4), 0, ui.dp(4));
         boolean unlocked = premium();
+        extras.addView(aiVoiceRow(), Ui.matchWidth());
+        extras.addView(ui.divider(70));
         if (category.hasRoles()) {
             extras.addView(premiumRow(R.drawable.ic_volume, R.string.cast_title, getString(R.string.cast_value),
                 null, () -> show(Screen.VOICES)), Ui.matchWidth());
@@ -2523,7 +2528,7 @@ public final class MainActivity extends Activity {
         if (state == NeuralVoice.State.READY && screen == Screen.REHEARSAL) {
             prefetchAhead();
         }
-        if ((screen == Screen.HOME && tab == Tab.SETTINGS) || screen == Screen.VOICES
+        if ((screen == Screen.HOME && tab == Tab.SETTINGS) || screen == Screen.VOICES || screen == Screen.SETUP
             || (screen == Screen.REHEARSAL && activeUtterance == null)) {
             render();
         }
@@ -2541,6 +2546,7 @@ public final class MainActivity extends Activity {
         playbackFailed = false;
         String id = "line-" + ++utteranceNumber;
         activeUtterance = id;
+        aiSpeaking = true;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate, 1f,
             new NeuralVoice.Playback() {
@@ -2604,7 +2610,8 @@ public final class MainActivity extends Activity {
                 }
                 case FAILED -> {
                     card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
-                        getString(R.string.ai_voice_retry), view -> {
+                        getString(R.string.ai_voice_failed_detail, neural.lastError()) + "\n"
+                            + getString(R.string.ai_voice_retry), view -> {
                             neural.delete();
                             neural.download();
                         }), Ui.matchWidth());
@@ -2631,6 +2638,40 @@ public final class MainActivity extends Activity {
             }
         }
         content.addView(card, ui.spaced(12));
+    }
+
+    /** Practice options row: which voice reads the lines, with the next step to improve it. */
+    private LinearLayout aiVoiceRow() {
+        if (!NeuralVoice.isSupported()) {
+            return ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+                getString(R.string.ai_voice_unsupported), null);
+        }
+        if (!premium()) {
+            return premiumRow(R.drawable.ic_star, R.string.ai_voice_title, getString(R.string.ai_voice_off), null,
+                () -> { });
+        }
+        boolean on = preferences.getBoolean(AI_VOICE_PREFERENCE, false);
+        return switch (neural.state()) {
+            case NOT_INSTALLED -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+                getString(R.string.ai_voice_tap_download, Math.round(NeuralVoice.downloadBytes() / 1_000_000.0)),
+                ui.chip(getString(R.string.ai_voice_download_confirm), ON_ACCENT_CONTAINER, ACCENT_CONTAINER),
+                view -> confirmAiDownload());
+            case DOWNLOADING -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+                getString(R.string.ai_voice_downloading, neural.progress()), null, null);
+            case FAILED -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
+                getString(R.string.ai_voice_failed_detail, neural.lastError()), view -> {
+                    tab = Tab.SETTINGS;
+                    show(Screen.HOME);
+                });
+            default -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+                getString(on ? R.string.ai_voice_on : R.string.ai_voice_off), ui.toggle(on), view -> {
+                    preferences.edit().putBoolean(AI_VOICE_PREFERENCE, !on).apply();
+                    if (!on) {
+                        neural.load();
+                    }
+                    render();
+                });
+        };
     }
 
     private void confirmAiDownload() {
@@ -2933,6 +2974,9 @@ public final class MainActivity extends Activity {
             return R.string.ai_voice_loading;
         }
         if (activeUtterance != null) {
+            if (aiSpeaking) {
+                return R.string.ai_voice_playing;
+            }
             return mode == Mode.LISTEN ? R.string.reading_playing : R.string.playing;
         }
         if (playbackFailed) {
