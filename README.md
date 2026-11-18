@@ -43,6 +43,15 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 
 İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler **Metinler → Yeni metin** ile eklenir. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
 
+### Premium
+
+Satın alma henüz Google Play'e bağlı değil. Debug derlemelerinde **Premium** sekmesindeki **Premium'a geç / Ücretsiz plana dön** düğmesiyle iki plan da cihazda denenebilir (release derlemelerinde bu düğme görünmez). Premium açıkken prova seçeneklerinde:
+
+- **Karakter sesleri:** Her karaktere ayrı Türkçe ses, ton (kalın/normal/ince) ve hız. Varsayılan dağıtım otomatik; seçimler metin başına kaydedilir.
+- **Sesle otomatik ilerleme:** Sıra sendeyken mikrofon dinler; repliğin en az %60'ı duyulunca prova kendiliğinden ilerler. Mikrofon izni gerekir; tanıma yoksa **Devam et** düğmesi çalışmaya devam eder.
+- **Ayrıntılı prova sonuçları:** İpucu açılan, geri dönülen ve eksik söylenen replikler sahne sonunda listelenir; **Bu replikleri çalış** yalnızca onları ipucu replikleriyle birlikte prova ettirir.
+- **Kamera provası:** Ön/arka kamerayla self-tape; üstte teleprompter, partner replikleri sesli okunur (kapatılabilir), son replikten sonra 2 sn kayıt payı. Videolar **Filmler › Memo Everything** klasörüne kaydedilir.
+
 ### Metin ayrıştırma
 
 - `Jack: Replik`, `JACK:` ve bir sonraki satırda replik.

@@ -52,6 +52,17 @@ final class Scene {
         this.sections = Collections.unmodifiableList(new ArrayList<>(sections));
     }
 
+    /** The given lines, in script order and without duplicates. */
+    Scene subset(java.util.Collection<Integer> indices) {
+        List<Line> chosen = new ArrayList<>();
+        for (int index : new java.util.TreeSet<>(indices)) {
+            if (index >= 0 && index < lines.size()) {
+                chosen.add(lines.get(index));
+            }
+        }
+        return new Scene(chosen, Collections.emptyList());
+    }
+
     Scene forSection(int index) {
         if (index < 0 || index >= sections.size()) {
             return this;

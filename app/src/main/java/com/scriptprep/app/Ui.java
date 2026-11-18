@@ -273,6 +273,12 @@ final class Ui {
 
     /** A settings-style row: icon tile, title and value, trailing chevron when tappable. */
     LinearLayout listRow(int drawable, String title, String value, View.OnClickListener action) {
+        View chevron = action == null ? null : icon(R.drawable.ic_chevron_right, TEXT_TERTIARY, 22);
+        return listRow(drawable, title, value, chevron, action);
+    }
+
+    /** A settings-style row with a custom trailing view such as a switch or a badge. */
+    LinearLayout listRow(int drawable, String title, String value, View trailing, View.OnClickListener action) {
         LinearLayout row = new LinearLayout(context);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setMinimumHeight(dp(64));
@@ -298,10 +304,38 @@ final class Ui {
             labels.addView(detail);
         }
         row.addView(labels, labelParams);
-        if (action != null) {
-            row.addView(icon(R.drawable.ic_chevron_right, TEXT_TERTIARY, 22));
+        if (trailing != null) {
+            row.addView(trailing);
         }
         return row;
+    }
+
+    /** A compact on/off switch drawn to match the theme. */
+    FrameLayout toggle(boolean on) {
+        FrameLayout track = new FrameLayout(context);
+        GradientDrawable trackShape = shape(on ? ACCENT : SURFACE_HIGHEST, 999);
+        if (!on) {
+            trackShape.setStroke(dp(1), OUTLINE);
+        }
+        track.setBackground(trackShape);
+        View knob = new View(context);
+        knob.setBackground(shape(on ? ON_ACCENT : TEXT_SECONDARY, 999));
+        FrameLayout.LayoutParams knobParams = new FrameLayout.LayoutParams(dp(20), dp(20),
+            Gravity.CENTER_VERTICAL | (on ? Gravity.END : Gravity.START));
+        knobParams.leftMargin = dp(4);
+        knobParams.rightMargin = dp(4);
+        track.addView(knob, knobParams);
+        track.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        track.setLayoutParams(new LinearLayout.LayoutParams(dp(48), dp(28)));
+        return track;
+    }
+
+    /** A small "Premium" badge with a lock, used on features the free plan cannot open. */
+    LinearLayout premiumBadge() {
+        LinearLayout badge = chip(context.getString(R.string.premium_tab), R.drawable.ic_lock,
+            ON_ACCENT_CONTAINER, ACCENT_CONTAINER);
+        badge.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        return badge;
     }
 
     View divider(int inset) {
