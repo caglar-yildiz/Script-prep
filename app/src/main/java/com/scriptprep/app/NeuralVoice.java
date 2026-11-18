@@ -198,6 +198,19 @@ final class NeuralVoice {
         });
     }
 
+    /** After a failure: loads an installed model again, otherwise resumes the download. */
+    void retry() {
+        if (state != State.FAILED) {
+            return;
+        }
+        if (isInstalled()) {
+            state = State.INSTALLED;
+            load();
+        } else {
+            download();
+        }
+    }
+
     void cancelDownload() {
         cancelDownload = true;
     }

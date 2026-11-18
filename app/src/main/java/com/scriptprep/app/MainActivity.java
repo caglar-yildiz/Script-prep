@@ -2612,8 +2612,7 @@ public final class MainActivity extends Activity {
                     card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
                         getString(R.string.ai_voice_failed_detail, neural.lastError()) + "\n"
                             + getString(R.string.ai_voice_retry), view -> {
-                            neural.delete();
-                            neural.download();
+                            neural.retry();
                         }), Ui.matchWidth());
                 }
                 default -> {
@@ -2659,10 +2658,8 @@ public final class MainActivity extends Activity {
             case DOWNLOADING -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
                 getString(R.string.ai_voice_downloading, neural.progress()), null, null);
             case FAILED -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
-                getString(R.string.ai_voice_failed_detail, neural.lastError()), view -> {
-                    tab = Tab.SETTINGS;
-                    show(Screen.HOME);
-                });
+                getString(R.string.ai_voice_failed_detail, neural.lastError()) + "\n"
+                    + getString(R.string.ai_voice_retry), view -> neural.retry());
             default -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
                 getString(on ? R.string.ai_voice_on : R.string.ai_voice_off), ui.toggle(on), view -> {
                     preferences.edit().putBoolean(AI_VOICE_PREFERENCE, !on).apply();
