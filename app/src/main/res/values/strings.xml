@@ -13,8 +13,8 @@
     <string name="speak_then_continue">Say your line, then tap Continue.</string>
     <string name="playing">Playing the partner’s line…</string>
     <string name="speech_ready">Tap Play to hear the partner’s line.</string>
-    <string name="speech_loading">Loading the Turkish rehearsal voice…</string>
-    <string name="speech_unavailable">The Turkish rehearsal voice is unavailable. You can keep reading from the screen.</string>
+    <string name="speech_loading">Loading the rehearsal voice…</string>
+    <string name="speech_unavailable">No device voice is available for this language. You can keep reading from the screen.</string>
     <string name="speech_failed">Couldn’t play the audio. Try again or continue.</string>
     <string name="next_line">Continue</string>
     <string name="previous_line">Previous line</string>
@@ -46,13 +46,12 @@
     <string name="premium_video">Video practice</string>
     <string name="premium_video_description">Record a practice video with a teleprompter.</string>
     <string name="voice_settings">Rehearsal voice</string>
-    <string name="voice_settings_description">Choose the Turkish device voice for the other characters’ lines.</string>
-    <string name="voice_option">Turkish voice %1$d</string>
+    <string name="voice_settings_description">Choose the device voice that reads the other characters’ lines in each language.</string>
+    <string name="voice_option">Voice %1$d</string>
     <string name="voice_default">Default device voice</string>
     <string name="voice_choose">Choose a voice</string>
     <string name="voice_preview">Preview voice</string>
-    <string name="voice_preview_text" translatable="false">Hazırsan sahneyi baştan alalım.</string>
-    <string name="voice_no_alternatives">No additional offline Turkish voices are installed.</string>
+    <string name="voice_no_alternatives">No additional offline voices are installed for this language.</string>
     <string name="voice_change_failed">Couldn’t select this voice.</string>
     <string name="pdf_no_text">This PDF has no selectable text. Run OCR on scanned pages before importing.</string>
     <string name="pdf_import_failed">Couldn’t open the PDF. Make sure the file is readable and password-free.</string>
@@ -257,7 +256,7 @@
     <string name="turn_cue_on">A short beep plays when it’s your line</string>
     <string name="turn_cue_off">Off</string>
     <string name="ai_voice_title">AI voice</string>
-    <string name="ai_voice_description">Natural Turkish voices generated on your phone with Supertonic 3. After a one-time download it works offline and gives you 10 different voices for your characters.</string>
+    <string name="ai_voice_description">Natural voices generated on your phone with Supertonic 3, in all the text languages the app supports. After a one-time download it works offline and gives you 10 different voices for your characters.</string>
     <string name="ai_voice_size">One-time download · about %1$d MB</string>
     <string name="ai_voice_unsupported">This device’s processor isn’t supported.</string>
     <string name="ai_voice_download">Download the AI voice</string>
@@ -282,4 +281,11 @@
     <string name="ai_voice_tap_download">Off · tap to download (about %1$d MB)</string>
     <string name="ai_voice_failed_detail">Reason: %1$s</string>
     <string name="ai_voice_playing">The AI voice is reading the line…</string>
+    <string name="text_language">Text language</string>
+    <string name="voice_language">Voice language</string>
+    <string name="language_spanish" translatable="false">Español</string>
+    <string name="language_german" translatable="false">Deutsch</string>
+    <string name="language_french" translatable="false">Français</string>
+    <string name="language_portuguese" translatable="false">Português</string>
+    <string name="language_italian" translatable="false">Italiano</string>
 </resources>

@@ -66,7 +66,6 @@ import java.util.Map;
 /** Premium: records a self-tape while a teleprompter shows the lines and reads the partners. */
 public final class VideoActivity extends Activity implements TextureView.SurfaceTextureListener {
     private static final String TAG = "ScriptPrep";
-    private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
     private static final int PERMISSIONS = 7;
     private static final int TAIL_MILLIS = 2000;
     private static final String EXTRA_TITLE = "title";
@@ -77,6 +76,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private static final String EXTRA_CAST = "cast";
     private static final String EXTRA_VOICE = "voice";
     private static final String EXTRA_AI_VOICE = "ai_voice";
+    private static final String EXTRA_LANGUAGE = "language";
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private Ui ui;
@@ -86,6 +86,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private boolean hasRoles;
     private Map<String, VoiceCast.Part> cast;
     private String defaultVoiceName;
+    private ScriptLanguage language;
     private NeuralVoice neural;
 
     private FrameLayout previewFrame;
@@ -132,6 +133,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private int position;
 
     static Intent intent(Context context, String title, Scene scene, String role, boolean hasRoles,
+                         ScriptLanguage language,
                          Map<String, VoiceCast.Part> cast, String defaultVoice, boolean aiVoice) {
         String[] lineRoles = new String[scene.lines.size()];
         String[] lineTexts = new String[scene.lines.size()];
@@ -147,7 +149,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             .putExtra(EXTRA_HAS_ROLES, hasRoles)
             .putExtra(EXTRA_CAST, cast == null ? "" : VoiceCast.toJson(cast))
             .putExtra(EXTRA_VOICE, defaultVoice)
-            .putExtra(EXTRA_AI_VOICE, aiVoice);
+            .putExtra(EXTRA_AI_VOICE, aiVoice)
+            .putExtra(EXTRA_LANGUAGE, language.code);
     }
 
     @Override
@@ -170,6 +173,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         hasRoles = intent.getBooleanExtra(EXTRA_HAS_ROLES, true);
         cast = VoiceCast.fromJson(intent.getStringExtra(EXTRA_CAST));
         defaultVoiceName = intent.getStringExtra(EXTRA_VOICE);
+        language = ScriptLanguage.fromCode(intent.getStringExtra(EXTRA_LANGUAGE));
         if (intent.getBooleanExtra(EXTRA_AI_VOICE, false)) {
             neural = NeuralVoice.get(this);
             neural.load();
@@ -482,7 +486,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         if (speech == null) {
             return;
         }
-        if (status != TextToSpeech.SUCCESS || speech.setLanguage(TURKISH) < TextToSpeech.LANG_AVAILABLE) {
+        if (status != TextToSpeech.SUCCESS || speech.setLanguage(language.locale) < TextToSpeech.LANG_AVAILABLE) {
             return;
         }
         speech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -511,7 +515,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         });
         if (speech.getVoices() != null) {
             for (Voice voice : speech.getVoices()) {
-                if (TURKISH.getLanguage().equals(voice.getLocale().getLanguage())) {
+                if (voice.getLocale() != null && language.code.equals(voice.getLocale().getLanguage())) {
                     voices.add(voice);
                     if (voice.getName().equals(defaultVoiceName)) {
                         defaultVoice = voice;
@@ -530,7 +534,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             VoiceCast.Part part = cast.get(roles[position]);
             String id = "video-" + ++utteranceNumber;
             activeUtterance = id;
-            neural.speak(texts[position], part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate, 1f,
+            neural.speak(texts[position], language.code, part == null ? 0 : part.speaker,
+                part == null ? 1f : part.pace.rate, 1f,
                 new NeuralVoice.Playback() {
                     @Override
                     public void onDone() {
@@ -553,7 +558,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         if (!speechReady) {
             return;
         }
-        VoiceCast.apply(speech, cast.get(roles[position]), voices, defaultVoice, TURKISH);
+        VoiceCast.apply(speech, cast.get(roles[position]), voices, defaultVoice, language.locale);
         activeUtterance = "video-" + ++utteranceNumber;
         if (speech.speak(texts[position], TextToSpeech.QUEUE_FLUSH, null, activeUtterance) == TextToSpeech.ERROR) {
             activeUtterance = null;
@@ -580,7 +585,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         for (int i = position + 1; i < texts.length; i++) {
             if (!isMine(i)) {
                 VoiceCast.Part part = cast.get(roles[i]);
-                neural.prefetch(texts[i], part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate);
+                neural.prefetch(texts[i], language.code, part == null ? 0 : part.speaker,
+                    part == null ? 1f : part.pace.rate);
                 return;
             }
         }

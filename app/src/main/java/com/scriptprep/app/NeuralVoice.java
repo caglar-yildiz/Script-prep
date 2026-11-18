@@ -36,7 +36,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Premium: natural Turkish voices generated on the device with Supertonic 3 through sherpa-onnx.
+ * Premium: natural voices in many languages, generated on the device with Supertonic 3 through
+ * sherpa-onnx.
  * The model (about 145 MB) is downloaded on request and runs offline afterwards.
  */
 final class NeuralVoice {
@@ -408,13 +409,13 @@ final class NeuralVoice {
         return new File(folder, name).getAbsolutePath();
     }
 
-    private static String key(String text, int speaker, float speed) {
-        return speaker + "|" + speed + "|" + text;
+    private static String key(String text, String language, int speaker, float speed) {
+        return language + "|" + speaker + "|" + speed + "|" + text;
     }
 
     /** Must run on the synthesis thread. */
-    private float[] generate(String text, int speaker, float speed) {
-        String key = key(text, speaker, speed);
+    private float[] generate(String text, String language, int speaker, float speed) {
+        String key = key(text, language, speaker, speed);
         float[] cached = cache.get(key);
         if (cached != null) {
             return cached;
@@ -427,7 +428,7 @@ final class NeuralVoice {
         config.setNumSteps(STEPS);
         config.setSpeed(speed);
         Map<String, String> extra = new LinkedHashMap<>();
-        extra.put("lang", "tr");
+        extra.put("lang", language);
         config.setExtra(extra);
         GeneratedAudio audio = engine.generateWithConfig(text, config);
         float[] samples = audio.getSamples();
@@ -437,13 +438,13 @@ final class NeuralVoice {
     }
 
     /** Generates a line ahead of time so it plays without delay. */
-    void prefetch(String text, int speaker, float speed) {
-        if (state != State.READY || cache.containsKey(key(text, speaker, speed))) {
+    void prefetch(String text, String language, int speaker, float speed) {
+        if (state != State.READY || cache.containsKey(key(text, language, speaker, speed))) {
             return;
         }
         synthesis.execute(() -> {
             try {
-                generate(text, speaker, speed);
+                generate(text, language, speaker, speed);
             } catch (RuntimeException error) {
                 Log.w(TAG, "Prefetch failed", error);
             }
@@ -451,12 +452,12 @@ final class NeuralVoice {
     }
 
     /** Speaks a line; the callback runs on the main thread unless playback is stopped first. */
-    void speak(String text, int speaker, float speed, float pitch, Playback callback) {
+    void speak(String text, String language, int speaker, float speed, float pitch, Playback callback) {
         int token = playToken.incrementAndGet();
         synthesis.execute(() -> {
             float[] samples;
             try {
-                samples = generate(text, speaker, speed);
+                samples = generate(text, language, speaker, speed);
             } catch (RuntimeException error) {
                 Log.w(TAG, "Synthesis failed", error);
                 samples = null;

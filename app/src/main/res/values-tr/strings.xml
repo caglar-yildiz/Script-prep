@@ -12,8 +12,8 @@
     <string name="speak_then_continue">Repliğini söyle, ardından devam et.</string>
     <string name="playing">Karşı replik okunuyor…</string>
     <string name="speech_ready">Karşı repliği dinlemek için Oku’ya dokun.</string>
-    <string name="speech_loading">Türkçe ses hazırlanıyor…</string>
-    <string name="speech_unavailable">Türkçe ses kullanılamıyor. Repliği ekrandan okuyup devam edebilirsin.</string>
+    <string name="speech_loading">Prova sesi hazırlanıyor…</string>
+    <string name="speech_unavailable">Bu dil için cihaz sesi bulunamadı. Repliği ekrandan okuyup devam edebilirsin.</string>
     <string name="speech_failed">Ses oynatılamadı. Yeniden deneyebilir veya devam edebilirsin.</string>
     <string name="next_line">Devam et</string>
     <string name="previous_line">Önceki replik</string>
@@ -45,12 +45,12 @@
     <string name="premium_video">Videolu prova</string>
     <string name="premium_video_description">Teleprompter ile kendi prova videonu çek.</string>
     <string name="voice_settings">Prova sesi</string>
-    <string name="voice_settings_description">Diğer karakterlerin replikleri için Türkçe cihaz sesini seç.</string>
-    <string name="voice_option">Türkçe ses %1$d</string>
+    <string name="voice_settings_description">Her dilde diğer karakterlerin repliklerini okuyacak cihaz sesini seç.</string>
+    <string name="voice_option">Ses %1$d</string>
     <string name="voice_default">Varsayılan cihaz sesi</string>
     <string name="voice_choose">Ses seç</string>
     <string name="voice_preview">Sesi dinle</string>
-    <string name="voice_no_alternatives">Cihazında ek Türkçe çevrimdışı ses bulunmuyor.</string>
+    <string name="voice_no_alternatives">Bu dil için cihazında ek çevrimdışı ses yüklü değil.</string>
     <string name="voice_change_failed">Bu ses seçilemedi.</string>
     <string name="pdf_no_text">Bu PDF’de seçilebilir metin bulunamadı. Taranmış sayfalar için önce OCR ile metin oluştur.</string>
     <string name="pdf_import_failed">PDF açılamadı. Dosyanın sağlam ve parolasız olduğunu kontrol et.</string>
@@ -255,7 +255,7 @@
     <string name="turn_cue_on">Sıra sana geldiğinde kısa bir bip çalar</string>
     <string name="turn_cue_off">Kapalı</string>
     <string name="ai_voice_title">Yapay zekâ sesi</string>
-    <string name="ai_voice_description">Supertonic 3 ile telefonunda üretilen doğal Türkçe sesler. Bir kez indirdikten sonra internetsiz çalışır ve karakterlerin için 10 farklı ses sunar.</string>
+    <string name="ai_voice_description">Supertonic 3 ile telefonunda üretilen doğal sesler; uygulamanın desteklediği tüm metin dillerinde çalışır. Bir kez indirdikten sonra internetsiz çalışır ve karakterlerin için 10 farklı ses sunar.</string>
     <string name="ai_voice_size">Tek seferlik indirme · yaklaşık %1$d MB</string>
     <string name="ai_voice_unsupported">Bu cihazın işlemcisi desteklenmiyor.</string>
     <string name="ai_voice_download">Yapay zekâ sesini indir</string>
@@ -280,4 +280,6 @@
     <string name="ai_voice_tap_download">Kapalı · indirmek için dokun (yaklaşık %1$d MB)</string>
     <string name="ai_voice_failed_detail">Neden: %1$s</string>
     <string name="ai_voice_playing">Replik yapay zekâ sesiyle okunuyor…</string>
+    <string name="text_language">Metin dili</string>
+    <string name="voice_language">Ses dili</string>
 </resources>

@@ -27,7 +27,8 @@ final class ScriptLibrary {
                 if (entry != null && !entry.optString("id").isEmpty()) {
                     scripts.add(new Script(
                         entry.optString("id"), entry.optString("title"), entry.optString("text"),
-                        TextCategory.fromSavedValue(entry.optString("category"))
+                        TextCategory.fromSavedValue(entry.optString("category")),
+                        ScriptLanguage.fromCode(entry.optString("language"))
                     ));
                 }
             }
@@ -37,7 +38,7 @@ final class ScriptLibrary {
         return scripts;
     }
 
-    String save(String id, String title, String text, TextCategory category) {
+    String save(String id, String title, String text, TextCategory category, ScriptLanguage language) {
         String scriptId = id == null ? UUID.randomUUID().toString() : id;
         List<Script> scripts = list();
         for (int i = 0; i < scripts.size(); i++) {
@@ -46,7 +47,7 @@ final class ScriptLibrary {
                 break;
             }
         }
-        scripts.add(0, new Script(scriptId, title, text, category));
+        scripts.add(0, new Script(scriptId, title, text, category, language));
         write(scripts);
         return scriptId;
     }
@@ -85,6 +86,7 @@ final class ScriptLibrary {
                 entry.put("title", script.title);
                 entry.put("text", script.text);
                 entry.put("category", script.category.name());
+                entry.put("language", script.language.code);
             } catch (JSONException error) {
                 throw new IllegalStateException("Could not serialize script", error);
             }
@@ -98,16 +100,18 @@ final class ScriptLibrary {
         final String title;
         final String text;
         final TextCategory category;
+        final ScriptLanguage language;
 
         Script(String id, String title, String text) {
-            this(id, title, text, TextCategory.ROLE_REHEARSAL);
+            this(id, title, text, TextCategory.ROLE_REHEARSAL, ScriptLanguage.TURKISH);
         }
 
-        Script(String id, String title, String text, TextCategory category) {
+        Script(String id, String title, String text, TextCategory category, ScriptLanguage language) {
             this.id = id;
             this.title = title;
             this.text = text;
             this.category = category;
+            this.language = language;
         }
     }
 }

@@ -13,7 +13,12 @@ import java.util.Locale;
 enum AppLanguage {
     SYSTEM("", R.string.language_system),
     TURKISH("tr", R.string.language_turkish),
-    ENGLISH("en", R.string.language_english);
+    ENGLISH("en", R.string.language_english),
+    SPANISH("es", R.string.language_spanish),
+    GERMAN("de", R.string.language_german),
+    FRENCH("fr", R.string.language_french),
+    PORTUGUESE("pt", R.string.language_portuguese),
+    ITALIAN("it", R.string.language_italian);
 
     private static final String PREFERENCES = "script_prep";
     private static final String KEY = "app_language";

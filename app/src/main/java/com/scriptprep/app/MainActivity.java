@@ -89,7 +89,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
-    private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
     private static final int MAX_SCRIPT_LENGTH = 150_000;
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
@@ -110,9 +109,8 @@ public final class MainActivity extends Activity {
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private final ExecutorService imports = Executors.newSingleThreadExecutor();
-    private final List<Voice> turkishVoices = new ArrayList<>();
-    /** Offline voices in settings order followed by online voices; Premium character voices. */
-    private final List<Voice> castVoices = new ArrayList<>();
+    /** Every installed device voice, in all languages. */
+    private final List<Voice> installedVoices = new ArrayList<>();
     private final Set<Integer> revealedLines = new TreeSet<>();
     private final Set<Integer> retriedLines = new TreeSet<>();
     private final Set<Integer> missedLines = new TreeSet<>();
@@ -151,6 +149,10 @@ public final class MainActivity extends Activity {
     private Screen screen = Screen.HOME;
     private Tab tab = Tab.SCRIPTS;
     private TextCategory category = TextCategory.ROLE_REHEARSAL;
+    /** Language of the open text. */
+    private ScriptLanguage language = ScriptLanguage.TURKISH;
+    /** Language whose default voice the settings screen is showing. */
+    private ScriptLanguage settingsLanguage;
     private String scriptId;
     private String scriptTitle = "";
     private String script = "";
@@ -199,6 +201,7 @@ public final class MainActivity extends Activity {
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
             tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
             category = TextCategory.fromSavedValue(state.getString("category"));
+            language = ScriptLanguage.fromCode(state.getString("language"));
             fullScene = parseScript(script);
             sectionIndex = state.getInt("section_index", -1);
             scene = fullScene.forSection(sectionIndex);
@@ -259,6 +262,7 @@ public final class MainActivity extends Activity {
         state.putString("script_id", scriptId);
         state.putString("editor_return", editorReturn.name());
         state.putString("category", category.name());
+        state.putString("language", language.code);
         state.putString("screen", screen.name());
         state.putString("tab", tab.name());
         state.putString("role", role);
@@ -395,7 +399,7 @@ public final class MainActivity extends Activity {
         if (speech == null) {
             return;
         }
-        if (status == TextToSpeech.SUCCESS && speech.setLanguage(TURKISH) >= TextToSpeech.LANG_AVAILABLE) {
+        if (status == TextToSpeech.SUCCESS) {
             int listenerStatus = speech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
                 @Override
                 public void onStart(String id) {}
@@ -413,7 +417,7 @@ public final class MainActivity extends Activity {
             speechState = listenerStatus == TextToSpeech.SUCCESS
                 ? SpeechState.READY : SpeechState.UNAVAILABLE;
             if (speechState == SpeechState.READY) {
-                loadTurkishVoices();
+                loadVoices();
             }
         } else {
             speechState = SpeechState.UNAVAILABLE;
@@ -475,13 +479,13 @@ public final class MainActivity extends Activity {
         }
         if (speechState == SpeechState.LOADING) {
             autoPlayPending = true;
-        } else if (speechState == SpeechState.READY) {
+        } else if (deviceVoiceAvailable(language)) {
             cancelSpeech();
             stopListening();
             playbackFailed = false;
             aiSpeaking = false;
-            VoiceCast.apply(speech, premium() ? currentCast().get(line.role) : null, castVoices,
-                defaultVoice(), TURKISH);
+            VoiceCast.apply(speech, premium() ? currentCast().get(line.role) : null, castVoices(),
+                defaultVoice(), language.locale);
             activeUtterance = "line-" + ++utteranceNumber;
             if (speech.speak(line.text, TextToSpeech.QUEUE_FLUSH, null, activeUtterance)
                 == TextToSpeech.ERROR) {
@@ -854,6 +858,7 @@ public final class MainActivity extends Activity {
                 case 1 -> openSavedScript(entry);
                 case 2 -> {
                     category = entry.category;
+                    language = entry.language;
                     openEditor(entry.id, entry.title, entry.text);
                 }
                 case 3 -> confirmDelete(entry);
@@ -877,6 +882,9 @@ public final class MainActivity extends Activity {
             parsedCache.put(key, parsed);
         }
         StringBuilder summary = new StringBuilder(getString(categoryTitle(entry.category)));
+        if (entry.language != interfaceLanguage()) {
+            summary.append(" · ").append(getString(entry.language.label));
+        }
         summary.append(" · ");
         if (entry.category.hasRoles()) {
             summary.append(getResources().getQuantityString(R.plurals.line_count,
@@ -895,7 +903,7 @@ public final class MainActivity extends Activity {
     private void openSample() {
         category = TextCategory.ROLE_REHEARSAL;
         openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title),
-            getString(R.string.sample_script)));
+            getString(R.string.sample_script), TextCategory.ROLE_REHEARSAL, interfaceLanguage()));
     }
 
     private void renderEmptyLibrary() {
@@ -960,47 +968,71 @@ public final class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- Settings
 
-    private void loadTurkishVoices() {
+    private void loadVoices() {
         Set<Voice> voices = speech.getVoices();
         if (voices != null) {
             for (Voice voice : voices) {
                 Set<String> features = voice.getFeatures();
-                if (TURKISH.getLanguage().equals(voice.getLocale().getLanguage())
-                    && !voice.isNetworkConnectionRequired()
+                if (voice.getLocale() != null
                     && (features == null || !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED))) {
-                    turkishVoices.add(voice);
+                    installedVoices.add(voice);
                 }
             }
         }
-        Collections.sort(turkishVoices, (first, second) -> first.getName().compareTo(second.getName()));
-        castVoices.addAll(turkishVoices);
-        List<Voice> online = new ArrayList<>();
-        if (voices != null) {
-            for (Voice voice : voices) {
-                Set<String> features = voice.getFeatures();
-                if (TURKISH.getLanguage().equals(voice.getLocale().getLanguage())
-                    && voice.isNetworkConnectionRequired()
-                    && (features == null || !features.contains(TextToSpeech.Engine.KEY_FEATURE_NOT_INSTALLED))) {
-                    online.add(voice);
-                }
-            }
-        }
-        Collections.sort(online, (first, second) -> first.getName().compareTo(second.getName()));
-        castVoices.addAll(online);
-        int index = selectedVoiceIndex();
-        if (index > 0 && speech.setVoice(turkishVoices.get(index - 1)) != TextToSpeech.SUCCESS) {
-            preferences.edit().remove(VOICE_PREFERENCE).apply();
-        }
+        Collections.sort(installedVoices, (first, second) -> first.getName().compareTo(second.getName()));
     }
 
-    private int selectedVoiceIndex() {
-        String name = preferences.getString(VOICE_PREFERENCE, "");
-        for (int i = 0; i < turkishVoices.size(); i++) {
-            if (turkishVoices.get(i).getName().equals(name)) {
+    /** Offline voices for a language, in a stable order that the settings numbering follows. */
+    private List<Voice> offlineVoices(ScriptLanguage target) {
+        List<Voice> voices = new ArrayList<>();
+        for (Voice voice : installedVoices) {
+            if (target.code.equals(voice.getLocale().getLanguage()) && !voice.isNetworkConnectionRequired()) {
+                voices.add(voice);
+            }
+        }
+        return voices;
+    }
+
+    /** Character voices for a language: offline voices first, then online ones. */
+    private List<Voice> castVoices(ScriptLanguage target) {
+        List<Voice> voices = offlineVoices(target);
+        for (Voice voice : installedVoices) {
+            if (target.code.equals(voice.getLocale().getLanguage()) && voice.isNetworkConnectionRequired()) {
+                voices.add(voice);
+            }
+        }
+        return voices;
+    }
+
+    private List<Voice> castVoices() {
+        return castVoices(language);
+    }
+
+    /** Turkish keeps the original key so earlier choices survive. */
+    private static String voiceKey(ScriptLanguage target) {
+        return target == ScriptLanguage.TURKISH ? VOICE_PREFERENCE : VOICE_PREFERENCE + "_" + target.code;
+    }
+
+    private int selectedVoiceIndex(ScriptLanguage target) {
+        String name = preferences.getString(voiceKey(target), "");
+        List<Voice> voices = offlineVoices(target);
+        for (int i = 0; i < voices.size(); i++) {
+            if (voices.get(i).getName().equals(name)) {
                 return i + 1;
             }
         }
         return 0;
+    }
+
+    private boolean deviceVoiceAvailable(ScriptLanguage target) {
+        return speechState == SpeechState.READY
+            && speech.isLanguageAvailable(target.locale) >= TextToSpeech.LANG_AVAILABLE;
+    }
+
+    /** The interface language mapped to a text language. */
+    @SuppressWarnings("deprecation")
+    private ScriptLanguage interfaceLanguage() {
+        return ScriptLanguage.forLocale(getResources().getConfiguration().locale);
     }
 
     private void renderSettings() {
@@ -1018,15 +1050,24 @@ public final class MainActivity extends Activity {
         content.addView(explanation, ui.spaced(8));
         LinearLayout voice = ui.card(SURFACE, null);
         voice.setPadding(0, ui.dp(4), 0, ui.dp(4));
-        if (speechState != SpeechState.READY) {
+        if (settingsLanguage == null) {
+            settingsLanguage = interfaceLanguage();
+        }
+        voice.addView(ui.listRow(R.drawable.ic_translate, getString(R.string.voice_language),
+            getString(settingsLanguage.label), view -> chooseLanguage(settingsLanguage, picked -> {
+                settingsLanguage = picked;
+                render();
+            })), Ui.matchWidth());
+        voice.addView(ui.divider(70));
+        if (!deviceVoiceAvailable(settingsLanguage)) {
             voice.addView(ui.listRow(R.drawable.ic_volume, getString(R.string.voice_settings),
                 getString(speechState == SpeechState.LOADING ? R.string.speech_loading : R.string.speech_unavailable),
                 null), Ui.matchWidth());
         } else {
-            int selected = selectedVoiceIndex();
+            int selected = selectedVoiceIndex(settingsLanguage);
             String current = selected == 0 ? getString(R.string.voice_default)
                 : getString(R.string.voice_option, selected);
-            if (turkishVoices.isEmpty()) {
+            if (offlineVoices(settingsLanguage).isEmpty()) {
                 voice.addView(ui.listRow(R.drawable.ic_volume, getString(R.string.voice_choose),
                     current + "\n" + getString(R.string.voice_no_alternatives), null), Ui.matchWidth());
             } else {
@@ -1035,7 +1076,7 @@ public final class MainActivity extends Activity {
             }
             voice.addView(ui.divider(70));
             voice.addView(ui.listRow(R.drawable.ic_play, getString(R.string.voice_preview),
-                getString(R.string.voice_preview_text), view -> previewVoice()), Ui.matchWidth());
+                settingsLanguage.sample, view -> previewVoice()), Ui.matchWidth());
         }
         content.addView(voice, ui.spaced(12));
 
@@ -1073,13 +1114,34 @@ public final class MainActivity extends Activity {
 
     private void previewVoice() {
         cancelSpeech();
-        VoiceCast.apply(speech, null, castVoices, defaultVoice(), TURKISH);
+        VoiceCast.apply(speech, null, castVoices(settingsLanguage), defaultVoice(settingsLanguage),
+            settingsLanguage.locale);
         activePreview = "preview-" + ++utteranceNumber;
-        if (speech.speak(getString(R.string.voice_preview_text), TextToSpeech.QUEUE_FLUSH,
+        if (speech.speak(settingsLanguage.sample, TextToSpeech.QUEUE_FLUSH,
             null, activePreview) != TextToSpeech.SUCCESS) {
             activePreview = null;
             notifyUser(R.string.speech_failed);
         }
+    }
+
+    private interface LanguagePick {
+        void picked(ScriptLanguage value);
+    }
+
+    private void chooseLanguage(ScriptLanguage current, LanguagePick pick) {
+        ScriptLanguage[] options = ScriptLanguage.values();
+        String[] labels = new String[options.length];
+        for (int i = 0; i < options.length; i++) {
+            labels[i] = getString(options[i].label);
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.text_language)
+            .setSingleChoiceItems(labels, current.ordinal(), (dialog, index) -> {
+                dialog.dismiss();
+                if (options[index] != current) {
+                    pick.picked(options[index]);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
     }
 
     private void showLanguageOptions() {
@@ -1097,28 +1159,30 @@ public final class MainActivity extends Activity {
     }
 
     private void showVoiceOptions() {
-        String[] labels = new String[turkishVoices.size() + 1];
+        ScriptLanguage target = settingsLanguage;
+        List<Voice> voices = offlineVoices(target);
+        String[] labels = new String[voices.size() + 1];
         labels[0] = getString(R.string.voice_default);
-        for (int i = 0; i < turkishVoices.size(); i++) {
+        for (int i = 0; i < voices.size(); i++) {
             labels[i + 1] = getString(R.string.voice_option, i + 1);
         }
         new AlertDialog.Builder(this)
             .setTitle(R.string.voice_choose)
-            .setSingleChoiceItems(labels, selectedVoiceIndex(), (dialog, choice) -> {
+            .setSingleChoiceItems(labels, selectedVoiceIndex(target), (dialog, choice) -> {
                 cancelSpeech();
                 if (choice == 0) {
-                    if (speech.setLanguage(TURKISH) < TextToSpeech.LANG_AVAILABLE) {
+                    if (speech.setLanguage(target.locale) < TextToSpeech.LANG_AVAILABLE) {
                         notifyUser(R.string.voice_change_failed);
                         return;
                     }
-                    preferences.edit().remove(VOICE_PREFERENCE).apply();
+                    preferences.edit().remove(voiceKey(target)).apply();
                 } else {
-                    Voice voice = turkishVoices.get(choice - 1);
+                    Voice voice = voices.get(choice - 1);
                     if (speech.setVoice(voice) != TextToSpeech.SUCCESS) {
                         notifyUser(R.string.voice_change_failed);
                         return;
                     }
-                    preferences.edit().putString(VOICE_PREFERENCE, voice.getName()).apply();
+                    preferences.edit().putString(voiceKey(target), voice.getName()).apply();
                 }
                 dialog.dismiss();
                 render();
@@ -1140,6 +1204,7 @@ public final class MainActivity extends Activity {
     private void categoryOption(TextCategory value, int detail, int top) {
         LinearLayout card = ui.card(SURFACE, view -> {
             category = value;
+            language = interfaceLanguage();
             show(Screen.SOURCE);
         });
         card.setOrientation(LinearLayout.HORIZONTAL);
@@ -1271,6 +1336,7 @@ public final class MainActivity extends Activity {
 
     private void openSavedScript(ScriptLibrary.Script entry) {
         category = entry.category;
+        language = entry.language;
         Scene parsed = parseScript(entry.text);
         if (parsed.roles.isEmpty()) {
             openEditor(entry.id, entry.title, entry.text);
@@ -1310,8 +1376,24 @@ public final class MainActivity extends Activity {
         }
 
         int[] colors = categoryColors(category);
-        content.addView(ui.chip(getString(categoryTitle(category)), categoryIcon(category), colors[0], colors[1]),
-            ui.wrapSpaced(8));
+        LinearLayout chips = horizontal();
+        chips.addView(ui.chip(getString(categoryTitle(category)), categoryIcon(category), colors[0], colors[1]));
+        LinearLayout languageChip = ui.chip(getString(language.label), R.drawable.ic_translate, TEXT, SURFACE_HIGHEST);
+        languageChip.setBackground(ui.ripple(ui.shape(SURFACE_HIGHEST, 999), 0x22FFFFFF));
+        languageChip.setClickable(true);
+        languageChip.setFocusable(true);
+        languageChip.setContentDescription(getString(R.string.text_language) + ": " + getString(language.label));
+        languageChip.setOnClickListener(view -> chooseLanguage(language, picked -> {
+            // Keep what was typed while the screen is rebuilt.
+            scriptTitle = titleField.getText().toString();
+            script = editor.getText().toString();
+            language = picked;
+            render();
+        }));
+        LinearLayout.LayoutParams languageParams = new LinearLayout.LayoutParams(-2, -2);
+        languageParams.leftMargin = ui.dp(8);
+        chips.addView(languageChip, languageParams);
+        content.addView(chips, ui.wrapSpaced(8));
 
         content.addView(fieldLabel(R.string.script_title_label, null), ui.spaced(20));
         titleField = field(R.string.script_title_hint, scriptTitle,
@@ -1473,7 +1555,7 @@ public final class MainActivity extends Activity {
             editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
         }
-        scriptId = library.save(scriptId, title, candidate, category);
+        scriptId = library.save(scriptId, title, candidate, category, language);
         scriptTitle = title;
         script = candidate;
         savedTitle = title;
@@ -2318,7 +2400,7 @@ public final class MainActivity extends Activity {
 
     private List<String> castVoiceNames() {
         List<String> names = new ArrayList<>();
-        for (Voice voice : castVoices) {
+        for (Voice voice : castVoices()) {
             names.add(voice.getName());
         }
         return names;
@@ -2329,17 +2411,22 @@ public final class MainActivity extends Activity {
         return VoiceCast.load(preferences, castKey(), roles, castVoiceNames());
     }
 
+    private Voice defaultVoice(ScriptLanguage target) {
+        int index = selectedVoiceIndex(target);
+        return index > 0 ? offlineVoices(target).get(index - 1) : null;
+    }
+
     private Voice defaultVoice() {
-        int index = selectedVoiceIndex();
-        return index > 0 ? turkishVoices.get(index - 1) : null;
+        return defaultVoice(language);
     }
 
     private String voiceLabel(String name) {
         if (name.isEmpty()) {
             return getString(R.string.voice_default);
         }
-        for (int i = 0; i < castVoices.size(); i++) {
-            Voice voice = castVoices.get(i);
+        List<Voice> voices = castVoices();
+        for (int i = 0; i < voices.size(); i++) {
+            Voice voice = voices.get(i);
             if (voice.getName().equals(name)) {
                 String label = getString(R.string.voice_option, i + 1);
                 return voice.isNetworkConnectionRequired() ? getString(R.string.voice_online, label) : label;
@@ -2457,6 +2544,7 @@ public final class MainActivity extends Activity {
                 .setNegativeButton(android.R.string.cancel, null).show();
             return;
         }
+        List<Voice> castVoices = castVoices();
         String[] labels = new String[castVoices.size() + 1];
         labels[0] = getString(R.string.voice_default);
         int selected = 0;
@@ -2481,7 +2569,7 @@ public final class MainActivity extends Activity {
         if (speechState != SpeechState.READY && !useAiVoice()) {
             return;
         }
-        String sample = getString(R.string.voice_preview_text);
+        String sample = language.sample;
         for (Scene.Line line : fullScene.lines) {
             if (line.role.equals(character)) {
                 sample = line.text;
@@ -2490,11 +2578,11 @@ public final class MainActivity extends Activity {
         }
         if (useAiVoice()) {
             VoiceCast.Part part = currentCast().get(character);
-            previewAiVoice(part.speaker, part.pace.rate, sample);
+            previewAiVoice(language, part.speaker, part.pace.rate, sample);
             return;
         }
         cancelSpeech();
-        VoiceCast.apply(speech, currentCast().get(character), castVoices, defaultVoice(), TURKISH);
+        VoiceCast.apply(speech, currentCast().get(character), castVoices(), defaultVoice(), language.locale);
         activePreview = "preview-" + ++utteranceNumber;
         if (speech.speak(sample, TextToSpeech.QUEUE_FLUSH, null, activePreview) != TextToSpeech.SUCCESS) {
             activePreview = null;
@@ -2548,7 +2636,8 @@ public final class MainActivity extends Activity {
         activeUtterance = id;
         aiSpeaking = true;
         VoiceCast.Part part = currentCast().get(line.role);
-        neural.speak(line.text, part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate, 1f,
+        neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
+            part == null ? 1f : part.pace.rate, 1f,
             new NeuralVoice.Playback() {
                 @Override
                 public void onDone() {
@@ -2575,7 +2664,8 @@ public final class MainActivity extends Activity {
             Scene.Line line = scene.lines.get(i);
             if (RehearsalOptions.shouldSpeak(mode, role, line.role)) {
                 VoiceCast.Part part = cast.get(line.role);
-                neural.prefetch(line.text, part == null ? 0 : part.speaker, part == null ? 1f : part.pace.rate);
+                neural.prefetch(line.text, language.code, part == null ? 0 : part.speaker,
+                    part == null ? 1f : part.pace.rate);
                 found++;
             }
         }
@@ -2697,10 +2787,11 @@ public final class MainActivity extends Activity {
     }
 
     private void previewAiVoice(int speaker) {
-        previewAiVoice(speaker, 1f, getString(R.string.voice_preview_text));
+        ScriptLanguage target = settingsLanguage == null ? interfaceLanguage() : settingsLanguage;
+        previewAiVoice(target, speaker, 1f, target.sample);
     }
 
-    private void previewAiVoice(int speaker, float speed, String text) {
+    private void previewAiVoice(ScriptLanguage target, int speaker, float speed, String text) {
         if (!neural.isReady()) {
             neural.load();
             notifyUser(R.string.ai_voice_loading);
@@ -2709,7 +2800,7 @@ public final class MainActivity extends Activity {
         cancelSpeech();
         String id = "preview-" + ++utteranceNumber;
         activePreview = id;
-        neural.speak(text, speaker, speed, 1f, new NeuralVoice.Playback() {
+        neural.speak(text, target.code, speaker, speed, 1f, new NeuralVoice.Playback() {
             @Override
             public void onDone() {
                 finishSpeech(id, false);
@@ -2735,7 +2826,7 @@ public final class MainActivity extends Activity {
     private void openVideo() {
         Map<String, VoiceCast.Part> cast = category.hasRoles() ? currentCast() : null;
         Voice fallback = defaultVoice();
-        startActivity(VideoActivity.intent(this, scriptTitle, scene, role, category.hasRoles(), cast,
+        startActivity(VideoActivity.intent(this, scriptTitle, scene, role, category.hasRoles(), language, cast,
             fallback == null ? "" : fallback.getName(), useAiVoice()));
     }
 
@@ -2828,7 +2919,7 @@ public final class MainActivity extends Activity {
                     return;
                 }
                 heardSoFar = (heardSoFar + " " + text).trim();
-                double said = HandsFree.coverage(scene.lines.get(target).text, heardSoFar);
+                double said = HandsFree.coverage(scene.lines.get(target).text, heardSoFar, language.locale);
                 if (said >= LINE_SAID) {
                     if (said < LINE_CLEAN) {
                         missedLines.add(target);
@@ -2875,7 +2966,7 @@ public final class MainActivity extends Activity {
                     pauseListening();
                 }
             }
-        });
+        }, language.locale);
     }
 
     private void pauseListening() {
@@ -2981,7 +3072,8 @@ public final class MainActivity extends Activity {
         }
         return switch (speechState) {
             case LOADING -> R.string.speech_loading;
-            case READY -> mode == Mode.LISTEN ? R.string.reading_ready : R.string.speech_ready;
+            case READY -> !deviceVoiceAvailable(language) ? R.string.speech_unavailable
+                : mode == Mode.LISTEN ? R.string.reading_ready : R.string.speech_ready;
             case UNAVAILABLE -> R.string.speech_unavailable;
         };
     }

@@ -31,7 +31,6 @@ final class HandsFree {
         void onFailure(boolean permanent);
     }
 
-    private static final Locale TURKISH = Locale.forLanguageTag("tr-TR");
     private static final Pattern WORD = Pattern.compile("[\\p{L}\\p{N}]+");
 
     private final Context context;
@@ -46,7 +45,7 @@ final class HandsFree {
         return SpeechRecognizer.isRecognitionAvailable(context);
     }
 
-    void start(Listener target) {
+    void start(Listener target, Locale language) {
         stop();
         if (recognizer == null) {
             recognizer = SpeechRecognizer.createSpeechRecognizer(context);
@@ -55,7 +54,7 @@ final class HandsFree {
         recognizer.setRecognitionListener(new Callbacks(target));
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
             .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "tr-TR")
+            .putExtra(RecognizerIntent.EXTRA_LANGUAGE, language.toLanguageTag())
             .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             .putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
             .putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, 1800L)
@@ -89,13 +88,13 @@ final class HandsFree {
     }
 
     /** Share of the expected words that were heard, ignoring case, accents and order. */
-    static double coverage(String expected, String heard) {
-        List<String> wanted = words(expected);
+    static double coverage(String expected, String heard, Locale language) {
+        List<String> wanted = words(expected, language);
         if (wanted.isEmpty()) {
             return 1;
         }
         Map<String, Integer> available = new HashMap<>();
-        for (String word : words(heard)) {
+        for (String word : words(heard, language)) {
             Integer count = available.get(word);
             available.put(word, count == null ? 1 : count + 1);
         }
@@ -110,8 +109,9 @@ final class HandsFree {
         return matched / (double) wanted.size();
     }
 
-    private static List<String> words(String text) {
-        String folded = Normalizer.normalize(text.toLowerCase(TURKISH), Normalizer.Form.NFD)
+    private static List<String> words(String text, Locale language) {
+        // Accents and the Turkish dotless i are folded so small recognition differences still match.
+        String folded = Normalizer.normalize(text.toLowerCase(language), Normalizer.Form.NFD)
             .replaceAll("\\p{M}+", "").replace('ı', 'i');
         List<String> words = new ArrayList<>();
         Matcher matcher = WORD.matcher(folded);

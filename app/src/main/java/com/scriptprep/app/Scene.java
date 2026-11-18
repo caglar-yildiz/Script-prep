@@ -23,20 +23,26 @@ final class Scene {
     private static final String NUMBER =
         "(?:\\d+|[IVXLCDM]+|BIR|IKI|U[CÇ]|DORT|BES|ALTI|YEDI|SEKIZ|DOKUZ|ON|"
         + "BIRINCI|IKINCI|UCUNCU|DORDUNCU|BESINCI|ALTINCI|YEDINCI|SEKIZINCI|DOKUZUNCU|ONUNCU|"
-        + "ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN)";
-    private static final Pattern ACT = titledHeading("PERDE|ACT");
-    private static final Pattern STAGE = titledHeading("SAHNE|SCENE|TABLO");
+        + "ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|FIRST|SECOND|THIRD|"
+        + "PRIMERO|PRIMER|SEGUNDO|TERCERO|TERCER|CUARTO|QUINTO|"
+        + "ERSTER|ERSTE|ZWEITER|ZWEITE|DRITTER|DRITTE|VIERTER|VIERTE|FUNFTER|FUNFTE|"
+        + "PREMIER|PREMIERE|DEUXIEME|TROISIEME|QUATRIEME|CINQUIEME|"
+        + "PRIMEIRO|PRIMEIRA|SEGUNDA|TERCEIRO|TERCEIRA|QUARTO|QUARTA|"
+        + "PRIMO|SECONDO|TERZO|QUINTO)";
+    private static final Pattern ACT = titledHeading("PERDE|ACT|ACTO|AKT|AUFZUG|ACTE|ATO|ATTO");
+    private static final Pattern STAGE = titledHeading("SAHNE|SCENE|TABLO|ESCENA|CUADRO|SZENE|AUFTRITT|BILD|TABLEAU|CENA|QUADRO|SCENA");
     private static final Pattern TRADITIONAL = Pattern.compile("^(?:MUKADDIME|MUHAVERE|FASIL|BITIS)[.:]?$");
     private static final Pattern SCREEN = Pattern.compile(
         "^(?:\\d+[A-Z]?\\s+)?(?:INT\\.?/EXT|I/E|IC\\s*/\\s*DIS|INT|EXT|EST|IC|DIS)[.\\s]+.+$"
     );
     private static final Pattern END = Pattern.compile(
         "^(?:(?:[IVXLCDM]+|\\d+)\\.?\\s+)?(?:PERDE SONU|SAHNE SONU|END OF (?:ACT|SCENE).*|"
-        + "BLACKOUT|CURTAIN|FADE OUT|(?:CUT|DISSOLVE|FADE) TO|SON|END|KARARIR)[.!:]?$"
+        + "BLACKOUT|CURTAIN|FADE OUT|(?:CUT|DISSOLVE|FADE) TO|SON|END|KARARIR|"
+        + "FIN|TELON|OSCURO|ENDE|VORHANG|RIDEAU|NOIR|FIM|PANO|FINE|SIPARIO|BUIO)[.!:]?$"
     );
     private static final Pattern EXERCISE = Pattern.compile("^ETKINLIK\\s+\\d+\\b");
     private static final Pattern LINK = Pattern.compile("https?://", Pattern.CASE_INSENSITIVE);
-    private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
+    private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE|PAGINA|SEITE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
 
     final List<Line> lines;
     final List<String> roles;
