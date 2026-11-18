@@ -33,6 +33,8 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -95,6 +97,8 @@ public final class MainActivity extends Activity {
     private static final int SNACKBAR_DURATION = 6000;
     private static final String VOICE_PREFERENCE = "tts_voice";
     private static final String HANDS_FREE_PREFERENCE = "hands_free";
+    private static final String TURN_CUE_PREFERENCE = "turn_cue";
+    private static final int TURN_CUE_MILLIS = 180;
     private static final int REQUEST_MICROPHONE = 11;
     private static final double LINE_SAID = 0.6;
     private static final double LINE_CLEAN = 0.8;
@@ -113,6 +117,7 @@ public final class MainActivity extends Activity {
     private final Set<Integer> missedLines = new TreeSet<>();
     private ArrayList<Integer> reviewBase;
     private HandsFree handsFree;
+    private ToneGenerator turnCue;
     private boolean listening;
     private boolean listeningPaused;
     private String heardSoFar = "";
@@ -285,6 +290,10 @@ public final class MainActivity extends Activity {
         cancelSpeech();
         if (handsFree != null) {
             handsFree.destroy();
+        }
+        if (turnCue != null) {
+            turnCue.release();
+            turnCue = null;
         }
         imports.shutdownNow();
         main.removeCallbacksAndMessages(null);
@@ -478,7 +487,31 @@ public final class MainActivity extends Activity {
             playCurrent();
         } else {
             render();
-            listenIfNeeded();
+            if (cueTurn()) {
+                // Let the beep finish before the microphone starts listening.
+                main.postDelayed(this::listenIfNeeded, TURN_CUE_MILLIS + 150);
+            } else {
+                listenIfNeeded();
+            }
+        }
+    }
+
+    /** Beeps when the rehearsal reaches one of the actor's own lines. */
+    private boolean cueTurn() {
+        if (mode != Mode.PRACTICE || !visible || screen != Screen.REHEARSAL || !isMyTurn()
+            || !preferences.getBoolean(TURN_CUE_PREFERENCE, true)) {
+            return false;
+        }
+        try {
+            if (turnCue == null) {
+                turnCue = new ToneGenerator(AudioManager.STREAM_MUSIC, 70);
+            }
+            turnCue.startTone(ToneGenerator.TONE_PROP_BEEP, TURN_CUE_MILLIS);
+            return true;
+        } catch (RuntimeException error) {
+            // Some devices refuse to create a tone generator; the rehearsal goes on silently.
+            turnCue = null;
+            return false;
         }
     }
 
@@ -1737,6 +1770,12 @@ public final class MainActivity extends Activity {
         if (mode == Mode.PRACTICE) {
             rows.add(ui.listRow(R.drawable.ic_eye, getString(R.string.visibility_title),
                 getString(visibilityLabel(lineVisibility)), view -> showVisibilityOptions()));
+            boolean cue = preferences.getBoolean(TURN_CUE_PREFERENCE, true);
+            rows.add(ui.listRow(R.drawable.ic_volume, getString(R.string.turn_cue_title),
+                getString(cue ? R.string.turn_cue_on : R.string.turn_cue_off), ui.toggle(cue), view -> {
+                    preferences.edit().putBoolean(TURN_CUE_PREFERENCE, !cue).apply();
+                    render();
+                }));
         }
         if (hasNamedSections()) {
             rows.add(ui.listRow(R.drawable.ic_list, getString(R.string.scene_title),

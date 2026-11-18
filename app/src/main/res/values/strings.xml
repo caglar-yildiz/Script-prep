@@ -253,4 +253,7 @@
         <item quantity="one">%d missed</item>
         <item quantity="other">%d missed</item>
     </plurals>
+    <string name="turn_cue_title">Beep on my turn</string>
+    <string name="turn_cue_on">A short beep plays when it’s your line</string>
+    <string name="turn_cue_off">Off</string>
 </resources>

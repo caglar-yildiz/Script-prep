@@ -251,4 +251,7 @@
         <item quantity="one">%d kaçırılan</item>
         <item quantity="other">%d kaçırılan</item>
     </plurals>
+    <string name="turn_cue_title">Sıra bende bip sesi</string>
+    <string name="turn_cue_on">Sıra sana geldiğinde kısa bir bip çalar</string>
+    <string name="turn_cue_off">Kapalı</string>
 </resources>
