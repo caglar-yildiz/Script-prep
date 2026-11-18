@@ -361,6 +361,16 @@ final class Ui {
         return track;
     }
 
+    /** Moves a bar made by {@link #progress} without rebuilding it. */
+    static void setProgress(LinearLayout track, int done, int total) {
+        int safeTotal = Math.max(1, total);
+        int filled = Math.max(0, Math.min(done, safeTotal));
+        ((LinearLayout.LayoutParams) track.getChildAt(0).getLayoutParams()).weight = filled;
+        ((LinearLayout.LayoutParams) track.getChildAt(1).getLayoutParams()).weight = safeTotal - filled;
+        track.setWeightSum(safeTotal);
+        track.requestLayout();
+    }
+
     /** Background for text fields: filled surface, accent outline while focused. */
     Drawable fieldBackground() {
         StateListDrawable states = new StateListDrawable();

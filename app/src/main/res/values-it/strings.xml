@@ -265,10 +265,10 @@
     <string name="ai_voice_size">Download unico · circa %1$d MB</string>
     <string name="ai_voice_unsupported">Il processore di questo dispositivo non è supportato.</string>
     <string name="ai_voice_download">Scarica la voce IA</string>
-    <string name="ai_voice_download_message">Il modello vocale pesa circa %1$d MB. Usa il Wi-Fi se puoi e tieni l’app aperta fino alla fine del download. Durante il download serve circa il doppio dello spazio libero.</string>
+    <string name="ai_voice_download_message">Il modello vocale pesa circa %1$d MB. Usa il Wi-Fi se puoi. Il download avviene in background, quindi puoi continuare a usare l’app o chiuderla.</string>
     <string name="ai_voice_download_confirm">Scarica</string>
     <string name="ai_voice_downloading">Download in corso… %1$d%%</string>
-    <string name="ai_voice_keep_open">Tieni l’app aperta fino alla fine</string>
+    <string name="ai_voice_keep_open">Puoi uscire dall’app; il download continua in background</string>
     <string name="ai_voice_failed">Impossibile configurare la voce IA</string>
     <string name="ai_voice_retry">Tocca per riprovare. Nel frattempo viene usata la voce del dispositivo.</string>
     <string name="ai_voice_use">Usa la voce IA</string>
@@ -318,4 +318,6 @@
         <item quantity="many">%d mesi di prova gratuita</item>
         <item quantity="other">%d mesi di prova gratuita</item>
     </plurals>
+    <string name="ai_voice_notification">Voce IA di Memo Everything</string>
+    <string name="ai_voice_waiting">In attesa di connessione…</string>
 </resources>

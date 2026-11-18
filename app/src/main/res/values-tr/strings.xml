@@ -258,10 +258,10 @@
     <string name="ai_voice_size">Tek seferlik indirme · yaklaşık %1$d MB</string>
     <string name="ai_voice_unsupported">Bu cihazın işlemcisi desteklenmiyor.</string>
     <string name="ai_voice_download">Yapay zekâ sesini indir</string>
-    <string name="ai_voice_download_message">Ses modeli yaklaşık %1$d MB. Mümkünse Wi-Fi kullan ve indirme bitene kadar uygulamayı açık tut. İndirme sırasında bunun yaklaşık iki katı boş alan gerekir.</string>
+    <string name="ai_voice_download_message">Ses modeli yaklaşık %1$d MB. Mümkünse Wi-Fi kullan. İndirme arka planda sürer; uygulamayı kullanmaya devam edebilir ya da kapatabilirsin.</string>
     <string name="ai_voice_download_confirm">İndir</string>
     <string name="ai_voice_downloading">İndiriliyor… %%%1$d</string>
-    <string name="ai_voice_keep_open">Bitene kadar uygulamayı açık tut</string>
+    <string name="ai_voice_keep_open">Uygulamadan çıkabilirsin; indirme arka planda sürer</string>
     <string name="ai_voice_failed">Yapay zekâ sesi kurulamadı</string>
     <string name="ai_voice_retry">Yeniden denemek için dokun. Bu arada cihaz sesi kullanılır.</string>
     <string name="ai_voice_use">Yapay zekâ sesini kullan</string>
@@ -308,4 +308,6 @@
         <item quantity="one">%d ay ücretsiz deneme</item>
         <item quantity="other">%d ay ücretsiz deneme</item>
     </plurals>
+    <string name="ai_voice_notification">Memo Everything yapay zekâ sesi</string>
+    <string name="ai_voice_waiting">Bağlantı bekleniyor…</string>
 </resources>

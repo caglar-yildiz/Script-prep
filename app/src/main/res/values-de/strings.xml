@@ -258,10 +258,10 @@
     <string name="ai_voice_size">Einmaliger Download · etwa %1$d MB</string>
     <string name="ai_voice_unsupported">Der Prozessor dieses Geräts wird nicht unterstützt.</string>
     <string name="ai_voice_download">KI-Stimme herunterladen</string>
-    <string name="ai_voice_download_message">Das Stimmmodell ist etwa %1$d MB groß. Nutze nach Möglichkeit WLAN und lass die App geöffnet, bis der Download fertig ist. Währenddessen brauchst du etwa doppelt so viel freien Speicher.</string>
+    <string name="ai_voice_download_message">Das Stimmmodell ist etwa %1$d MB groß. Nutze nach Möglichkeit WLAN. Der Download läuft im Hintergrund, du kannst die App also weiter nutzen oder schließen.</string>
     <string name="ai_voice_download_confirm">Herunterladen</string>
     <string name="ai_voice_downloading">Wird heruntergeladen… %1$d %%</string>
-    <string name="ai_voice_keep_open">Lass die App geöffnet, bis es fertig ist</string>
+    <string name="ai_voice_keep_open">Du kannst die App verlassen; der Download läuft im Hintergrund weiter</string>
     <string name="ai_voice_failed">Die KI-Stimme konnte nicht eingerichtet werden</string>
     <string name="ai_voice_retry">Tippe, um es erneut zu versuchen. Bis dahin wird die Gerätestimme verwendet.</string>
     <string name="ai_voice_use">KI-Stimme verwenden</string>
@@ -308,4 +308,6 @@
         <item quantity="one">%d Monat kostenlos testen</item>
         <item quantity="other">%d Monate kostenlos testen</item>
     </plurals>
+    <string name="ai_voice_notification">Memo Everything KI-Stimme</string>
+    <string name="ai_voice_waiting">Warte auf Verbindung…</string>
 </resources>

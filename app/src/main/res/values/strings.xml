@@ -259,10 +259,10 @@
     <string name="ai_voice_size">One-time download · about %1$d MB</string>
     <string name="ai_voice_unsupported">This device’s processor isn’t supported.</string>
     <string name="ai_voice_download">Download the AI voice</string>
-    <string name="ai_voice_download_message">The voice model is about %1$d MB. Use Wi-Fi if you can and keep the app open until the download finishes. You need about twice as much free space while it downloads.</string>
+    <string name="ai_voice_download_message">The voice model is about %1$d MB. Use Wi-Fi if you can. It downloads in the background, so you can keep using the app or close it.</string>
     <string name="ai_voice_download_confirm">Download</string>
     <string name="ai_voice_downloading">Downloading… %1$d%%</string>
-    <string name="ai_voice_keep_open">Keep the app open until it finishes</string>
+    <string name="ai_voice_keep_open">You can leave the app; the download continues in the background</string>
     <string name="ai_voice_failed">The AI voice couldn’t be set up</string>
     <string name="ai_voice_retry">Tap to try again. The device voice is used in the meantime.</string>
     <string name="ai_voice_use">Use the AI voice</string>
@@ -314,4 +314,6 @@
         <item quantity="one">%d-month free trial</item>
         <item quantity="other">%d-month free trial</item>
     </plurals>
+    <string name="ai_voice_notification">Memo Everything AI voice</string>
+    <string name="ai_voice_waiting">Waiting for a connection…</string>
 </resources>

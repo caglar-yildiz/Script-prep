@@ -265,10 +265,10 @@
     <string name="ai_voice_size">Download único · cerca de %1$d MB</string>
     <string name="ai_voice_unsupported">O processador deste aparelho não é compatível.</string>
     <string name="ai_voice_download">Baixar a voz de IA</string>
-    <string name="ai_voice_download_message">O modelo de voz tem cerca de %1$d MB. Use Wi-Fi se puder e mantenha o app aberto até o download terminar. Durante o download, você precisa de cerca do dobro de espaço livre.</string>
+    <string name="ai_voice_download_message">O modelo de voz tem cerca de %1$d MB. Use Wi-Fi se puder. O download acontece em segundo plano, então você pode continuar usando o app ou fechá-lo.</string>
     <string name="ai_voice_download_confirm">Baixar</string>
     <string name="ai_voice_downloading">Baixando… %1$d%%</string>
-    <string name="ai_voice_keep_open">Mantenha o app aberto até terminar</string>
+    <string name="ai_voice_keep_open">Você pode sair do app; o download continua em segundo plano</string>
     <string name="ai_voice_failed">Não foi possível configurar a voz de IA</string>
     <string name="ai_voice_retry">Toque para tentar de novo. Enquanto isso, a voz do aparelho é usada.</string>
     <string name="ai_voice_use">Usar a voz de IA</string>
@@ -318,4 +318,6 @@
         <item quantity="many">%d meses de teste grátis</item>
         <item quantity="other">%d meses de teste grátis</item>
     </plurals>
+    <string name="ai_voice_notification">Voz de IA do Memo Everything</string>
+    <string name="ai_voice_waiting">Aguardando conexão…</string>
 </resources>

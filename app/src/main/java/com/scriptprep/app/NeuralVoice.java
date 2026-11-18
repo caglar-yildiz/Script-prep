@@ -1,6 +1,10 @@
 package com.scriptprep.app;
 
+import android.app.DownloadManager;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
@@ -104,11 +108,29 @@ final class NeuralVoice {
     private OfflineTts engine;
     private AudioTrack track;
     private Listener listener;
+    private Runnable progressListener;
+    private final SharedPreferences preferences;
+    /** System downloads in progress, as "file name=download id" pairs separated by commas. */
+    private static final String DOWNLOADS = "ai_voice_downloads";
+    private volatile boolean waitingForNetwork;
+    private final Runnable poll = this::pollDownloads;
 
     private NeuralVoice(Context context) {
         this.context = context.getApplicationContext();
-        folder = new File(this.context.getFilesDir(), FOLDER);
-        state = isInstalled() ? State.INSTALLED : State.NOT_INSTALLED;
+        preferences = this.context.getSharedPreferences("script_prep", Context.MODE_PRIVATE);
+        // App-specific external storage: the system download manager can write there, and it
+        // is removed with the app.
+        File external = this.context.getExternalFilesDir(null);
+        folder = new File(external != null ? external : this.context.getFilesDir(), FOLDER);
+        if (isInstalled()) {
+            state = State.INSTALLED;
+        } else if (!preferences.getString(DOWNLOADS, "").isEmpty()) {
+            // A download started earlier kept running in the background.
+            state = State.DOWNLOADING;
+            main.post(poll);
+        } else {
+            state = State.NOT_INSTALLED;
+        }
     }
 
     static synchronized NeuralVoice get(Context context) {
@@ -138,6 +160,16 @@ final class NeuralVoice {
 
     void setListener(Listener value) {
         listener = value;
+    }
+
+    /** Called on the main thread while bytes arrive, without a state change. */
+    void setProgressListener(Runnable value) {
+        progressListener = value;
+    }
+
+    /** The download is paused until a network connection is available. */
+    boolean isWaitingForNetwork() {
+        return waitingForNetwork;
     }
 
     State state() {
@@ -186,7 +218,12 @@ final class NeuralVoice {
             return;
         }
         cancelDownload = false;
+        waitingForNetwork = false;
         setState(State.DOWNLOADING);
+        if (startSystemDownloads()) {
+            main.post(poll);
+            return;
+        }
         network.execute(() -> {
             try {
                 installFiles();
@@ -214,6 +251,204 @@ final class NeuralVoice {
 
     void cancelDownload() {
         cancelDownload = true;
+        if (removeSystemDownloads()) {
+            main.removeCallbacks(poll);
+            setState(State.NOT_INSTALLED);
+        }
+    }
+
+    // ---------------------------------------------------------------- System downloads
+
+    /**
+     * Hands the files to the system download manager, which keeps going when the app is closed,
+     * shows its progress in the notification shade and resumes after connection drops.
+     */
+    private boolean startSystemDownloads() {
+        DownloadManager manager = context.getSystemService(DownloadManager.class);
+        if (manager == null || context.getExternalFilesDir(null) == null) {
+            return false;
+        }
+        if (!folder.isDirectory() && !folder.mkdirs()) {
+            return false;
+        }
+        long needed = 0;
+        for (ModelFile file : FILES) {
+            if (new File(folder, file.name).length() != file.size) {
+                needed += file.size;
+            }
+        }
+        if (folder.getUsableSpace() < needed + 32L * 1024 * 1024) {
+            lastError = "Not enough free space";
+            state = State.FAILED;
+            setState(State.FAILED);
+            return true;
+        }
+        StringBuilder ids = new StringBuilder();
+        try {
+            for (ModelFile file : FILES) {
+                if (new File(folder, file.name).length() == file.size) {
+                    continue;
+                }
+                File target = new File(folder, file.name + ".download");
+                if (target.exists() && !target.delete()) {
+                    Log.w(TAG, "Could not remove an old download");
+                }
+                DownloadManager.Request request = new DownloadManager.Request(Uri.parse(SOURCE + file.name))
+                    .setTitle(context.getString(R.string.ai_voice_notification))
+                    .setDescription(file.name)
+                    .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                    .setDestinationInExternalFilesDir(context, null, FOLDER + "/" + file.name + ".download")
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(false);
+                long id = manager.enqueue(request);
+                if (ids.length() > 0) {
+                    ids.append(',');
+                }
+                ids.append(file.name).append('=').append(id);
+            }
+        } catch (RuntimeException error) {
+            Log.w(TAG, "System download manager refused the request", error);
+            preferences.edit().putString(DOWNLOADS, ids.toString()).apply();
+            removeSystemDownloads();
+            return false;
+        }
+        preferences.edit().putString(DOWNLOADS, ids.toString()).apply();
+        if (ids.length() == 0) {
+            // Everything was already there; just verify and finish.
+            finishSystemDownloads(Collections.emptyMap());
+        }
+        return true;
+    }
+
+    private Map<String, Long> systemDownloads() {
+        Map<String, Long> ids = new LinkedHashMap<>();
+        for (String pair : preferences.getString(DOWNLOADS, "").split(",")) {
+            int split = pair.indexOf('=');
+            if (split > 0) {
+                try {
+                    ids.put(pair.substring(0, split), Long.parseLong(pair.substring(split + 1)));
+                } catch (NumberFormatException ignored) {
+                    // A damaged entry is skipped.
+                }
+            }
+        }
+        return ids;
+    }
+
+    /** Cancels running system downloads; returns whether there were any. */
+    private boolean removeSystemDownloads() {
+        Map<String, Long> ids = systemDownloads();
+        preferences.edit().remove(DOWNLOADS).apply();
+        DownloadManager manager = context.getSystemService(DownloadManager.class);
+        if (ids.isEmpty() || manager == null) {
+            return !ids.isEmpty();
+        }
+        long[] values = new long[ids.size()];
+        int index = 0;
+        for (long id : ids.values()) {
+            values[index++] = id;
+        }
+        manager.remove(values);
+        return true;
+    }
+
+    /** Checks the system downloads about once a second while they run. */
+    private void pollDownloads() {
+        Map<String, Long> ids = systemDownloads();
+        DownloadManager manager = context.getSystemService(DownloadManager.class);
+        if (ids.isEmpty() || manager == null || state != State.DOWNLOADING) {
+            return;
+        }
+        long[] values = new long[ids.size()];
+        int index = 0;
+        for (long id : ids.values()) {
+            values[index++] = id;
+        }
+        long bytes = 0;
+        int finished = 0;
+        boolean paused = false;
+        String failure = null;
+        try (Cursor cursor = manager.query(new DownloadManager.Query().setFilterById(values))) {
+            int found = 0;
+            while (cursor != null && cursor.moveToNext()) {
+                found++;
+                int status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));
+                long so = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR));
+                bytes += Math.max(0, so);
+                if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                    finished++;
+                } else if (status == DownloadManager.STATUS_FAILED) {
+                    failure = "Download error "
+                        + cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON));
+                } else if (status == DownloadManager.STATUS_PAUSED) {
+                    paused = true;
+                }
+            }
+            if (found < ids.size() && failure == null) {
+                // The user cancelled it from the notification or system settings.
+                failure = "Download was cancelled";
+            }
+        } catch (RuntimeException error) {
+            failure = describe(error);
+        }
+        for (ModelFile file : FILES) {
+            if (!ids.containsKey(file.name) && new File(folder, file.name).length() == file.size) {
+                bytes += file.size;
+            }
+        }
+        downloaded = bytes;
+        waitingForNetwork = paused;
+        if (failure != null) {
+            lastError = failure;
+            removeSystemDownloads();
+            setState(State.FAILED);
+            return;
+        }
+        if (finished == ids.size()) {
+            finishSystemDownloads(ids);
+            return;
+        }
+        Runnable progress = progressListener;
+        if (progress != null) {
+            progress.run();
+        }
+        main.postDelayed(poll, 1000);
+    }
+
+    /** Verifies every finished file before the model counts as installed. */
+    private void finishSystemDownloads(Map<String, Long> ids) {
+        network.execute(() -> {
+            try {
+                for (ModelFile file : FILES) {
+                    File target = new File(folder, file.name);
+                    if (target.length() == file.size && !ids.containsKey(file.name)) {
+                        continue;
+                    }
+                    File done = new File(folder, file.name + ".download");
+                    if (!file.sha256.equals(sha256(done))) {
+                        throw new IOException("Checksum mismatch for " + file.name);
+                    }
+                    if (target.exists() && !target.delete()) {
+                        throw new IOException("Could not replace " + file.name);
+                    }
+                    if (!done.renameTo(target)) {
+                        throw new IOException("Could not store " + file.name);
+                    }
+                }
+                File marker = new File(folder, ".complete");
+                if (!marker.exists() && !marker.createNewFile()) {
+                    throw new IOException("Could not mark the model as installed");
+                }
+                // The files have been moved, so this only clears the system's records.
+                main.post(this::removeSystemDownloads);
+                setState(State.INSTALLED);
+            } catch (IOException | RuntimeException error) {
+                Log.w(TAG, "Neural voice verification failed", error);
+                lastError = describe(error);
+                main.post(this::removeSystemDownloads);
+                setState(State.FAILED);
+            }
+        });
     }
 
     private void installFiles() throws IOException {
@@ -294,7 +529,10 @@ final class NeuralVoice {
                     downloaded = base + written;
                     if (downloaded - lastReport > 1_000_000) {
                         lastReport = downloaded;
-                        setState(State.DOWNLOADING);
+                        Runnable progress = progressListener;
+                        if (progress != null) {
+                            main.post(progress);
+                        }
                     }
                 }
                 downloaded = base + written;
@@ -334,6 +572,8 @@ final class NeuralVoice {
     void delete() {
         stop();
         cancelDownload = true;
+        main.removeCallbacks(poll);
+        removeSystemDownloads();
         synthesis.execute(() -> {
             releaseEngine();
             cache.clear();

@@ -136,6 +136,11 @@ public final class MainActivity extends Activity {
     private EditText titleField;
     private EditText editor;
     private View snackbarView;
+    private ScrollView scrollView;
+    private String scrollViewKey;
+    /** Download progress labels and bars, updated in place so the screen is not redrawn. */
+    private final List<TextView> downloadLabels = new ArrayList<>();
+    private final List<LinearLayout> downloadBars = new ArrayList<>();
 
     private TextToSpeech speech;
     private SpeechState speechState = SpeechState.LOADING;
@@ -190,6 +195,7 @@ public final class MainActivity extends Activity {
         library = new ScriptLibrary(preferences);
         neural = NeuralVoice.get(this);
         neural.setListener(this::onNeuralVoiceChanged);
+        neural.setProgressListener(this::updateDownloadProgress);
         billing = new Billing(this, preferences);
         billing.setListener(this::onBillingChanged);
         drawBehindSystemBars();
@@ -304,6 +310,7 @@ public final class MainActivity extends Activity {
     protected void onDestroy() {
         cancelSpeech();
         neural.setListener(null);
+        neural.setProgressListener(null);
         billing.end();
         if (isFinishing()) {
             neural.unload();
@@ -560,7 +567,17 @@ public final class MainActivity extends Activity {
         show(Screen.HOME);
     }
 
+    /**
+     * Identifies what the screen shows. Redrawing the same view keeps the scroll position;
+     * moving to another screen, tab, text or rehearsal line starts at the top.
+     */
+    private String scrollKey() {
+        return screen + "|" + tab + "|" + scriptId + "|" + sectionIndex
+            + (screen == Screen.REHEARSAL ? "|" + position : "");
+    }
+
     private void render() {
+        int keptScroll = scrollView != null && scrollKey().equals(scrollViewKey) ? scrollView.getScrollY() : 0;
         FrameLayout root = new FrameLayout(this);
         root.setBackgroundColor(BACKGROUND);
 
@@ -580,6 +597,8 @@ public final class MainActivity extends Activity {
         scroll.setClipToPadding(false);
         scroll.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
         body.addView(scroll, new FrameLayout.LayoutParams(-1, -1));
+        scrollView = scroll;
+        scrollViewKey = scrollKey();
 
         content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
@@ -597,6 +616,8 @@ public final class MainActivity extends Activity {
 
         titleField = null;
         editor = null;
+        downloadLabels.clear();
+        downloadBars.clear();
         snackbarView = null;
         switch (screen) {
             case HOME -> {
@@ -632,6 +653,9 @@ public final class MainActivity extends Activity {
             return insets;
         });
         setContentView(root);
+        if (keptScroll > 0) {
+            scroll.post(() -> scroll.scrollTo(0, keptScroll));
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -2826,17 +2850,7 @@ public final class MainActivity extends Activity {
             switch (neural.state()) {
                 case NOT_INSTALLED -> card.addView(ui.listRow(R.drawable.ic_star,
                     getString(R.string.ai_voice_download), size, view -> confirmAiDownload()), Ui.matchWidth());
-                case DOWNLOADING -> {
-                    LinearLayout row = ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_downloading,
-                        neural.progress()), getString(R.string.ai_voice_keep_open),
-                        ui.button(getString(android.R.string.cancel), 0, Kind.TEXT, view -> neural.cancelDownload()),
-                        null);
-                    card.addView(row, Ui.matchWidth());
-                    LinearLayout bar = ui.progress(neural.progress(), 100);
-                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, ui.dp(4));
-                    params.setMargins(ui.dp(16), 0, ui.dp(16), ui.dp(12));
-                    card.addView(bar, params);
-                }
+                case DOWNLOADING -> card.addView(downloadProgress(), Ui.matchWidth());
                 case FAILED -> {
                     card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
                         getString(R.string.ai_voice_failed_detail, neural.lastError()) + "\n"
@@ -2884,8 +2898,7 @@ public final class MainActivity extends Activity {
                 getString(R.string.ai_voice_tap_download, Math.round(NeuralVoice.downloadBytes() / 1_000_000.0)),
                 ui.chip(getString(R.string.ai_voice_download_confirm), ON_ACCENT_CONTAINER, ACCENT_CONTAINER),
                 view -> confirmAiDownload());
-            case DOWNLOADING -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
-                getString(R.string.ai_voice_downloading, neural.progress()), null, null);
+            case DOWNLOADING -> downloadProgress();
             case FAILED -> ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_failed),
                 getString(R.string.ai_voice_failed_detail, neural.lastError()) + "\n"
                     + getString(R.string.ai_voice_retry), view -> neural.retry());
@@ -2898,6 +2911,40 @@ public final class MainActivity extends Activity {
                     render();
                 });
         };
+    }
+
+    /** Download status that updates itself in place while the files arrive. */
+    private LinearLayout downloadProgress() {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout row = ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_title),
+            getString(R.string.ai_voice_keep_open),
+            ui.button(getString(android.R.string.cancel), 0, Kind.TEXT, view -> neural.cancelDownload()), null);
+        box.addView(row, Ui.matchWidth());
+        TextView label = ui.text("", Type.LABEL, ACCENT);
+        label.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
+        LinearLayout.LayoutParams labelParams = Ui.matchWidth();
+        labelParams.setMargins(ui.dp(16), 0, ui.dp(16), ui.dp(6));
+        box.addView(label, labelParams);
+        LinearLayout bar = ui.progress(0, 100);
+        LinearLayout.LayoutParams barParams = new LinearLayout.LayoutParams(-1, ui.dp(4));
+        barParams.setMargins(ui.dp(16), 0, ui.dp(16), ui.dp(12));
+        box.addView(bar, barParams);
+        downloadLabels.add(label);
+        downloadBars.add(bar);
+        updateDownloadProgress();
+        return box;
+    }
+
+    private void updateDownloadProgress() {
+        String text = neural.isWaitingForNetwork() ? getString(R.string.ai_voice_waiting)
+            : getString(R.string.ai_voice_downloading, neural.progress());
+        for (TextView label : downloadLabels) {
+            label.setText(text);
+        }
+        for (LinearLayout bar : downloadBars) {
+            Ui.setProgress(bar, neural.progress(), 100);
+        }
     }
 
     private void confirmAiDownload() {
