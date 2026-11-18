@@ -275,10 +275,9 @@
     <string name="ai_voice_on">La voz IA lee las réplicas del compañero</string>
     <string name="ai_voice_off">Desactivada · la voz del dispositivo lee las réplicas</string>
     <string name="ai_voice_loading">Preparando la voz IA…</string>
-    <string name="ai_voice_preview_detail">Escuchar la voz IA 1</string>
+    <string name="ai_voice_preview_detail">Escuchar a %1$s</string>
     <string name="ai_voice_delete">Eliminar la voz IA</string>
     <string name="ai_voice_delete_message">El modelo de voz se eliminará de este dispositivo. Puedes volver a descargarlo más tarde.</string>
-    <string name="ai_voice_option">Voz IA %1$d</string>
     <string name="cast_intro_ai">Elige una de las 10 voces IA y un ritmo para cada personaje. Toca reproducir para escucharlas.</string>
     <string name="licenses_title">Licencias</string>
     <string name="licenses_value">Software de código abierto y modelo de voz</string>
@@ -320,4 +319,30 @@
     </plurals>
     <string name="ai_voice_notification">Voz IA de Memo Everything</string>
     <string name="ai_voice_waiting">Esperando conexión…</string>
+    <string-array name="ai_voice_names">
+        <item>Elena</item>
+        <item>Lucía</item>
+        <item>Carmen</item>
+        <item>Sofía</item>
+        <item>Inés</item>
+        <item>Pablo</item>
+        <item>Javier</item>
+        <item>Andrés</item>
+        <item>Diego</item>
+        <item>Tomás</item>
+    </string-array>
+    <string-array name="ai_voice_traits">
+        <item>tranquila, algo grave</item>
+        <item>alegre y juvenil</item>
+        <item>clara, de locutora</item>
+        <item>firme y expresiva</item>
+        <item>amable y suave</item>
+        <item>animado y enérgico</item>
+        <item>grave y serio</item>
+        <item>pulido, con autoridad</item>
+        <item>suave y juvenil</item>
+        <item>cálido, narrador</item>
+    </string-array>
+    <string name="voice_female">Mujer</string>
+    <string name="voice_male">Hombre</string>
 </resources>

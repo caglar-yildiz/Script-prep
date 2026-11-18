@@ -275,10 +275,9 @@
     <string name="ai_voice_on">La voix IA lit les répliques du partenaire</string>
     <string name="ai_voice_off">Désactivée · la voix de l’appareil lit les répliques</string>
     <string name="ai_voice_loading">Préparation de la voix IA…</string>
-    <string name="ai_voice_preview_detail">Écouter la voix IA 1</string>
+    <string name="ai_voice_preview_detail">Écouter %1$s</string>
     <string name="ai_voice_delete">Supprimer la voix IA</string>
     <string name="ai_voice_delete_message">Le modèle de voix sera supprimé de cet appareil. Tu pourras le télécharger à nouveau plus tard.</string>
-    <string name="ai_voice_option">Voix IA %1$d</string>
     <string name="cast_intro_ai">Choisis l’une des 10 voix IA et un débit pour chaque personnage. Touche lire pour les écouter.</string>
     <string name="licenses_title">Licences</string>
     <string name="licenses_value">Logiciels open source et modèle de voix</string>
@@ -320,4 +319,30 @@
     </plurals>
     <string name="ai_voice_notification">Voix IA de Memo Everything</string>
     <string name="ai_voice_waiting">En attente de connexion…</string>
+    <string-array name="ai_voice_names">
+        <item>Élise</item>
+        <item>Chloé</item>
+        <item>Camille</item>
+        <item>Manon</item>
+        <item>Juliette</item>
+        <item>Hugo</item>
+        <item>Louis</item>
+        <item>Antoine</item>
+        <item>Théo</item>
+        <item>Bernard</item>
+    </string-array>
+    <string-array name="ai_voice_traits">
+        <item>calme, un peu grave</item>
+        <item>vive et enjouée</item>
+        <item>claire, voix d’annonce</item>
+        <item>nette et assurée</item>
+        <item>douce et bienveillante</item>
+        <item>vif et enjoué</item>
+        <item>grave et sérieux</item>
+        <item>posé, plein d’autorité</item>
+        <item>doux et jeune</item>
+        <item>chaleureux, conteur</item>
+    </string-array>
+    <string name="voice_female">Femme</string>
+    <string name="voice_male">Homme</string>
 </resources>

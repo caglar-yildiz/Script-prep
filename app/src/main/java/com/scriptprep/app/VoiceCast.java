@@ -71,6 +71,8 @@ final class VoiceCast {
 
     private static final String PREFIX = "voice_cast_";
     private static final Tone[] TONE_CYCLE = {Tone.NORMAL, Tone.LOW, Tone.HIGH};
+    /** AI speakers in turns of female (0–4) and male (5–9) so neighbouring characters differ. */
+    private static final int[] AI_ORDER = {0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
 
     private VoiceCast() {}
 
@@ -84,7 +86,7 @@ final class VoiceCast {
             String voice = voices.isEmpty() || i == 0 ? "" : voices.get((i - 1) % voices.size());
             int round = voices.isEmpty() ? i : i / (voices.size() + 1);
             // Tone only shapes device voices; the AI voice has ten distinct speakers instead.
-            cast.put(roles.get(i), new Part(voice, i % NeuralVoice.SPEAKERS,
+            cast.put(roles.get(i), new Part(voice, AI_ORDER[i % AI_ORDER.length],
                 TONE_CYCLE[round % TONE_CYCLE.length], Pace.NORMAL));
         }
         return cast;

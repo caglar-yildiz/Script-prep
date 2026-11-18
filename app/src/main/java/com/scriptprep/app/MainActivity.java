@@ -2633,12 +2633,17 @@ public final class MainActivity extends Activity {
             voiceRow.setPadding(0, ui.dp(4), ui.dp(8), 0);
             voiceRow.addView(ui.text(getString(R.string.cast_voice), Type.LABEL, TEXT_SECONDARY),
                 new LinearLayout.LayoutParams(ui.dp(56), -2));
-            LinearLayout picker = ui.button(ai ? getString(R.string.ai_voice_option, part.speaker + 1)
-                : voiceLabel(part.voice), ai ? R.drawable.ic_star : R.drawable.ic_volume, Kind.TONAL,
+            LinearLayout picker = ui.button(ai ? aiVoiceName(part.speaker) + " · " + aiVoiceGender(part.speaker)
+                : voiceLabel(part.voice), ai ? 0 : R.drawable.ic_volume, Kind.TONAL,
                 view -> chooseCharacterVoice(character));
             picker.setMinimumHeight(ui.dp(44));
             voiceRow.addView(picker, new LinearLayout.LayoutParams(0, -2, 1));
             card.addView(voiceRow, ui.spaced(4));
+            if (ai) {
+                TextView trait = ui.text(aiVoiceTrait(part.speaker), Type.CAPTION, TEXT_TERTIARY);
+                trait.setPadding(ui.dp(56), ui.dp(4), 0, 0);
+                card.addView(trait, Ui.matchWidth());
+            }
 
             if (!ai) {
                 VoiceCast.Tone[] tones = VoiceCast.Tone.values();
@@ -2694,9 +2699,15 @@ public final class MainActivity extends Activity {
 
     private void chooseCharacterVoice(String character) {
         if (useAiVoice()) {
-            String[] speakers = new String[NeuralVoice.SPEAKERS];
+            CharSequence[] speakers = new CharSequence[NeuralVoice.SPEAKERS];
             for (int i = 0; i < speakers.length; i++) {
-                speakers[i] = getString(R.string.ai_voice_option, i + 1);
+                SpannableStringBuilder item = new SpannableStringBuilder(aiVoiceName(i)).append('\n');
+                int start = item.length();
+                item.append(aiVoiceGender(i)).append(" · ").append(aiVoiceTrait(i));
+                item.setSpan(new RelativeSizeSpan(0.82f), start, item.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                item.setSpan(new ForegroundColorSpan(TEXT_SECONDARY), start, item.length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                speakers[i] = item;
             }
             new AlertDialog.Builder(this).setTitle(getString(R.string.cast_voice_for, character))
                 .setSingleChoiceItems(speakers, currentCast().get(character).speaker, (dialog, index) -> {
@@ -2869,7 +2880,7 @@ public final class MainActivity extends Activity {
                             render();
                         }), Ui.matchWidth());
                     card.addView(ui.divider(70));
-                    String status = neural.isReady() ? getString(R.string.ai_voice_preview_detail)
+                    String status = neural.isReady() ? getString(R.string.ai_voice_preview_detail, aiVoiceName(0))
                         : getString(R.string.ai_voice_loading);
                     card.addView(ui.listRow(R.drawable.ic_play, getString(R.string.voice_preview), status,
                         view -> previewAiVoice(0)), Ui.matchWidth());
@@ -2880,6 +2891,22 @@ public final class MainActivity extends Activity {
             }
         }
         content.addView(card, ui.spaced(12));
+    }
+
+    /** Premium AI voices are named and marked with a star; the names follow the app language. */
+    private String aiVoiceName(int speaker) {
+        String[] names = getResources().getStringArray(R.array.ai_voice_names);
+        return "★ " + names[Math.max(0, Math.min(names.length - 1, speaker))];
+    }
+
+    /** Speakers 0–4 are Supertonic's female voices F1–F5, 5–9 the male voices M1–M5. */
+    private String aiVoiceGender(int speaker) {
+        return getString(speaker < NeuralVoice.SPEAKERS / 2 ? R.string.voice_female : R.string.voice_male);
+    }
+
+    private String aiVoiceTrait(int speaker) {
+        String[] traits = getResources().getStringArray(R.array.ai_voice_traits);
+        return traits[Math.max(0, Math.min(traits.length - 1, speaker))];
     }
 
     /** Practice options row: which voice reads the lines, with the next step to improve it. */
