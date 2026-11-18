@@ -51,13 +51,17 @@ Arayüz Türkçe, İngilizce, İspanyolca, Almanca, Fransızca, Portekizce (Brez
 
 ### Premium
 
-Satın alma henüz Google Play'e bağlı değil. Debug derlemelerinde **Premium** sekmesindeki **Premium'a geç / Ücretsiz plana dön** düğmesiyle iki plan da cihazda denenebilir (release derlemelerinde bu düğme görünmez). Premium açıkken prova seçeneklerinde:
+Premium, Google Play aboneliğiyle açılır. Debug derlemelerinde **Premium** sekmesinin altındaki **Test modu** kartından Premium satın almadan açılıp kapatılabilir (release derlemelerinde bu kart görünmez). Premium açıkken prova seçeneklerinde:
 
 - **Karakter sesleri:** Her karaktere ayrı Türkçe ses, ton (kalın/normal/ince) ve hız. Varsayılan dağıtım otomatik; seçimler metin başına kaydedilir.
 - **Sesle otomatik ilerleme:** Sıra sendeyken mikrofon dinler; repliğin en az %60'ı duyulunca prova kendiliğinden ilerler. Mikrofon izni gerekir; tanıma yoksa **Devam et** düğmesi çalışmaya devam eder.
 - **Ayrıntılı prova sonuçları:** İpucu açılan, geri dönülen ve eksik söylenen replikler sahne sonunda listelenir; **Bu replikleri çalış** yalnızca onları ipucu replikleriyle birlikte prova ettirir.
 - **Yapay zekâ sesi:** [Supertonic 3](https://huggingface.co/Supertone/supertonic-3) (OpenRAIL-M) modeli [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx) ile cihazda çalışır. **Ayarlar → Yapay zekâ sesi** ile bir kez indirilir (~145 MB, SHA-256 ile doğrulanır), sonra çevrimdışıdır. 10 farklı Türkçe ses karakterlere dağıtılır; sıradaki partner replikleri önceden üretilir. Model yüklenemezse cihaz sesine geri dönülür.
 - **Kamera provası:** Ön/arka kamerayla self-tape; üstte teleprompter, partner replikleri sesli okunur (kapatılabilir), son replikten sonra 2 sn kayıt payı. Videolar **Filmler › Memo Everything** klasörüne kaydedilir.
+
+### Google Play
+
+Uygulama kimliği `com.memoeverything.app`. Premium, Google Play Billing ile aylık (`monthly`) ve yıllık (`yearly`) temel planları olan `memo_premium` aboneliğidir. İmzalı App Bundle, `v*` etiketiyle tetiklenen **Release bundle** iş akışında üretilir. Yayın adımları, Play Console ayarları ve 7 dilde mağaza metinleri: [docs/play-store.md](docs/play-store.md). Gizlilik politikası taslağı: [docs/privacy-policy.md](docs/privacy-policy.md).
 
 ### Metin ayrıştırma
 

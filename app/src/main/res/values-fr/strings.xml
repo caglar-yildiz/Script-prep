@@ -116,7 +116,6 @@
     <string name="onboarding_add">Ajoute un texte, un discours ou un poème</string>
     <string name="onboarding_role">Choisis le rôle que tu apprends</string>
     <string name="onboarding_rehearse">Répète avec un partenaire vocal</string>
-    <string name="coming_soon">Bientôt</string>
     <string name="premium_headline">Répète comme avec toute la troupe</string>
     <string name="premium_features">Ce qui est inclus</string>
     <string name="settings_general">Général</string>
@@ -289,4 +288,34 @@
     <string name="ai_voice_playing">La voix IA lit la réplique…</string>
     <string name="text_language">Langue du texte</string>
     <string name="voice_language">Langue de la voix</string>
+    <string name="premium_choose_plan">Choisis ton offre</string>
+    <string name="plan_monthly">Mensuel</string>
+    <string name="plan_yearly">Annuel</string>
+    <string name="plan_best_value">Meilleur prix</string>
+    <string name="price_per_week">%1$s / semaine</string>
+    <string name="price_per_month">%1$s / mois</string>
+    <string name="price_per_year">%1$s / an</string>
+    <string name="billing_loading">Chargement des offres Google Play…</string>
+    <string name="billing_unavailable">Impossible de charger les offres. Vérifie que tu es connecté à Google Play et à Internet.</string>
+    <string name="billing_retry">Réessayer</string>
+    <string name="billing_pending">Ton paiement est en attente. Premium sera débloqué dès que Google Play l’aura confirmé.</string>
+    <string name="billing_restore">Restaurer les achats</string>
+    <string name="billing_manage">Gérer l’abonnement</string>
+    <string name="billing_terms">L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies. Tu peux le résilier à tout moment dans Google Play.</string>
+    <string name="billing_failed">Impossible d’ouvrir Google Play. Réessaie.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d jour d’essai gratuit</item>
+        <item quantity="many">%d jours d’essai gratuit</item>
+        <item quantity="other">%d jours d’essai gratuit</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d semaine d’essai gratuit</item>
+        <item quantity="many">%d semaines d’essai gratuit</item>
+        <item quantity="other">%d semaines d’essai gratuit</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d mois d’essai gratuit</item>
+        <item quantity="many">%d mois d’essai gratuit</item>
+        <item quantity="other">%d mois d’essai gratuit</item>
+    </plurals>
 </resources>

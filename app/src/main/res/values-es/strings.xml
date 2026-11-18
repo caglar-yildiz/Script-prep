@@ -116,7 +116,6 @@
     <string name="onboarding_add">Añade un guion, discurso o poema</string>
     <string name="onboarding_role">Elige el papel que estás aprendiendo</string>
     <string name="onboarding_rehearse">Ensaya con un compañero de voz</string>
-    <string name="coming_soon">Próximamente</string>
     <string name="premium_headline">Ensaya como si tuvieras todo el reparto</string>
     <string name="premium_features">Qué incluye</string>
     <string name="settings_general">General</string>
@@ -289,4 +288,34 @@
     <string name="ai_voice_playing">La voz IA está leyendo la réplica…</string>
     <string name="text_language">Idioma del texto</string>
     <string name="voice_language">Idioma de la voz</string>
+    <string name="premium_choose_plan">Elige tu plan</string>
+    <string name="plan_monthly">Mensual</string>
+    <string name="plan_yearly">Anual</string>
+    <string name="plan_best_value">Mejor precio</string>
+    <string name="price_per_week">%1$s / semana</string>
+    <string name="price_per_month">%1$s / mes</string>
+    <string name="price_per_year">%1$s / año</string>
+    <string name="billing_loading">Cargando planes de Google Play…</string>
+    <string name="billing_unavailable">No se pudieron cargar los planes. Comprueba que has iniciado sesión en Google Play y que tienes conexión.</string>
+    <string name="billing_retry">Reintentar</string>
+    <string name="billing_pending">Tu pago está pendiente. Premium se activará en cuanto Google Play lo confirme.</string>
+    <string name="billing_restore">Restaurar compras</string>
+    <string name="billing_manage">Gestionar suscripción</string>
+    <string name="billing_terms">La suscripción se renueva automáticamente hasta que la canceles. Puedes cancelarla cuando quieras en Google Play.</string>
+    <string name="billing_failed">No se pudo abrir Google Play. Inténtalo de nuevo.</string>
+    <plurals name="trial_days">
+        <item quantity="one">Prueba gratis de %d día</item>
+        <item quantity="many">Prueba gratis de %d días</item>
+        <item quantity="other">Prueba gratis de %d días</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">Prueba gratis de %d semana</item>
+        <item quantity="many">Prueba gratis de %d semanas</item>
+        <item quantity="other">Prueba gratis de %d semanas</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">Prueba gratis de %d mes</item>
+        <item quantity="many">Prueba gratis de %d meses</item>
+        <item quantity="other">Prueba gratis de %d meses</item>
+    </plurals>
 </resources>

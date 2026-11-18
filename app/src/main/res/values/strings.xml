@@ -117,7 +117,6 @@
     <string name="onboarding_add">Add a script, speech or poem</string>
     <string name="onboarding_role">Pick the part you’re learning</string>
     <string name="onboarding_rehearse">Rehearse with a voice partner</string>
-    <string name="coming_soon">Coming soon</string>
     <string name="premium_headline">Rehearse like you have a full cast</string>
     <string name="premium_features">What’s included</string>
     <string name="settings_general">General</string>
@@ -288,4 +287,31 @@
     <string name="language_french" translatable="false">Français</string>
     <string name="language_portuguese" translatable="false">Português</string>
     <string name="language_italian" translatable="false">Italiano</string>
+    <string name="premium_choose_plan">Choose your plan</string>
+    <string name="plan_monthly">Monthly</string>
+    <string name="plan_yearly">Yearly</string>
+    <string name="plan_best_value">Best value</string>
+    <string name="price_per_week">%1$s / week</string>
+    <string name="price_per_month">%1$s / month</string>
+    <string name="price_per_year">%1$s / year</string>
+    <string name="billing_loading">Loading plans from Google Play…</string>
+    <string name="billing_unavailable">Plans couldn’t be loaded. Make sure you’re signed in to Google Play and online.</string>
+    <string name="billing_retry">Try again</string>
+    <string name="billing_pending">Your payment is pending. Premium unlocks as soon as Google Play confirms it.</string>
+    <string name="billing_restore">Restore purchases</string>
+    <string name="billing_manage">Manage subscription</string>
+    <string name="billing_terms">The subscription renews automatically until you cancel. You can cancel anytime in Google Play.</string>
+    <string name="billing_failed">Couldn’t open Google Play. Try again.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d-day free trial</item>
+        <item quantity="other">%d-day free trial</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d-week free trial</item>
+        <item quantity="other">%d-week free trial</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d-month free trial</item>
+        <item quantity="other">%d-month free trial</item>
+    </plurals>
 </resources>

@@ -118,6 +118,7 @@ public final class MainActivity extends Activity {
     private HandsFree handsFree;
     private ToneGenerator turnCue;
     private NeuralVoice neural;
+    private Billing billing;
     private boolean listening;
     private boolean listeningPaused;
     private String heardSoFar = "";
@@ -189,6 +190,8 @@ public final class MainActivity extends Activity {
         library = new ScriptLibrary(preferences);
         neural = NeuralVoice.get(this);
         neural.setListener(this::onNeuralVoiceChanged);
+        billing = new Billing(this, preferences);
+        billing.setListener(this::onBillingChanged);
         drawBehindSystemBars();
         if (state != null) {
             script = state.getString("script", "");
@@ -246,6 +249,8 @@ public final class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         visible = true;
+        // Subscriptions can change outside the app, for example a cancellation in Google Play.
+        billing.connect();
         if (screen == Screen.REHEARSAL) {
             main.post(this::listenIfNeeded);
         }
@@ -299,6 +304,7 @@ public final class MainActivity extends Activity {
     protected void onDestroy() {
         cancelSpeech();
         neural.setListener(null);
+        billing.end();
         if (isFinishing()) {
             neural.unload();
         }
@@ -2328,7 +2334,7 @@ public final class MainActivity extends Activity {
     }
 
     private void setPremium(boolean active) {
-        Premium.setActive(preferences, active);
+        Premium.setTesting(preferences, active);
         if (!active) {
             stopListening();
         }
@@ -2338,6 +2344,7 @@ public final class MainActivity extends Activity {
 
     private void renderPremium() {
         boolean active = premium();
+        boolean purchased = Premium.isPurchased(preferences);
         pageTitle(getString(R.string.app_name), getString(R.string.premium_tab), null);
 
         LinearLayout hero = new LinearLayout(this);
@@ -2347,35 +2354,22 @@ public final class MainActivity extends Activity {
         LinearLayout top = horizontal();
         top.addView(ui.iconTile(active ? R.drawable.ic_check : R.drawable.ic_star, ACCENT, ACCENT_CONTAINER, 44));
         top.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1));
-        boolean testable = Premium.canSwitchForTesting(this);
-        if (active || !testable) {
-            top.addView(ui.chip(getString(active ? R.string.premium_active_chip : R.string.coming_soon),
-                ON_ACCENT_CONTAINER, ACCENT_CONTAINER));
+        if (active) {
+            top.addView(ui.chip(getString(R.string.premium_active_chip), ON_ACCENT_CONTAINER, ACCENT_CONTAINER));
         }
         hero.addView(top, Ui.matchWidth());
         hero.addView(ui.text(getString(active ? R.string.premium_active_title : R.string.premium_headline),
             Type.HEADLINE, TEXT), ui.spaced(18));
         hero.addView(ui.text(getString(active ? R.string.premium_active_description : R.string.premium_description),
             Type.BODY_LARGE, TEXT_SECONDARY), ui.spaced(6));
-        if (testable) {
-            LinearLayout switchPlan = ui.button(getString(active ? R.string.premium_switch_off
-                : R.string.premium_switch_on), active ? 0 : R.drawable.ic_star,
-                active ? Kind.OUTLINE : Kind.PRIMARY, view -> setPremium(!active));
-            hero.addView(switchPlan, ui.spaced(20));
+        if (purchased) {
+            hero.addView(ui.button(getString(R.string.billing_manage), 0, Kind.OUTLINE,
+                view -> manageSubscription()), ui.spaced(20));
         }
         content.addView(hero, ui.spaced(20));
 
-        if (testable) {
-            LinearLayout note = ui.card(SURFACE, null);
-            note.setOrientation(LinearLayout.HORIZONTAL);
-            note.addView(ui.icon(R.drawable.ic_info, TEXT_SECONDARY, 20));
-            LinearLayout labels = new LinearLayout(this);
-            labels.setOrientation(LinearLayout.VERTICAL);
-            labels.addView(ui.text(getString(R.string.premium_test_title), Type.SUBTITLE, TEXT));
-            labels.addView(ui.text(getString(R.string.premium_test_description), Type.BODY, TEXT_SECONDARY),
-                ui.spaced(2));
-            note.addView(labels, weighted(12, ui));
-            content.addView(note, ui.spaced(12));
+        if (!active) {
+            renderPlans();
         }
 
         sectionLabel(R.string.premium_features);
@@ -2389,6 +2383,151 @@ public final class MainActivity extends Activity {
         if (active) {
             TextView where = ui.text(getString(R.string.premium_where), Type.BODY, TEXT_TERTIARY);
             content.addView(where, ui.spaced(12));
+        }
+
+        if (Premium.canSwitchForTesting(this)) {
+            boolean testing = Premium.isTesting(preferences);
+            LinearLayout note = ui.card(SURFACE, null);
+            LinearLayout heading = horizontal();
+            heading.addView(ui.icon(R.drawable.ic_info, TEXT_SECONDARY, 20));
+            TextView title = ui.text(getString(R.string.premium_test_title), Type.SUBTITLE, TEXT);
+            heading.addView(title, weighted(12, ui));
+            note.addView(heading, Ui.matchWidth());
+            note.addView(ui.text(getString(R.string.premium_test_description), Type.BODY, TEXT_SECONDARY),
+                ui.spaced(6));
+            note.addView(ui.button(getString(testing ? R.string.premium_switch_off : R.string.premium_switch_on),
+                0, Kind.TONAL, view -> setPremium(!testing)), ui.wrapSpaced(12));
+            content.addView(note, ui.spaced(24));
+        }
+    }
+
+    /** The subscription plans from Google Play, or why they cannot be shown. */
+    private void renderPlans() {
+        sectionLabel(R.string.premium_choose_plan);
+        Billing.Status status = billing.status();
+        Billing.Plan yearly = billing.plan(Billing.YEARLY);
+        Billing.Plan monthly = billing.plan(Billing.MONTHLY);
+        if (billing.isPending()) {
+            content.addView(ui.text(getString(R.string.billing_pending), Type.BODY_LARGE, ON_ACCENT_CONTAINER),
+                ui.spaced(10));
+        }
+        if (yearly == null && monthly == null) {
+            LinearLayout card = ui.card(SURFACE, null);
+            card.setOrientation(LinearLayout.HORIZONTAL);
+            card.setGravity(Gravity.CENTER_VERTICAL);
+            boolean loading = status == Billing.Status.CONNECTING;
+            if (loading) {
+                ProgressBar spinner = new ProgressBar(this);
+                spinner.setIndeterminateTintList(ColorStateList.valueOf(ACCENT));
+                card.addView(spinner, new LinearLayout.LayoutParams(ui.dp(24), ui.dp(24)));
+            }
+            TextView message = ui.text(getString(loading ? R.string.billing_loading : R.string.billing_unavailable),
+                Type.BODY, TEXT_SECONDARY);
+            card.addView(message, weighted(loading ? 14 : 0, ui));
+            if (!loading) {
+                card.addView(ui.button(getString(R.string.billing_retry), 0, Kind.TEXT, view -> {
+                    billing.connect();
+                    render();
+                }));
+            }
+            content.addView(card, ui.spaced(10));
+        } else {
+            if (yearly != null) {
+                content.addView(planCard(yearly, R.string.plan_yearly, true), ui.spaced(10));
+            }
+            if (monthly != null) {
+                content.addView(planCard(monthly, R.string.plan_monthly, false), ui.spaced(10));
+            }
+        }
+        LinearLayout restore = ui.button(getString(R.string.billing_restore), 0, Kind.TEXT, view -> {
+            billing.restore();
+            notifyUser(R.string.billing_loading);
+        });
+        content.addView(restore, ui.wrapSpaced(6));
+        TextView terms = ui.text(getString(R.string.billing_terms), Type.CAPTION, TEXT_TERTIARY);
+        terms.setPadding(ui.dp(4), 0, ui.dp(4), 0);
+        content.addView(terms, ui.spaced(2));
+    }
+
+    private LinearLayout planCard(Billing.Plan plan, int name, boolean highlight) {
+        LinearLayout card = ui.card(highlight ? ACCENT_CONTAINER : SURFACE, view -> {
+            if (!billing.purchase(this, plan)) {
+                notifyUser(R.string.billing_failed);
+            }
+        });
+        if (highlight) {
+            card.setBackground(ui.ripple(ui.outlined(ACCENT_CONTAINER, 20, 0x80F4A98A), 0x22FFFFFF));
+        }
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.setPadding(ui.dp(18), ui.dp(16), ui.dp(12), ui.dp(16));
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout heading = horizontal();
+        heading.addView(ui.text(getString(name), Type.TITLE, highlight ? ON_ACCENT_CONTAINER : TEXT));
+        if (highlight) {
+            TextView best = ui.chip(getString(R.string.plan_best_value), Ui.ON_ACCENT, ACCENT);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, -2);
+            params.leftMargin = ui.dp(8);
+            heading.addView(best, params);
+        }
+        labels.addView(heading);
+        labels.addView(ui.text(priceLabel(plan), Type.BODY_LARGE, highlight ? ON_ACCENT_CONTAINER : TEXT_SECONDARY),
+            ui.spaced(4));
+        String trial = trialLabel(plan.trial);
+        if (trial != null) {
+            labels.addView(ui.text(trial, Type.LABEL, ACCENT), ui.spaced(4));
+        }
+        card.addView(labels, new LinearLayout.LayoutParams(0, -2, 1));
+        card.addView(ui.icon(R.drawable.ic_chevron_right, highlight ? ON_ACCENT_CONTAINER : TEXT_TERTIARY, 22));
+        card.setContentDescription(getString(name) + ", " + priceLabel(plan) + (trial == null ? "" : ", " + trial));
+        return card;
+    }
+
+    private String priceLabel(Billing.Plan plan) {
+        int[] period = Billing.duration(plan.period);
+        if (period == null || period[0] != 1) {
+            return plan.price;
+        }
+        return switch ((char) period[1]) {
+            case 'W' -> getString(R.string.price_per_week, plan.price);
+            case 'M' -> getString(R.string.price_per_month, plan.price);
+            case 'Y' -> getString(R.string.price_per_year, plan.price);
+            default -> plan.price;
+        };
+    }
+
+    private String trialLabel(String period) {
+        int[] trial = Billing.duration(period);
+        if (trial == null) {
+            return null;
+        }
+        int amount = trial[0];
+        return switch ((char) trial[1]) {
+            case 'D' -> getResources().getQuantityString(R.plurals.trial_days, amount, amount);
+            case 'W' -> getResources().getQuantityString(R.plurals.trial_weeks, amount, amount);
+            case 'M' -> getResources().getQuantityString(R.plurals.trial_months, amount, amount);
+            default -> null;
+        };
+    }
+
+    private void manageSubscription() {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(
+            "https://play.google.com/store/account/subscriptions?sku=" + Billing.PRODUCT
+                + "&package=" + getPackageName()));
+        try {
+            startActivity(intent);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.billing_failed);
+        }
+    }
+
+    private void onBillingChanged() {
+        if (!premium()) {
+            stopListening();
+        }
+        if ((screen == Screen.HOME && (tab == Tab.PREMIUM || tab == Tab.SETTINGS)) || screen == Screen.SETUP) {
+            render();
         }
     }
 

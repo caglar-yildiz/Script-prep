@@ -38,14 +38,45 @@ android {
     buildToolsVersion = "36.0.0"
 
     defaultConfig {
-        applicationId = "com.scriptprep.app"
+        // The store identity; the Java package keeps its original name.
+        applicationId = "com.memoeverything.app"
         minSdk = 23
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.2.0"
+        // Release builds get these from the release workflow so every upload counts up.
+        versionCode = (System.getenv("VERSION_CODE") ?: "2").toInt()
+        versionName = System.getenv("VERSION_NAME") ?: "0.3.0"
         ndk {
             // Phones (arm) and the common emulator image; 32-bit x86 is left out to save space.
             abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+    }
+
+    // Release signing uses the upload key from the environment (see .github/workflows/release.yml).
+    val releaseKeystore = System.getenv("RELEASE_KEYSTORE_PATH")
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword = System.getenv("RELEASE_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            if (releaseKeystore != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
+    bundle {
+        language {
+            // The app switches its own language, so every translation must be installed.
+            enableSplit = false
         }
     }
 
@@ -65,8 +96,13 @@ android {
 }
 
 dependencies {
-    implementation("com.tom-roush:pdfbox-android:2.0.27.0")
+    implementation("com.tom-roush:pdfbox-android:2.0.27.0") {
+        // Only needed for certificate-encrypted PDFs, which are not supported; it also ships
+        // trust-all TLS helpers that Google Play's security scan flags.
+        exclude(group = "org.bouncycastle", module = "bcpkix-jdk15to18")
+    }
     implementation(files(sherpaOnnxAar))
     // The sherpa-onnx bindings are written in Kotlin.
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
+    implementation("com.android.billingclient:billing:9.1.0")
 }

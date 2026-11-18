@@ -116,7 +116,6 @@
     <string name="onboarding_add">Oyun, konuşma veya şiir metni ekle</string>
     <string name="onboarding_role">Çalışacağın rolü seç</string>
     <string name="onboarding_rehearse">Sesli bir partnerle prova yap</string>
-    <string name="coming_soon">Yakında</string>
     <string name="premium_headline">Tüm oyuncu kadrosu yanındaymış gibi çalış</string>
     <string name="premium_features">Neler var</string>
     <string name="settings_general">Genel</string>
@@ -282,4 +281,31 @@
     <string name="ai_voice_playing">Replik yapay zekâ sesiyle okunuyor…</string>
     <string name="text_language">Metin dili</string>
     <string name="voice_language">Ses dili</string>
+    <string name="premium_choose_plan">Planını seç</string>
+    <string name="plan_monthly">Aylık</string>
+    <string name="plan_yearly">Yıllık</string>
+    <string name="plan_best_value">En avantajlı</string>
+    <string name="price_per_week">%1$s / hafta</string>
+    <string name="price_per_month">%1$s / ay</string>
+    <string name="price_per_year">%1$s / yıl</string>
+    <string name="billing_loading">Planlar Google Play’den yükleniyor…</string>
+    <string name="billing_unavailable">Planlar yüklenemedi. Google Play’de oturum açtığından ve internete bağlı olduğundan emin ol.</string>
+    <string name="billing_retry">Yeniden dene</string>
+    <string name="billing_pending">Ödemen bekleniyor. Google Play onayladığı anda Premium açılır.</string>
+    <string name="billing_restore">Satın alımları geri yükle</string>
+    <string name="billing_manage">Aboneliği yönet</string>
+    <string name="billing_terms">Abonelik sen iptal edene kadar otomatik yenilenir. İstediğin zaman Google Play’den iptal edebilirsin.</string>
+    <string name="billing_failed">Google Play açılamadı. Yeniden dene.</string>
+    <plurals name="trial_days">
+        <item quantity="one">%d gün ücretsiz deneme</item>
+        <item quantity="other">%d gün ücretsiz deneme</item>
+    </plurals>
+    <plurals name="trial_weeks">
+        <item quantity="one">%d hafta ücretsiz deneme</item>
+        <item quantity="other">%d hafta ücretsiz deneme</item>
+    </plurals>
+    <plurals name="trial_months">
+        <item quantity="one">%d ay ücretsiz deneme</item>
+        <item quantity="other">%d ay ücretsiz deneme</item>
+    </plurals>
 </resources>
