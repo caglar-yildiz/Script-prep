@@ -109,6 +109,15 @@ final class VoiceCast {
         preferences.edit().putString(PREFIX + key, toJson(cast)).apply();
     }
 
+    /** The stored cast of a text as saved, for backups; null when it has none. */
+    static String raw(SharedPreferences preferences, String key) {
+        return preferences.getString(PREFIX + key, null);
+    }
+
+    static void putRaw(SharedPreferences preferences, String key, String json) {
+        preferences.edit().putString(PREFIX + key, json).apply();
+    }
+
     static void reset(SharedPreferences preferences, String key) {
         preferences.edit().remove(PREFIX + key).apply();
     }

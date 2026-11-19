@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 and older: back up the texts and settings only, not the AI voice model. -->
+<full-backup-content>
+    <include domain="sharedpref" path="script_prep.xml" />
+</full-backup-content>

@@ -23,7 +23,9 @@
         android:localeConfig="@xml/locales_config"
         android:icon="@mipmap/memo_launcher"
         android:theme="@style/Theme.ScriptPrep"
-        android:allowBackup="false"
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:enableOnBackInvokedCallback="false">
         <activity
             android:name=".MainActivity"

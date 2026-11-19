@@ -93,6 +93,10 @@ public final class MainActivity extends Activity {
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
     private static final int IMPORT_PDF = 2;
+    private static final int EXPORT_BACKUP = 3;
+    private static final int IMPORT_BACKUP = 4;
+    private static final String SPEED_PREFERENCE = "reading_speed";
+    private static final float[] SPEEDS = {0.75f, 1f, 1.25f, 1.5f};
     private static final int SNACKBAR_DURATION = 6000;
     private static final String VOICE_PREFERENCE = "tts_voice";
     private static final String HANDS_FREE_PREFERENCE = "hands_free";
@@ -157,6 +161,8 @@ public final class MainActivity extends Activity {
     private TextCategory category = TextCategory.ROLE_REHEARSAL;
     /** Language of the open text. */
     private ScriptLanguage language = ScriptLanguage.TURKISH;
+    /** Whether the user chose the text language, so it is not guessed again. */
+    private boolean languagePicked;
     /** Language whose default voice the settings screen is showing. */
     private ScriptLanguage settingsLanguage;
     private String scriptId;
@@ -353,6 +359,15 @@ public final class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if ((requestCode == EXPORT_BACKUP || requestCode == IMPORT_BACKUP)
+            && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            if (requestCode == EXPORT_BACKUP) {
+                writeBackup(data.getData());
+            } else {
+                readBackup(data.getData());
+            }
+            return;
+        }
         if ((requestCode != IMPORT_TEXT && requestCode != IMPORT_PDF)
             || resultCode != RESULT_OK || data == null) {
             return;
@@ -497,8 +512,9 @@ public final class MainActivity extends Activity {
             stopListening();
             playbackFailed = false;
             aiSpeaking = false;
-            VoiceCast.apply(speech, premium() ? currentCast().get(line.role) : null, castVoices(),
-                defaultVoice(), language.locale);
+            VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
+            VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
+            speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
             activeUtterance = "line-" + ++utteranceNumber;
             if (speech.speak(line.text, TextToSpeech.QUEUE_FLUSH, null, activeUtterance)
                 == TextToSpeech.ERROR) {
@@ -1122,6 +1138,19 @@ public final class MainActivity extends Activity {
             }), Ui.matchWidth());
         content.addView(plan, ui.spaced(10));
 
+        sectionLabel(R.string.backup_title);
+        content.addView(ui.text(getString(R.string.backup_description), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout backup = ui.card(SURFACE, null);
+        backup.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        int count = library.list().size();
+        backup.addView(ui.listRow(R.drawable.ic_file, getString(R.string.backup_export),
+            getResources().getQuantityString(R.plurals.library_count, count, count), view -> startBackupExport()),
+            Ui.matchWidth());
+        backup.addView(ui.divider(70));
+        backup.addView(ui.listRow(R.drawable.ic_texts, getString(R.string.backup_import),
+            getString(R.string.backup_import_detail), view -> startBackupImport()), Ui.matchWidth());
+        content.addView(backup, ui.spaced(12));
+
         sectionLabel(R.string.settings_about);
         LinearLayout about = ui.card(SURFACE, null);
         about.setPadding(0, ui.dp(4), 0, ui.dp(4));
@@ -1387,7 +1416,15 @@ public final class MainActivity extends Activity {
         savedTitle = title;
         savedScript = text;
         editorReturn = Screen.HOME;
+        languagePicked = id != null;
+        ScriptLanguage detected = id == null ? LanguageGuess.guess(text) : null;
+        if (detected != null) {
+            language = detected;
+        }
         show(Screen.EDITOR);
+        if (detected != null && detected != interfaceLanguage()) {
+            notifyUser(getString(R.string.language_detected, getString(detected.label)));
+        }
     }
 
     /** Edits the open text and comes back to the current screen afterwards. */
@@ -1418,6 +1455,7 @@ public final class MainActivity extends Activity {
             scriptTitle = titleField.getText().toString();
             script = editor.getText().toString();
             language = picked;
+            languagePicked = true;
             render();
         }));
         LinearLayout.LayoutParams languageParams = new LinearLayout.LayoutParams(-2, -2);
@@ -1585,6 +1623,12 @@ public final class MainActivity extends Activity {
             editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
         }
+        if (scriptId == null && !languagePicked) {
+            ScriptLanguage detected = LanguageGuess.guess(candidate);
+            if (detected != null) {
+                language = detected;
+            }
+        }
         scriptId = library.save(scriptId, title, candidate, category, language);
         scriptTitle = title;
         script = candidate;
@@ -1625,6 +1669,87 @@ public final class MainActivity extends Activity {
         }
         new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
             .setMessage(summary).setPositiveButton(android.R.string.ok, null).show();
+    }
+
+    // ---------------------------------------------------------------- Backup file
+
+    @SuppressWarnings("deprecation")
+    private void startBackupExport() {
+        String date = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(new java.util.Date());
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("application/json")
+            .putExtra(Intent.EXTRA_TITLE, "memo-everything-" + date + ".json");
+        try {
+            startActivityForResult(intent, EXPORT_BACKUP);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.backup_write_failed);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void startBackupImport() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("*/*")
+            .putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/json", "text/plain",
+                "application/octet-stream"});
+        try {
+            startActivityForResult(intent, IMPORT_BACKUP);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.backup_read_failed);
+        }
+    }
+
+    private void writeBackup(Uri target) {
+        imports.execute(() -> {
+            try {
+                String json = library.exportJson();
+                try (java.io.OutputStream output = getContentResolver().openOutputStream(target, "wt")) {
+                    if (output == null) {
+                        throw new IOException("No output stream");
+                    }
+                    output.write(json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+                int count = library.list().size();
+                main.post(() -> notifyUser(getResources().getQuantityString(R.plurals.backup_exported, count, count)));
+            } catch (IOException | org.json.JSONException | RuntimeException error) {
+                Log.w("ScriptPrep", "Could not write a backup", error);
+                main.post(() -> notifyUser(R.string.backup_write_failed));
+            }
+        });
+    }
+
+    private void readBackup(Uri source) {
+        imports.execute(() -> {
+            try {
+                StringBuilder json = new StringBuilder();
+                try (java.io.InputStream input = getContentResolver().openInputStream(source)) {
+                    if (input == null) {
+                        throw new IOException("No input stream");
+                    }
+                    java.io.Reader reader = new java.io.InputStreamReader(input,
+                        java.nio.charset.StandardCharsets.UTF_8);
+                    char[] buffer = new char[8192];
+                    int read;
+                    while ((read = reader.read(buffer)) != -1) {
+                        json.append(buffer, 0, read);
+                        if (json.length() > 64L * 1024 * 1024) {
+                            throw new IOException("Backup too large");
+                        }
+                    }
+                }
+                int count = library.importJson(json.toString());
+                main.post(() -> {
+                    parsedCache.clear();
+                    notifyUser(getResources().getQuantityString(R.plurals.backup_imported, count, count));
+                    render();
+                });
+            } catch (IOException | org.json.JSONException | RuntimeException error) {
+                Log.w("ScriptPrep", "Could not read a backup", error);
+                main.post(() -> notifyUser(R.string.backup_read_failed));
+            }
+        });
     }
 
     // ---------------------------------------------------------------- Delete
@@ -1819,6 +1944,12 @@ public final class MainActivity extends Activity {
         show(Screen.SETUP);
     }
 
+    private void notifyUser(String message) {
+        if (!isDestroyed()) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void notifyUser(int message) {
         if (!isDestroyed()) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -1904,6 +2035,10 @@ public final class MainActivity extends Activity {
         if (mode == Mode.PRACTICE) {
             rows.add(ui.listRow(R.drawable.ic_eye, getString(R.string.visibility_title),
                 getString(visibilityLabel(lineVisibility)), view -> showVisibilityOptions()));
+        }
+        rows.add(ui.listRow(R.drawable.ic_next, getString(R.string.speed_title), speedLabel(readingSpeed()),
+            view -> showSpeedOptions()));
+        if (mode == Mode.PRACTICE) {
             boolean cue = preferences.getBoolean(TURN_CUE_PREFERENCE, true);
             rows.add(ui.listRow(R.drawable.ic_volume, getString(R.string.turn_cue_title),
                 getString(cue ? R.string.turn_cue_on : R.string.turn_cue_off), ui.toggle(cue), view -> {
@@ -1983,6 +2118,38 @@ public final class MainActivity extends Activity {
             }
         });
         group.addView(choice, new LinearLayout.LayoutParams(0, -2, 1));
+    }
+
+    /** How fast partner lines are read, on top of each character's own pace. */
+    private float readingSpeed() {
+        float value = preferences.getFloat(SPEED_PREFERENCE, 1f);
+        return value > 0.5f && value < 2f ? value : 1f;
+    }
+
+    private String speedLabel(float value) {
+        int name = value < 0.9f ? R.string.speed_slow : value < 1.1f ? R.string.speed_normal
+            : value < 1.4f ? R.string.speed_fast : R.string.speed_faster;
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(2);
+        return getString(name) + " · " + format.format(value) + "×";
+    }
+
+    private void showSpeedOptions() {
+        String[] labels = new String[SPEEDS.length];
+        int selected = 1;
+        for (int i = 0; i < SPEEDS.length; i++) {
+            labels[i] = speedLabel(SPEEDS[i]);
+            if (Math.abs(SPEEDS[i] - readingSpeed()) < 0.01f) {
+                selected = i;
+            }
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.speed_title)
+            .setSingleChoiceItems(labels, selected, (dialog, index) -> {
+                dialog.dismiss();
+                preferences.edit().putFloat(SPEED_PREFERENCE, SPEEDS[index]).apply();
+                render();
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
     }
 
     private void showRoleOptions() {
@@ -2811,7 +2978,7 @@ public final class MainActivity extends Activity {
         aiSpeaking = true;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
-            part == null ? 1f : part.pace.rate, 1f,
+            (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
             new NeuralVoice.Playback() {
                 @Override
                 public void onDone() {
@@ -2839,7 +3006,7 @@ public final class MainActivity extends Activity {
             if (RehearsalOptions.shouldSpeak(mode, role, line.role)) {
                 VoiceCast.Part part = cast.get(line.role);
                 neural.prefetch(line.text, language.code, part == null ? 0 : part.speaker,
-                    part == null ? 1f : part.pace.rate);
+                    (part == null ? 1f : part.pace.rate) * readingSpeed());
                 found++;
             }
         }
@@ -3040,7 +3207,7 @@ public final class MainActivity extends Activity {
         Map<String, VoiceCast.Part> cast = category.hasRoles() ? currentCast() : null;
         Voice fallback = defaultVoice();
         startActivity(VideoActivity.intent(this, scriptTitle, scene, role, category.hasRoles(), language, cast,
-            fallback == null ? "" : fallback.getName(), useAiVoice()));
+            fallback == null ? "" : fallback.getName(), useAiVoice(), readingSpeed()));
     }
 
     // ---------------------------------------------------------------- Hands-free cues

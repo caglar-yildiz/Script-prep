@@ -77,6 +77,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private static final String EXTRA_VOICE = "voice";
     private static final String EXTRA_AI_VOICE = "ai_voice";
     private static final String EXTRA_LANGUAGE = "language";
+    private static final String EXTRA_SPEED = "speed";
 
     private final Handler main = new Handler(Looper.getMainLooper());
     private Ui ui;
@@ -87,6 +88,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
     private Map<String, VoiceCast.Part> cast;
     private String defaultVoiceName;
     private ScriptLanguage language;
+    private float speed = 1f;
     private NeuralVoice neural;
 
     private FrameLayout previewFrame;
@@ -134,7 +136,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
 
     static Intent intent(Context context, String title, Scene scene, String role, boolean hasRoles,
                          ScriptLanguage language,
-                         Map<String, VoiceCast.Part> cast, String defaultVoice, boolean aiVoice) {
+                         Map<String, VoiceCast.Part> cast, String defaultVoice, boolean aiVoice,
+                         float speed) {
         String[] lineRoles = new String[scene.lines.size()];
         String[] lineTexts = new String[scene.lines.size()];
         for (int i = 0; i < lineRoles.length; i++) {
@@ -150,7 +153,8 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             .putExtra(EXTRA_CAST, cast == null ? "" : VoiceCast.toJson(cast))
             .putExtra(EXTRA_VOICE, defaultVoice)
             .putExtra(EXTRA_AI_VOICE, aiVoice)
-            .putExtra(EXTRA_LANGUAGE, language.code);
+            .putExtra(EXTRA_LANGUAGE, language.code)
+            .putExtra(EXTRA_SPEED, speed);
     }
 
     @Override
@@ -174,6 +178,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         cast = VoiceCast.fromJson(intent.getStringExtra(EXTRA_CAST));
         defaultVoiceName = intent.getStringExtra(EXTRA_VOICE);
         language = ScriptLanguage.fromCode(intent.getStringExtra(EXTRA_LANGUAGE));
+        speed = intent.getFloatExtra(EXTRA_SPEED, 1f);
         if (intent.getBooleanExtra(EXTRA_AI_VOICE, false)) {
             neural = NeuralVoice.get(this);
             neural.load();
@@ -535,7 +540,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             String id = "video-" + ++utteranceNumber;
             activeUtterance = id;
             neural.speak(texts[position], language.code, part == null ? 0 : part.speaker,
-                part == null ? 1f : part.pace.rate, 1f,
+                (part == null ? 1f : part.pace.rate) * speed, 1f,
                 new NeuralVoice.Playback() {
                     @Override
                     public void onDone() {
@@ -558,7 +563,9 @@ public final class VideoActivity extends Activity implements TextureView.Surface
         if (!speechReady) {
             return;
         }
-        VoiceCast.apply(speech, cast.get(roles[position]), voices, defaultVoice, language.locale);
+        VoiceCast.Part part = cast.get(roles[position]);
+        VoiceCast.apply(speech, part, voices, defaultVoice, language.locale);
+        speech.setSpeechRate((part == null ? 1f : part.pace.rate) * speed);
         activeUtterance = "video-" + ++utteranceNumber;
         if (speech.speak(texts[position], TextToSpeech.QUEUE_FLUSH, null, activeUtterance) == TextToSpeech.ERROR) {
             activeUtterance = null;
@@ -586,7 +593,7 @@ public final class VideoActivity extends Activity implements TextureView.Surface
             if (!isMine(i)) {
                 VoiceCast.Part part = cast.get(roles[i]);
                 neural.prefetch(texts[i], language.code, part == null ? 0 : part.speaker,
-                    part == null ? 1f : part.pace.rate);
+                    (part == null ? 1f : part.pace.rate) * speed);
                 return;
             }
         }

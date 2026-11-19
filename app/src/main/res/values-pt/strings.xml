@@ -345,4 +345,27 @@
     </string-array>
     <string name="voice_female">Feminina</string>
     <string name="voice_male">Masculina</string>
+    <string name="language_detected">Idioma do texto detectado: %1$s</string>
+    <string name="speed_title">Velocidade de leitura</string>
+    <string name="speed_slow">Lenta</string>
+    <string name="speed_normal">Normal</string>
+    <string name="speed_fast">Rápida</string>
+    <string name="speed_faster">Muito rápida</string>
+    <string name="backup_title">Backup</string>
+    <string name="backup_description">Seus textos e configurações vão para o backup da sua conta Google quando o backup do Android está ativado. Para ter sua própria cópia, exporte-os para um arquivo.</string>
+    <string name="backup_export">Exportar textos para um arquivo</string>
+    <string name="backup_import">Importar textos de um arquivo</string>
+    <string name="backup_import_detail">Adiciona os textos de um backup; nada é excluído</string>
+    <string name="backup_write_failed">Não foi possível salvar o backup.</string>
+    <string name="backup_read_failed">Não foi possível ler este backup.</string>
+    <plurals name="backup_exported">
+        <item quantity="one">%d texto exportado</item>
+        <item quantity="many">%d textos exportados</item>
+        <item quantity="other">%d textos exportados</item>
+    </plurals>
+    <plurals name="backup_imported">
+        <item quantity="one">%d texto importado</item>
+        <item quantity="many">%d textos importados</item>
+        <item quantity="other">%d textos importados</item>
+    </plurals>
 </resources>

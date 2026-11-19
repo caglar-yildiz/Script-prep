@@ -77,20 +77,88 @@ final class ScriptLibrary {
         write(scripts);
     }
 
+    /** A backup file: every text plus its character voices. */
+    String exportJson() throws JSONException {
+        JSONArray texts = new JSONArray();
+        JSONObject casts = new JSONObject();
+        for (Script script : list()) {
+            texts.put(toJson(script));
+            String cast = VoiceCast.raw(preferences, script.id);
+            if (cast != null) {
+                casts.put(script.id, cast);
+            }
+        }
+        return new JSONObject()
+            .put("app", "memo-everything")
+            .put("version", 1)
+            .put("texts", texts)
+            .put("voiceCasts", casts)
+            .toString(2);
+    }
+
+    /**
+     * Merges a backup into the library: texts with the same id are replaced, new ones are added
+     * at the top, nothing is removed. Returns how many texts were imported.
+     */
+    int importJson(String json) throws JSONException {
+        JSONObject backup = new JSONObject(json);
+        JSONArray texts = backup.getJSONArray("texts");
+        JSONObject casts = backup.optJSONObject("voiceCasts");
+        List<Script> imported = new ArrayList<>();
+        for (int i = 0; i < texts.length(); i++) {
+            JSONObject entry = texts.optJSONObject(i);
+            if (entry == null || entry.optString("text").isEmpty()) {
+                continue;
+            }
+            String id = entry.optString("id");
+            imported.add(new Script(id.isEmpty() ? UUID.randomUUID().toString() : id,
+                entry.optString("title"), entry.optString("text"),
+                TextCategory.fromSavedValue(entry.optString("category")),
+                ScriptLanguage.fromCode(entry.optString("language"))));
+        }
+        List<Script> merged = new ArrayList<>(imported);
+        for (Script existing : list()) {
+            boolean replaced = false;
+            for (Script incoming : imported) {
+                if (incoming.id.equals(existing.id)) {
+                    replaced = true;
+                    break;
+                }
+            }
+            if (!replaced) {
+                merged.add(existing);
+            }
+        }
+        write(merged);
+        if (casts != null) {
+            for (Script script : imported) {
+                String cast = casts.optString(script.id, null);
+                if (cast != null) {
+                    VoiceCast.putRaw(preferences, script.id, cast);
+                }
+            }
+        }
+        return imported.size();
+    }
+
+    private static JSONObject toJson(Script script) throws JSONException {
+        JSONObject entry = new JSONObject();
+        entry.put("id", script.id);
+        entry.put("title", script.title);
+        entry.put("text", script.text);
+        entry.put("category", script.category.name());
+        entry.put("language", script.language.code);
+        return entry;
+    }
+
     private void write(List<Script> scripts) {
         JSONArray entries = new JSONArray();
         for (Script script : scripts) {
-            JSONObject entry = new JSONObject();
             try {
-                entry.put("id", script.id);
-                entry.put("title", script.title);
-                entry.put("text", script.text);
-                entry.put("category", script.category.name());
-                entry.put("language", script.language.code);
+                entries.put(toJson(script));
             } catch (JSONException error) {
                 throw new IllegalStateException("Could not serialize script", error);
             }
-            entries.put(entry);
         }
         preferences.edit().putString(SCRIPTS, entries.toString()).apply();
     }

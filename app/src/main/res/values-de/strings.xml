@@ -335,4 +335,25 @@
     </string-array>
     <string name="voice_female">Frau</string>
     <string name="voice_male">Mann</string>
+    <string name="language_detected">Textsprache erkannt: %1$s</string>
+    <string name="speed_title">Lesetempo</string>
+    <string name="speed_slow">Langsam</string>
+    <string name="speed_normal">Normal</string>
+    <string name="speed_fast">Schnell</string>
+    <string name="speed_faster">Sehr schnell</string>
+    <string name="backup_title">Sicherung</string>
+    <string name="backup_description">Wenn die Android-Sicherung aktiv ist, werden deine Texte und Einstellungen in deinem Google-Konto gesichert. Für eine eigene Kopie exportiere sie in eine Datei.</string>
+    <string name="backup_export">Texte in Datei exportieren</string>
+    <string name="backup_import">Texte aus Datei importieren</string>
+    <string name="backup_import_detail">Fügt die Texte einer Sicherung hinzu; nichts wird gelöscht</string>
+    <string name="backup_write_failed">Die Sicherungsdatei konnte nicht gespeichert werden.</string>
+    <string name="backup_read_failed">Diese Sicherungsdatei konnte nicht gelesen werden.</string>
+    <plurals name="backup_exported">
+        <item quantity="one">%d Text exportiert</item>
+        <item quantity="other">%d Texte exportiert</item>
+    </plurals>
+    <plurals name="backup_imported">
+        <item quantity="one">%d Text importiert</item>
+        <item quantity="other">%d Texte importiert</item>
+    </plurals>
 </resources>

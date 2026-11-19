@@ -341,4 +341,25 @@
     </string-array>
     <string name="voice_female">Female</string>
     <string name="voice_male">Male</string>
+    <string name="language_detected">Text language detected: %1$s</string>
+    <string name="speed_title">Reading speed</string>
+    <string name="speed_slow">Slow</string>
+    <string name="speed_normal">Normal</string>
+    <string name="speed_fast">Fast</string>
+    <string name="speed_faster">Very fast</string>
+    <string name="backup_title">Backup</string>
+    <string name="backup_description">Your texts and settings are backed up to your Google account when Android backup is on. For a copy you keep yourself, export them to a file.</string>
+    <string name="backup_export">Export texts to a file</string>
+    <string name="backup_import">Import texts from a file</string>
+    <string name="backup_import_detail">Adds the texts in a backup; nothing is deleted</string>
+    <string name="backup_write_failed">Couldn’t save the backup file.</string>
+    <string name="backup_read_failed">Couldn’t read this backup file.</string>
+    <plurals name="backup_exported">
+        <item quantity="one">%d text exported</item>
+        <item quantity="other">%d texts exported</item>
+    </plurals>
+    <plurals name="backup_imported">
+        <item quantity="one">%d text imported</item>
+        <item quantity="other">%d texts imported</item>
+    </plurals>
 </resources>
