@@ -66,7 +66,7 @@ Kimlikler kodla birebir aynı olmalı (`Billing.java`). İstersen bir temel plan
 
 ## 5. Mağaza sayfası ve politikalar
 
-- **Gizlilik politikası URL'si** zorunlu (mikrofon/kamera izni). `docs/privacy-policy.md` hazır; `[İLETİŞİM E-POSTASI]` yerini doldurup herkese açık bir adreste yayınla (ör. GitHub Pages; depo gizliyse Pages ücretli plan ister, alternatif olarak Google Sites/Notion gibi bir sayfa).
+- **Gizlilik politikası URL'si** zorunlu (mikrofon/kamera izni): `https://caglar-yildiz.github.io/Script-prep/`. Kaynağı `docs/index.html`. Yayınlamak için: GitHub → depo → Settings → Pages → *Deploy from a branch* → `main` / `docs` → Save (birkaç dakika sürer).
 - **Uygulama erişimi**: giriş gerekmez.
 - **Reklamlar**: yok.
 - **İçerik derecelendirmesi** anketi: şiddet/kumar vb. yok → genelde "Herkes/3+" çıkar.
