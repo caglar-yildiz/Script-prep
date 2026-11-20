@@ -28,6 +28,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Keeps downloaded Gradle dependencies between runs, so builds rarely need Maven Central.
+          cache: gradle
 
       - name: Ensure Android SDK packages are installed
         run: |
@@ -39,7 +41,8 @@ jobs:
 
       - name: Build and verify APK
         run: |
-          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+          # Dependency downloads occasionally fail on CI runners; try once more before giving up.
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug || ./gradlew --no-daemon --stacktrace --refresh-dependencies :app:assembleDebug
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -Fx "targetSdkVersion:'36'"
           cp app/build/outputs/apk/debug/app-debug.apk Memo-Everything.apk

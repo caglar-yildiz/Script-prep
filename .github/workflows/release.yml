@@ -3,7 +3,7 @@ name: Release bundle
 # Builds the signed Android App Bundle (AAB) for Google Play.
 # Push a tag such as v0.3.0, or start it by hand from the Actions tab.
 #
-# Repository secrets (Settings > Secrets and variables > Actions):
+# Secrets of the play-signing environment (Settings > Environments > play-signing):
 #   RELEASE_KEYSTORE_BASE64   upload keystore, base64-encoded
 #   RELEASE_KEYSTORE_PASSWORD keystore password
 #   RELEASE_KEY_ALIAS         key alias inside the keystore
@@ -26,6 +26,8 @@ jobs:
   bundle:
     name: Build signed release bundle
     runs-on: ubuntu-24.04
+    # The upload key's secrets are stored in this environment.
+    environment: play-signing
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
@@ -36,6 +38,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Keeps downloaded Gradle dependencies between runs, so builds rarely need Maven Central.
+          cache: gradle
 
       - name: Ensure Android SDK packages are installed
         run: |
@@ -75,7 +79,8 @@ jobs:
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          ./gradlew --no-daemon --stacktrace :app:bundleRelease
+          # Dependency downloads occasionally fail on CI runners; try once more before giving up.
+          ./gradlew --no-daemon --stacktrace :app:bundleRelease || ./gradlew --no-daemon --stacktrace --refresh-dependencies :app:bundleRelease
           bundle="app/build/outputs/bundle/release/app-release.aab"
           jarsigner -verify "$bundle" | grep -q "jar verified" || { echo "::error::The bundle is not signed."; exit 1; }
           cp "$bundle" "Memo-Everything-$VERSION_NAME-$VERSION_CODE.aab"

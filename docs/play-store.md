@@ -21,7 +21,7 @@ keytool -genkeypair -v -keystore memo-upload.jks -alias upload \
 base64 -w0 memo-upload.jks > memo-upload.b64   # macOS: base64 -i memo-upload.jks -o memo-upload.b64
 ```
 
-GitHub → depo → Settings → Secrets and variables → Actions → **New repository secret**:
+GitHub → depo → Settings → **Environments → play-signing** → **Add environment secret** (iş akışları bu ortamı kullanır):
 
 | Secret | Değer |
 | --- | --- |
@@ -34,8 +34,8 @@ Play Console'da **Play App Signing** açık kalsın (varsayılan): Google asıl 
 
 ## 2. İmzalı App Bundle (AAB)
 
-- Sürüm etiketi gönder: `git tag v0.3.0 && git push origin v0.3.0`
-  ya da GitHub → Actions → **Release bundle** → *Run workflow*.
+- GitHub → Actions → **Build Play Store bundle** (`main.yml`, yalnızca `main` dalında) → *Run workflow*,
+  ya da sürüm etiketi gönder: `git tag v0.3.0 && git push origin v0.3.0` (**Release bundle**, `release.yml`).
 - İş bitince **Artifacts** altından `Memo-Everything-…aab` dosyasını indir.
 - Sürüm kodu her çalıştırmada otomatik artar (`100 + çalıştırma numarası`).
 
