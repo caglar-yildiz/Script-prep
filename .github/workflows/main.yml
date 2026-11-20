@@ -29,20 +29,24 @@ jobs:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
 
       - name: Build release bundle
+        env:
+          # Every upload to Google Play needs a larger version code than the last one.
+          VERSION_CODE: ${{ 100 + github.run_number }}
         run: ./gradlew --no-daemon :app:testReleaseUnitTest :app:bundleRelease
 
       - name: Sign bundle with the Play upload key
         env:
-          PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_BASE64 }}
-          PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
-          PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
-          PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+          # The play-signing environment stores the upload key under the RELEASE_* names.
+          PLAY_UPLOAD_KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          PLAY_UPLOAD_STORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          PLAY_UPLOAD_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          PLAY_UPLOAD_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
           set -euo pipefail
-          : "${PLAY_UPLOAD_KEYSTORE_BASE64:?Set PLAY_UPLOAD_KEYSTORE_BASE64 in the play-signing environment}"
-          : "${PLAY_UPLOAD_STORE_PASSWORD:?Set PLAY_UPLOAD_STORE_PASSWORD in the play-signing environment}"
-          : "${PLAY_UPLOAD_KEY_ALIAS:?Set PLAY_UPLOAD_KEY_ALIAS in the play-signing environment}"
-          : "${PLAY_UPLOAD_KEY_PASSWORD:?Set PLAY_UPLOAD_KEY_PASSWORD in the play-signing environment}"
+          : "${PLAY_UPLOAD_KEYSTORE_BASE64:?Set RELEASE_KEYSTORE_BASE64 in the play-signing environment}"
+          : "${PLAY_UPLOAD_STORE_PASSWORD:?Set RELEASE_KEYSTORE_PASSWORD in the play-signing environment}"
+          : "${PLAY_UPLOAD_KEY_ALIAS:?Set RELEASE_KEY_ALIAS in the play-signing environment}"
+          : "${PLAY_UPLOAD_KEY_PASSWORD:?Set RELEASE_KEY_PASSWORD in the play-signing environment}"
 
           keystore=$(mktemp "$RUNNER_TEMP/play-upload.XXXXXX")
           trap 'rm -f "$keystore"' EXIT
