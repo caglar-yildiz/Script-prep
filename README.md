@@ -65,7 +65,7 @@ Premium, Google Play aboneliğiyle açılır. Debug derlemelerinde **Ayarlar →
 
 ### Google Play
 
-Uygulama kimliği `com.memoeverything.app`. Premium, Google Play Billing ile aylık (`monthly`) ve yıllık (`yearly`) temel planları olan `memo_premium` aboneliğidir. İmzalı App Bundle, `v*` etiketiyle tetiklenen **Release bundle** iş akışında üretilir. Yayın adımları, Play Console ayarları ve 7 dilde mağaza metinleri: [docs/play-store.md](docs/play-store.md). Gizlilik politikası taslağı: [docs/privacy-policy.md](docs/privacy-policy.md).
+Uygulama kimliği `com.memoeverything.app`. Premium, Google Play Billing ile aylık (`monthly`) ve yıllık (`yearly`) temel planları olan `memo_premium` aboneliğidir. İmzalı App Bundle, `v*` etiketiyle tetiklenen **Release bundle** iş akışında üretilir. Yayın adımları, Play Console ayarları ve 7 dilde mağaza metinleri: [docs/play-store.md](docs/play-store.md). Gizlilik politikası: https://caglar-yildiz.github.io/Script-prep/ (kaynak [docs/index.html](docs/index.html)).
 
 ### Metin ayrıştırma
 
