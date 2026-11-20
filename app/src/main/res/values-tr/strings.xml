@@ -179,9 +179,6 @@
     <string name="premium_switch_off">Ücretsiz plana dön</string>
     <string name="premium_now_on">Premium açıldı</string>
     <string name="premium_now_off">Ücretsiz plana dönüldü</string>
-    <string name="plan_title">Plan</string>
-    <string name="plan_free">Ücretsiz</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s, Premium’a dahil bir özellik.</string>
     <string name="paywall_open">Premium’u gör</string>
     <string name="cast_title">Karakter sesleri</string>
@@ -335,4 +332,26 @@
     </string-array>
     <string name="voice_female">Kadın</string>
     <string name="voice_male">Erkek</string>
+    <string name="language_detected">Metin dili algılandı: %1$s</string>
+    <string name="speed_title">Okuma hızı</string>
+    <string name="speed_slow">Yavaş</string>
+    <string name="speed_normal">Normal</string>
+    <string name="speed_fast">Hızlı</string>
+    <string name="speed_faster">Çok hızlı</string>
+    <string name="backup_title">Yedekleme</string>
+    <string name="backup_description">Android yedeklemesi açıksa metinlerin ve ayarların Google hesabına yedeklenir. Kendi elinde tutacağın bir kopya için bir dosyaya dışa aktar.</string>
+    <string name="backup_export">Metinleri dosyaya aktar</string>
+    <string name="backup_import">Dosyadan metin al</string>
+    <string name="backup_import_detail">Yedekteki metinleri ekler; hiçbir şey silinmez</string>
+    <string name="backup_write_failed">Yedek dosyası kaydedilemedi.</string>
+    <string name="backup_read_failed">Bu yedek dosyası okunamadı.</string>
+    <plurals name="backup_exported">
+        <item quantity="one">%d metin dışa aktarıldı</item>
+        <item quantity="other">%d metin dışa aktarıldı</item>
+    </plurals>
+    <plurals name="backup_imported">
+        <item quantity="one">%d metin içe aktarıldı</item>
+        <item quantity="other">%d metin içe aktarıldı</item>
+    </plurals>
+    <string name="premium_see_plans">Planları ve özellikleri gör</string>
 </resources>

@@ -93,6 +93,10 @@ public final class MainActivity extends Activity {
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
     private static final int IMPORT_PDF = 2;
+    private static final int EXPORT_BACKUP = 3;
+    private static final int IMPORT_BACKUP = 4;
+    private static final String SPEED_PREFERENCE = "reading_speed";
+    private static final float[] SPEEDS = {0.75f, 1f, 1.25f, 1.5f};
     private static final int SNACKBAR_DURATION = 6000;
     private static final String VOICE_PREFERENCE = "tts_voice";
     private static final String HANDS_FREE_PREFERENCE = "hands_free";
@@ -103,8 +107,7 @@ public final class MainActivity extends Activity {
     private static final double LINE_SAID = 0.6;
     private static final double LINE_CLEAN = 0.8;
     private static final int LISTEN_RETRIES = 6;
-    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES }
-    private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
+    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -153,10 +156,13 @@ public final class MainActivity extends Activity {
     private String activePreview;
 
     private Screen screen = Screen.HOME;
-    private Tab tab = Tab.SCRIPTS;
+    /** Where the Premium screen goes back to: Settings, or the screen that asked for Premium. */
+    private Screen premiumReturn = Screen.SETTINGS;
     private TextCategory category = TextCategory.ROLE_REHEARSAL;
     /** Language of the open text. */
     private ScriptLanguage language = ScriptLanguage.TURKISH;
+    /** Whether the user chose the text language, so it is not guessed again. */
+    private boolean languagePicked;
     /** Language whose default voice the settings screen is showing. */
     private ScriptLanguage settingsLanguage;
     private String scriptId;
@@ -208,7 +214,7 @@ public final class MainActivity extends Activity {
             editorReturn = Screen.valueOf(state.getString("editor_return", Screen.HOME.name()));
             String restoredScreen = state.getString("screen", Screen.HOME.name());
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
-            tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
+            premiumReturn = Screen.valueOf(state.getString("premium_return", Screen.SETTINGS.name()));
             category = TextCategory.fromSavedValue(state.getString("category"));
             language = ScriptLanguage.fromCode(state.getString("language"));
             fullScene = parseScript(script);
@@ -275,7 +281,7 @@ public final class MainActivity extends Activity {
         state.putString("category", category.name());
         state.putString("language", language.code);
         state.putString("screen", screen.name());
-        state.putString("tab", tab.name());
+        state.putString("premium_return", premiumReturn.name());
         state.putString("role", role);
         state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
@@ -342,7 +348,9 @@ public final class MainActivity extends Activity {
             leaveEditor();
         } else if (screen == Screen.SETUP && hasNamedSections()) {
             show(Screen.SECTIONS);
-        } else if (screen != Screen.HOME || tab != Tab.SCRIPTS) {
+        } else if (screen == Screen.PREMIUM) {
+            show(premiumReturn);
+        } else if (screen != Screen.HOME) {
             returnToLibrary();
         } else {
             super.onBackPressed();
@@ -353,6 +361,15 @@ public final class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if ((requestCode == EXPORT_BACKUP || requestCode == IMPORT_BACKUP)
+            && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            if (requestCode == EXPORT_BACKUP) {
+                writeBackup(data.getData());
+            } else {
+                readBackup(data.getData());
+            }
+            return;
+        }
         if ((requestCode != IMPORT_TEXT && requestCode != IMPORT_PDF)
             || resultCode != RESULT_OK || data == null) {
             return;
@@ -443,7 +460,7 @@ public final class MainActivity extends Activity {
             } else {
                 render();
             }
-        } else if (screen == Screen.HOME && tab == Tab.SETTINGS) {
+        } else if (screen == Screen.SETTINGS) {
             render();
         }
     }
@@ -497,8 +514,9 @@ public final class MainActivity extends Activity {
             stopListening();
             playbackFailed = false;
             aiSpeaking = false;
-            VoiceCast.apply(speech, premium() ? currentCast().get(line.role) : null, castVoices(),
-                defaultVoice(), language.locale);
+            VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
+            VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
+            speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
             activeUtterance = "line-" + ++utteranceNumber;
             if (speech.speak(line.text, TextToSpeech.QUEUE_FLUSH, null, activeUtterance)
                 == TextToSpeech.ERROR) {
@@ -563,16 +581,21 @@ public final class MainActivity extends Activity {
     }
 
     private void returnToLibrary() {
-        tab = Tab.SCRIPTS;
         show(Screen.HOME);
+    }
+
+    /** Opens the Premium screen; back returns to the screen it was opened from. */
+    private void openPremium() {
+        premiumReturn = screen == Screen.PREMIUM ? premiumReturn : screen;
+        show(Screen.PREMIUM);
     }
 
     /**
      * Identifies what the screen shows. Redrawing the same view keeps the scroll position;
-     * moving to another screen, tab, text or rehearsal line starts at the top.
+     * moving to another screen, text or rehearsal line starts at the top.
      */
     private String scrollKey() {
-        return screen + "|" + tab + "|" + scriptId + "|" + sectionIndex
+        return screen + "|" + scriptId + "|" + sectionIndex
             + (screen == Screen.REHEARSAL ? "|" + position : "");
     }
 
@@ -620,14 +643,9 @@ public final class MainActivity extends Activity {
         downloadBars.clear();
         snackbarView = null;
         switch (screen) {
-            case HOME -> {
-                switch (tab) {
-                    case SCRIPTS -> renderLibrary();
-                    case PREMIUM -> renderPremium();
-                    case SETTINGS -> renderSettings();
-                }
-                bottomNavigation();
-            }
+            case HOME -> renderLibrary();
+            case SETTINGS -> renderSettings();
+            case PREMIUM -> renderPremium();
             case CATEGORIES -> renderCategories();
             case SOURCE -> renderSource();
             case EDITOR -> renderEditor();
@@ -739,53 +757,9 @@ public final class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- Home tabs
 
-    private void bottomNavigation() {
-        footer.setBackground(topBorder());
-        footer.setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(10));
-        LinearLayout items = horizontal();
-        addTab(items, Tab.SCRIPTS, R.string.scripts_tab, R.drawable.ic_texts);
-        addTab(items, Tab.PREMIUM, R.string.premium_tab, R.drawable.ic_star);
-        addTab(items, Tab.SETTINGS, R.string.settings_tab, R.drawable.ic_settings);
-        footer.addView(items, Ui.matchWidth());
-    }
-
-    private void addTab(LinearLayout navigation, Tab destination, int label, int drawable) {
-        boolean selected = tab == destination;
-        LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.VERTICAL);
-        item.setGravity(Gravity.CENTER_HORIZONTAL);
-        item.setPadding(0, ui.dp(4), 0, ui.dp(4));
-        item.setBackground(ui.ripple(null, 0x1FFFFFFF));
-        item.setClickable(true);
-        item.setFocusable(true);
-        item.setSelected(selected);
-        item.setContentDescription(getString(label));
-        item.setOnClickListener(view -> {
-            if (tab != destination) {
-                cancelSpeech();
-                tab = destination;
-                render();
-            }
-        });
-
-        FrameLayout pill = new FrameLayout(this);
-        if (selected) {
-            pill.setBackground(ui.shape(ACCENT_CONTAINER, 999));
-        }
-        pill.addView(ui.icon(drawable, selected ? ACCENT : TEXT_TERTIARY, 24),
-            new FrameLayout.LayoutParams(ui.dp(24), ui.dp(24), Gravity.CENTER));
-        item.addView(pill, new LinearLayout.LayoutParams(ui.dp(64), ui.dp(32)));
-
-        TextView text = ui.text(getString(label), Type.CAPTION, selected ? TEXT : TEXT_TERTIARY);
-        text.setTypeface(selected ? Ui.MEDIUM : Ui.REGULAR);
-        text.setPadding(0, ui.dp(4), 0, 0);
-        text.setGravity(Gravity.CENTER);
-        text.setSingleLine(true);
-        item.addView(text, new LinearLayout.LayoutParams(-2, -2));
-        navigation.addView(item, new LinearLayout.LayoutParams(0, -2, 1));
-    }
-
     private void renderLibrary() {
+        LinearLayout bar = topBar(0, null, null);
+        barAction(bar, R.drawable.ic_settings, R.string.settings_tab, view -> show(Screen.SETTINGS));
         List<ScriptLibrary.Script> scripts = library.list();
         if (scripts.isEmpty()) {
             renderEmptyLibrary();
@@ -805,7 +779,7 @@ public final class MainActivity extends Activity {
         count.setPadding(0, ui.dp(4), 0, 0);
         titles.addView(count);
         heading.addView(titles, new LinearLayout.LayoutParams(0, -2, 1));
-        content.addView(heading, ui.spaced(20));
+        content.addView(heading, ui.spaced(0));
 
         LinearLayout.LayoutParams first = ui.spaced(20);
         boolean isFirst = true;
@@ -1066,7 +1040,15 @@ public final class MainActivity extends Activity {
     }
 
     private void renderSettings() {
-        pageTitle(getString(R.string.app_name), getString(R.string.settings_tab), null);
+        topBar(R.drawable.ic_back, getString(R.string.settings_tab), this::returnToLibrary);
+
+        sectionLabel(R.string.premium_tab);
+        LinearLayout premiumCard = ui.card(premium() ? ACCENT_CONTAINER : SURFACE, null);
+        premiumCard.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        premiumCard.addView(ui.listRow(R.drawable.ic_star, getString(R.string.app_name) + " " + getString(R.string.premium_tab),
+            getString(premium() ? R.string.premium_active_chip : R.string.premium_see_plans),
+            view -> openPremium()), Ui.matchWidth());
+        content.addView(premiumCard, ui.spaced(10));
 
         sectionLabel(R.string.settings_general);
         LinearLayout general = ui.card(SURFACE, null);
@@ -1112,15 +1094,19 @@ public final class MainActivity extends Activity {
 
         renderAiVoiceSettings();
 
-        sectionLabel(R.string.plan_title);
-        LinearLayout plan = ui.card(SURFACE, null);
-        plan.setPadding(0, ui.dp(4), 0, ui.dp(4));
-        plan.addView(ui.listRow(R.drawable.ic_star, getString(R.string.plan_title),
-            getString(premium() ? R.string.plan_premium : R.string.plan_free), view -> {
-                tab = Tab.PREMIUM;
-                render();
-            }), Ui.matchWidth());
-        content.addView(plan, ui.spaced(10));
+
+        sectionLabel(R.string.backup_title);
+        content.addView(ui.text(getString(R.string.backup_description), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout backup = ui.card(SURFACE, null);
+        backup.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        int count = library.list().size();
+        backup.addView(ui.listRow(R.drawable.ic_file, getString(R.string.backup_export),
+            getResources().getQuantityString(R.plurals.library_count, count, count), view -> startBackupExport()),
+            Ui.matchWidth());
+        backup.addView(ui.divider(70));
+        backup.addView(ui.listRow(R.drawable.ic_texts, getString(R.string.backup_import),
+            getString(R.string.backup_import_detail), view -> startBackupImport()), Ui.matchWidth());
+        content.addView(backup, ui.spaced(12));
 
         sectionLabel(R.string.settings_about);
         LinearLayout about = ui.card(SURFACE, null);
@@ -1387,7 +1373,15 @@ public final class MainActivity extends Activity {
         savedTitle = title;
         savedScript = text;
         editorReturn = Screen.HOME;
+        languagePicked = id != null;
+        ScriptLanguage detected = id == null ? LanguageGuess.guess(text) : null;
+        if (detected != null) {
+            language = detected;
+        }
         show(Screen.EDITOR);
+        if (detected != null && detected != interfaceLanguage()) {
+            notifyUser(getString(R.string.language_detected, getString(detected.label)));
+        }
     }
 
     /** Edits the open text and comes back to the current screen afterwards. */
@@ -1418,6 +1412,7 @@ public final class MainActivity extends Activity {
             scriptTitle = titleField.getText().toString();
             script = editor.getText().toString();
             language = picked;
+            languagePicked = true;
             render();
         }));
         LinearLayout.LayoutParams languageParams = new LinearLayout.LayoutParams(-2, -2);
@@ -1585,6 +1580,12 @@ public final class MainActivity extends Activity {
             editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
         }
+        if (scriptId == null && !languagePicked) {
+            ScriptLanguage detected = LanguageGuess.guess(candidate);
+            if (detected != null) {
+                language = detected;
+            }
+        }
         scriptId = library.save(scriptId, title, candidate, category, language);
         scriptTitle = title;
         script = candidate;
@@ -1625,6 +1626,87 @@ public final class MainActivity extends Activity {
         }
         new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
             .setMessage(summary).setPositiveButton(android.R.string.ok, null).show();
+    }
+
+    // ---------------------------------------------------------------- Backup file
+
+    @SuppressWarnings("deprecation")
+    private void startBackupExport() {
+        String date = new java.text.SimpleDateFormat("yyyy-MM-dd", Locale.ROOT).format(new java.util.Date());
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("application/json")
+            .putExtra(Intent.EXTRA_TITLE, "memo-everything-" + date + ".json");
+        try {
+            startActivityForResult(intent, EXPORT_BACKUP);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.backup_write_failed);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void startBackupImport() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("*/*")
+            .putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"application/json", "text/plain",
+                "application/octet-stream"});
+        try {
+            startActivityForResult(intent, IMPORT_BACKUP);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.backup_read_failed);
+        }
+    }
+
+    private void writeBackup(Uri target) {
+        imports.execute(() -> {
+            try {
+                String json = library.exportJson();
+                try (java.io.OutputStream output = getContentResolver().openOutputStream(target, "wt")) {
+                    if (output == null) {
+                        throw new IOException("No output stream");
+                    }
+                    output.write(json.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                }
+                int count = library.list().size();
+                main.post(() -> notifyUser(getResources().getQuantityString(R.plurals.backup_exported, count, count)));
+            } catch (IOException | org.json.JSONException | RuntimeException error) {
+                Log.w("ScriptPrep", "Could not write a backup", error);
+                main.post(() -> notifyUser(R.string.backup_write_failed));
+            }
+        });
+    }
+
+    private void readBackup(Uri source) {
+        imports.execute(() -> {
+            try {
+                StringBuilder json = new StringBuilder();
+                try (java.io.InputStream input = getContentResolver().openInputStream(source)) {
+                    if (input == null) {
+                        throw new IOException("No input stream");
+                    }
+                    java.io.Reader reader = new java.io.InputStreamReader(input,
+                        java.nio.charset.StandardCharsets.UTF_8);
+                    char[] buffer = new char[8192];
+                    int read;
+                    while ((read = reader.read(buffer)) != -1) {
+                        json.append(buffer, 0, read);
+                        if (json.length() > 64L * 1024 * 1024) {
+                            throw new IOException("Backup too large");
+                        }
+                    }
+                }
+                int count = library.importJson(json.toString());
+                main.post(() -> {
+                    parsedCache.clear();
+                    notifyUser(getResources().getQuantityString(R.plurals.backup_imported, count, count));
+                    render();
+                });
+            } catch (IOException | org.json.JSONException | RuntimeException error) {
+                Log.w("ScriptPrep", "Could not read a backup", error);
+                main.post(() -> notifyUser(R.string.backup_read_failed));
+            }
+        });
     }
 
     // ---------------------------------------------------------------- Delete
@@ -1712,7 +1794,7 @@ public final class MainActivity extends Activity {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
         params.setMargins(ui.dp(12), 0, ui.dp(12), ui.dp(12));
         // Sit above the floating create button on the library.
-        if (screen == Screen.HOME && tab == Tab.SCRIPTS && !library.list().isEmpty()) {
+        if (screen == Screen.HOME && !library.list().isEmpty()) {
             params.bottomMargin = ui.dp(84);
         }
         overlay.addView(bar, params);
@@ -1819,6 +1901,12 @@ public final class MainActivity extends Activity {
         show(Screen.SETUP);
     }
 
+    private void notifyUser(String message) {
+        if (!isDestroyed()) {
+            Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private void notifyUser(int message) {
         if (!isDestroyed()) {
             Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
@@ -1904,6 +1992,10 @@ public final class MainActivity extends Activity {
         if (mode == Mode.PRACTICE) {
             rows.add(ui.listRow(R.drawable.ic_eye, getString(R.string.visibility_title),
                 getString(visibilityLabel(lineVisibility)), view -> showVisibilityOptions()));
+        }
+        rows.add(ui.listRow(R.drawable.ic_next, getString(R.string.speed_title), speedLabel(readingSpeed()),
+            view -> showSpeedOptions()));
+        if (mode == Mode.PRACTICE) {
             boolean cue = preferences.getBoolean(TURN_CUE_PREFERENCE, true);
             rows.add(ui.listRow(R.drawable.ic_volume, getString(R.string.turn_cue_title),
                 getString(cue ? R.string.turn_cue_on : R.string.turn_cue_off), ui.toggle(cue), view -> {
@@ -1983,6 +2075,38 @@ public final class MainActivity extends Activity {
             }
         });
         group.addView(choice, new LinearLayout.LayoutParams(0, -2, 1));
+    }
+
+    /** How fast partner lines are read, on top of each character's own pace. */
+    private float readingSpeed() {
+        float value = preferences.getFloat(SPEED_PREFERENCE, 1f);
+        return value > 0.5f && value < 2f ? value : 1f;
+    }
+
+    private String speedLabel(float value) {
+        int name = value < 0.9f ? R.string.speed_slow : value < 1.1f ? R.string.speed_normal
+            : value < 1.4f ? R.string.speed_fast : R.string.speed_faster;
+        NumberFormat format = NumberFormat.getNumberInstance();
+        format.setMaximumFractionDigits(2);
+        return getString(name) + " · " + format.format(value) + "×";
+    }
+
+    private void showSpeedOptions() {
+        String[] labels = new String[SPEEDS.length];
+        int selected = 1;
+        for (int i = 0; i < SPEEDS.length; i++) {
+            labels[i] = speedLabel(SPEEDS[i]);
+            if (Math.abs(SPEEDS[i] - readingSpeed()) < 0.01f) {
+                selected = i;
+            }
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.speed_title)
+            .setSingleChoiceItems(labels, selected, (dialog, index) -> {
+                dialog.dismiss();
+                preferences.edit().putFloat(SPEED_PREFERENCE, SPEEDS[index]).apply();
+                render();
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
     }
 
     private void showRoleOptions() {
@@ -2349,10 +2473,7 @@ public final class MainActivity extends Activity {
         new AlertDialog.Builder(this)
             .setTitle(feature)
             .setMessage(getString(R.string.paywall_message, getString(feature)))
-            .setPositiveButton(R.string.paywall_open, (dialog, which) -> {
-                tab = Tab.PREMIUM;
-                show(Screen.HOME);
-            })
+            .setPositiveButton(R.string.paywall_open, (dialog, which) -> openPremium())
             .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
@@ -2369,7 +2490,7 @@ public final class MainActivity extends Activity {
     private void renderPremium() {
         boolean active = premium();
         boolean purchased = Premium.isPurchased(preferences);
-        pageTitle(getString(R.string.app_name), getString(R.string.premium_tab), null);
+        topBar(R.drawable.ic_back, getString(R.string.premium_tab), () -> show(premiumReturn));
 
         LinearLayout hero = new LinearLayout(this);
         hero.setOrientation(LinearLayout.VERTICAL);
@@ -2550,7 +2671,7 @@ public final class MainActivity extends Activity {
         if (!premium()) {
             stopListening();
         }
-        if ((screen == Screen.HOME && (tab == Tab.PREMIUM || tab == Tab.SETTINGS)) || screen == Screen.SETUP) {
+        if (screen == Screen.PREMIUM || screen == Screen.SETTINGS || screen == Screen.SETUP) {
             render();
         }
     }
@@ -2790,7 +2911,7 @@ public final class MainActivity extends Activity {
         if (state == NeuralVoice.State.READY && screen == Screen.REHEARSAL) {
             prefetchAhead();
         }
-        if ((screen == Screen.HOME && tab == Tab.SETTINGS) || screen == Screen.VOICES || screen == Screen.SETUP
+        if (screen == Screen.SETTINGS || screen == Screen.VOICES || screen == Screen.SETUP
             || (screen == Screen.REHEARSAL && activeUtterance == null)) {
             render();
         }
@@ -2811,7 +2932,7 @@ public final class MainActivity extends Activity {
         aiSpeaking = true;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
-            part == null ? 1f : part.pace.rate, 1f,
+            (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
             new NeuralVoice.Playback() {
                 @Override
                 public void onDone() {
@@ -2839,7 +2960,7 @@ public final class MainActivity extends Activity {
             if (RehearsalOptions.shouldSpeak(mode, role, line.role)) {
                 VoiceCast.Part part = cast.get(line.role);
                 neural.prefetch(line.text, language.code, part == null ? 0 : part.speaker,
-                    part == null ? 1f : part.pace.rate);
+                    (part == null ? 1f : part.pace.rate) * readingSpeed());
                 found++;
             }
         }
@@ -3040,7 +3161,7 @@ public final class MainActivity extends Activity {
         Map<String, VoiceCast.Part> cast = category.hasRoles() ? currentCast() : null;
         Voice fallback = defaultVoice();
         startActivity(VideoActivity.intent(this, scriptTitle, scene, role, category.hasRoles(), language, cast,
-            fallback == null ? "" : fallback.getName(), useAiVoice()));
+            fallback == null ? "" : fallback.getName(), useAiVoice(), readingSpeed()));
     }
 
     // ---------------------------------------------------------------- Hands-free cues

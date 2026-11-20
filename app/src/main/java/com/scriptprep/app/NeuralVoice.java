@@ -117,7 +117,8 @@ final class NeuralVoice {
 
     private NeuralVoice(Context context) {
         this.context = context.getApplicationContext();
-        preferences = this.context.getSharedPreferences("script_prep", Context.MODE_PRIVATE);
+        // Download bookkeeping is device specific, so it lives outside the backed-up preferences.
+        preferences = this.context.getSharedPreferences("neural_voice", Context.MODE_PRIVATE);
         // App-specific external storage: the system download manager can write there, and it
         // is removed with the app.
         File external = this.context.getExternalFilesDir(null);

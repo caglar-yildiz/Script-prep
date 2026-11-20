@@ -43,15 +43,19 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 
 İlk derlemede sherpa-onnx AAR dosyası (~50 MB) GitHub sürümünden `app/libs/` klasörüne indirilir ve SHA-256 ile doğrulanır; bu klasör depoya eklenmez.
 
-İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler **Metinler → Yeni metin** ile eklenir. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler ana ekrandaki **Yeni metin** düğmesiyle eklenir; Ayarlar sağ üstteki dişli simgesinden açılır. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+
+### Yedekleme
+
+Metinler ve ayarlar Android otomatik yedeklemesine dahil (yapay zekâ ses modeli ve indirme kayıtları hariç), böylece yeniden kurulumda ya da yeni telefonda geri gelir. **Ayarlar → Yedekleme** ile metinler bir JSON dosyasına dışa aktarılıp içe aktarılabilir; içe aktarma aynı kimlikli metinleri günceller, diğerlerini ekler, hiçbir şeyi silmez. Debug derlemeleri depodaki sabit `app/debug.keystore` ile imzalanır; böylece CI'dan gelen her APK öncekinin üzerine güncelleme olarak kurulur.
 
 ### Diller
 
-Arayüz Türkçe, İngilizce, İspanyolca, Almanca, Fransızca, Portekizce (Brezilya) ve İtalyanca. Her metnin ayrıca bir **metin dili** var (düzenleyicideki dil çipi); yeni metinler arayüz dilinde başlar, önceki metinler Türkçe kabul edilir. Cihaz sesi, yapay zekâ sesi, sesle ilerleme ve sahne başlığı tanıma (ACTO/ESCENA, AKT/SZENE, ACTE/SCÈNE, ATO/CENA, ATTO/SCENA) bu dile göre çalışır. Cihaz sesi her dil için **Ayarlar → Prova sesi → Ses dili** ile ayrı seçilir.
+Arayüz Türkçe, İngilizce, İspanyolca, Almanca, Fransızca, Portekizce (Brezilya) ve İtalyanca. Her metnin ayrıca bir **metin dili** var (düzenleyicideki dil çipi); yeni, içe aktarılan veya yapıştırılan metinlerin dili otomatik algılanır (algılanamazsa arayüz dili kullanılır), önceki metinler Türkçe kabul edilir. Cihaz sesi, yapay zekâ sesi, sesle ilerleme ve sahne başlığı tanıma (ACTO/ESCENA, AKT/SZENE, ACTE/SCÈNE, ATO/CENA, ATTO/SCENA) bu dile göre çalışır. Cihaz sesi her dil için **Ayarlar → Prova sesi → Ses dili** ile ayrı seçilir.
 
 ### Premium
 
-Premium, Google Play aboneliğiyle açılır. Debug derlemelerinde **Premium** sekmesinin altındaki **Test modu** kartından Premium satın almadan açılıp kapatılabilir (release derlemelerinde bu kart görünmez). Premium açıkken prova seçeneklerinde:
+Premium, Google Play aboneliğiyle açılır. Debug derlemelerinde **Ayarlar → Premium** ekranının altındaki **Test modu** kartından Premium satın almadan açılıp kapatılabilir (release derlemelerinde bu kart görünmez). Premium açıkken prova seçeneklerinde:
 
 - **Karakter sesleri:** Her karaktere ayrı Türkçe ses, ton (kalın/normal/ince) ve hız. Varsayılan dağıtım otomatik; seçimler metin başına kaydedilir.
 - **Sesle otomatik ilerleme:** Sıra sendeyken mikrofon dinler; repliğin en az %60'ı duyulunca prova kendiliğinden ilerler. Mikrofon izni gerekir; tanıma yoksa **Devam et** düğmesi çalışmaya devam eder.

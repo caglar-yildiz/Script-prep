@@ -183,9 +183,6 @@
     <string name="premium_switch_off">Revenir à Gratuit</string>
     <string name="premium_now_on">Premium activé</string>
     <string name="premium_now_off">Retour à l’offre gratuite</string>
-    <string name="plan_title">Offre</string>
-    <string name="plan_free">Gratuit</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s fait partie de Premium.</string>
     <string name="paywall_open">Voir Premium</string>
     <string name="cast_title">Voix des personnages</string>
@@ -345,4 +342,28 @@
     </string-array>
     <string name="voice_female">Femme</string>
     <string name="voice_male">Homme</string>
+    <string name="language_detected">Langue du texte détectée : %1$s</string>
+    <string name="speed_title">Vitesse de lecture</string>
+    <string name="speed_slow">Lente</string>
+    <string name="speed_normal">Normale</string>
+    <string name="speed_fast">Rapide</string>
+    <string name="speed_faster">Très rapide</string>
+    <string name="backup_title">Sauvegarde</string>
+    <string name="backup_description">Tes textes et réglages sont sauvegardés sur ton compte Google si la sauvegarde Android est activée. Pour garder ta propre copie, exporte-les dans un fichier.</string>
+    <string name="backup_export">Exporter les textes</string>
+    <string name="backup_import">Importer des textes</string>
+    <string name="backup_import_detail">Ajoute les textes d’une sauvegarde ; rien n’est supprimé</string>
+    <string name="backup_write_failed">Impossible d’enregistrer la sauvegarde.</string>
+    <string name="backup_read_failed">Impossible de lire cette sauvegarde.</string>
+    <plurals name="backup_exported">
+        <item quantity="one">%d texte exporté</item>
+        <item quantity="many">%d textes exportés</item>
+        <item quantity="other">%d textes exportés</item>
+    </plurals>
+    <plurals name="backup_imported">
+        <item quantity="one">%d texte importé</item>
+        <item quantity="many">%d textes importés</item>
+        <item quantity="other">%d textes importés</item>
+    </plurals>
+    <string name="premium_see_plans">Voir les offres et fonctionnalités</string>
 </resources>

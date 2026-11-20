@@ -54,6 +54,14 @@ android {
     // Release signing uses the upload key from the environment (see .github/workflows/release.yml).
     val releaseKeystore = System.getenv("RELEASE_KEYSTORE_PATH")
     signingConfigs {
+        // A fixed debug key, so every CI debug APK installs as an update and keeps the user's
+        // texts. It only signs test builds; store releases use the upload key below.
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
         if (releaseKeystore != null) {
             create("release") {
                 storeFile = file(releaseKeystore)

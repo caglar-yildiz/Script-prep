@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12 and newer: texts and settings go to the Google account backup and move to a new
+     phone; the AI voice model and download state stay on the device. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <include domain="sharedpref" path="script_prep.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="sharedpref" path="script_prep.xml" />
+    </device-transfer>
+</data-extraction-rules>

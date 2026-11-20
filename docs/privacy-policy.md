@@ -1,6 +1,6 @@
 # Memo Everything – Privacy Policy
 
-_Last updated: 18 November 2026_
+_Last updated: 19 November 2026_
 
 Memo Everything ("the app") helps you learn scripts, speeches and poems by heart. This policy explains what data the app handles. In short: **your texts, recordings and settings stay on your device. We do not run servers that receive your data, and the app has no ads, analytics or account.**
 
@@ -11,7 +11,7 @@ Memo Everything ("the app") helps you learn scripts, speeches and poems by heart
 - **Self-tape videos** you record. They are saved to your device's Movies › Memo Everything folder and are shared only if you choose to share them.
 - **The AI voice model**, if you download it.
 
-This data is not uploaded by the app. It is removed when you delete it in the app, uninstall the app, or clear the app's storage. The app does not use Android cloud backup.
+The app does not upload this data to us. If Android backup is turned on for your Google account, Android includes your texts and settings in that backup (stored by Google, end-to-end encrypted on recent Android versions) so they come back when you reinstall the app or move to a new phone; videos and the AI voice model are not included. You can also export your texts to a file you choose and import them later. Data on the device is removed when you delete it in the app, uninstall the app, or clear the app's storage.
 
 ## Permissions
 
@@ -46,7 +46,7 @@ Questions: **[CONTACT EMAIL]**
 
 # Memo Everything – Gizlilik Politikası
 
-_Son güncelleme: 18 Kasım 2026_
+_Son güncelleme: 19 Kasım 2026_
 
 Memo Everything ("uygulama"), oyun metinlerini, konuşmaları ve şiirleri ezberlemene yardım eder. Kısaca: **metinlerin, kayıtların ve ayarların cihazında kalır. Verilerini alan bir sunucumuz yok; uygulamada reklam, analiz aracı veya hesap yoktur.**
 
@@ -57,7 +57,7 @@ Memo Everything ("uygulama"), oyun metinlerini, konuşmaları ve şiirleri ezber
 - **Çektiğin self-tape videoları.** Cihazında Filmler › Memo Everything klasörüne kaydedilir; yalnızca sen paylaşırsan paylaşılır.
 - İndirirsen **yapay zekâ ses modeli**.
 
-Uygulama bu verileri hiçbir yere yüklemez. Uygulamada sildiğinde, uygulamayı kaldırdığında ya da uygulama verilerini temizlediğinde silinir. Uygulama Android bulut yedeklemesini kullanmaz.
+Uygulama bu verileri bize göndermez. Google hesabında Android yedeklemesi açıksa Android, metinlerini ve ayarlarını bu yedeğe ekler (Google tarafından saklanır, yeni Android sürümlerinde uçtan uca şifrelidir); böylece uygulamayı yeniden kurduğunda ya da yeni telefona geçtiğinde geri gelirler. Videolar ve yapay zekâ ses modeli yedeğe girmez. Metinlerini istediğin bir dosyaya dışa aktarıp sonra içe de aktarabilirsin. Cihazdaki veriler, uygulamada sildiğinde, uygulamayı kaldırdığında ya da uygulama verilerini temizlediğinde silinir.
 
 ## İzinler
 

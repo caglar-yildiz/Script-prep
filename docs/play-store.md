@@ -77,6 +77,7 @@ Kimlikler kodla birebir aynı olmalı (`Billing.java`). İstersen bir temel plan
   - Fotoğraf/video: yalnızca cihazda saklanıyor.
   - Satın alma geçmişi: Google Play Billing üzerinden; Play'in kendi işlediği veriler.
   - Veriler aktarım sırasında şifreleniyor: evet (HTTPS). Kullanıcı verileri silebilir: evet (uygulama içinden).
+  - Yedekleme: metinler ve ayarlar Android'in kendi yedeğine (Google hesabı) giriyor; bu, geliştiricinin veri toplaması sayılmaz. Kullanıcı ayrıca dosyaya dışa aktarabiliyor.
 - **Görseller**: uygulama simgesi 512×512, öne çıkan görsel 1024×500, en az 2 telefon ekran görüntüsü (her dil için ayrı yüklenebilir).
 
 ## 6. Kapalı test (kişisel hesap şartı)
