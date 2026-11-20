@@ -107,8 +107,7 @@ public final class MainActivity extends Activity {
     private static final double LINE_SAID = 0.6;
     private static final double LINE_CLEAN = 0.8;
     private static final int LISTEN_RETRIES = 6;
-    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES }
-    private enum Tab { SCRIPTS, PREMIUM, SETTINGS }
+    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -157,7 +156,8 @@ public final class MainActivity extends Activity {
     private String activePreview;
 
     private Screen screen = Screen.HOME;
-    private Tab tab = Tab.SCRIPTS;
+    /** Where the Premium screen goes back to: Settings, or the screen that asked for Premium. */
+    private Screen premiumReturn = Screen.SETTINGS;
     private TextCategory category = TextCategory.ROLE_REHEARSAL;
     /** Language of the open text. */
     private ScriptLanguage language = ScriptLanguage.TURKISH;
@@ -214,7 +214,7 @@ public final class MainActivity extends Activity {
             editorReturn = Screen.valueOf(state.getString("editor_return", Screen.HOME.name()));
             String restoredScreen = state.getString("screen", Screen.HOME.name());
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
-            tab = Tab.valueOf(state.getString("tab", Tab.SCRIPTS.name()));
+            premiumReturn = Screen.valueOf(state.getString("premium_return", Screen.SETTINGS.name()));
             category = TextCategory.fromSavedValue(state.getString("category"));
             language = ScriptLanguage.fromCode(state.getString("language"));
             fullScene = parseScript(script);
@@ -281,7 +281,7 @@ public final class MainActivity extends Activity {
         state.putString("category", category.name());
         state.putString("language", language.code);
         state.putString("screen", screen.name());
-        state.putString("tab", tab.name());
+        state.putString("premium_return", premiumReturn.name());
         state.putString("role", role);
         state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
@@ -348,7 +348,9 @@ public final class MainActivity extends Activity {
             leaveEditor();
         } else if (screen == Screen.SETUP && hasNamedSections()) {
             show(Screen.SECTIONS);
-        } else if (screen != Screen.HOME || tab != Tab.SCRIPTS) {
+        } else if (screen == Screen.PREMIUM) {
+            show(premiumReturn);
+        } else if (screen != Screen.HOME) {
             returnToLibrary();
         } else {
             super.onBackPressed();
@@ -458,7 +460,7 @@ public final class MainActivity extends Activity {
             } else {
                 render();
             }
-        } else if (screen == Screen.HOME && tab == Tab.SETTINGS) {
+        } else if (screen == Screen.SETTINGS) {
             render();
         }
     }
@@ -579,16 +581,21 @@ public final class MainActivity extends Activity {
     }
 
     private void returnToLibrary() {
-        tab = Tab.SCRIPTS;
         show(Screen.HOME);
+    }
+
+    /** Opens the Premium screen; back returns to the screen it was opened from. */
+    private void openPremium() {
+        premiumReturn = screen == Screen.PREMIUM ? premiumReturn : screen;
+        show(Screen.PREMIUM);
     }
 
     /**
      * Identifies what the screen shows. Redrawing the same view keeps the scroll position;
-     * moving to another screen, tab, text or rehearsal line starts at the top.
+     * moving to another screen, text or rehearsal line starts at the top.
      */
     private String scrollKey() {
-        return screen + "|" + tab + "|" + scriptId + "|" + sectionIndex
+        return screen + "|" + scriptId + "|" + sectionIndex
             + (screen == Screen.REHEARSAL ? "|" + position : "");
     }
 
@@ -636,14 +643,9 @@ public final class MainActivity extends Activity {
         downloadBars.clear();
         snackbarView = null;
         switch (screen) {
-            case HOME -> {
-                switch (tab) {
-                    case SCRIPTS -> renderLibrary();
-                    case PREMIUM -> renderPremium();
-                    case SETTINGS -> renderSettings();
-                }
-                bottomNavigation();
-            }
+            case HOME -> renderLibrary();
+            case SETTINGS -> renderSettings();
+            case PREMIUM -> renderPremium();
             case CATEGORIES -> renderCategories();
             case SOURCE -> renderSource();
             case EDITOR -> renderEditor();
@@ -755,53 +757,9 @@ public final class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- Home tabs
 
-    private void bottomNavigation() {
-        footer.setBackground(topBorder());
-        footer.setPadding(ui.dp(8), ui.dp(8), ui.dp(8), ui.dp(10));
-        LinearLayout items = horizontal();
-        addTab(items, Tab.SCRIPTS, R.string.scripts_tab, R.drawable.ic_texts);
-        addTab(items, Tab.PREMIUM, R.string.premium_tab, R.drawable.ic_star);
-        addTab(items, Tab.SETTINGS, R.string.settings_tab, R.drawable.ic_settings);
-        footer.addView(items, Ui.matchWidth());
-    }
-
-    private void addTab(LinearLayout navigation, Tab destination, int label, int drawable) {
-        boolean selected = tab == destination;
-        LinearLayout item = new LinearLayout(this);
-        item.setOrientation(LinearLayout.VERTICAL);
-        item.setGravity(Gravity.CENTER_HORIZONTAL);
-        item.setPadding(0, ui.dp(4), 0, ui.dp(4));
-        item.setBackground(ui.ripple(null, 0x1FFFFFFF));
-        item.setClickable(true);
-        item.setFocusable(true);
-        item.setSelected(selected);
-        item.setContentDescription(getString(label));
-        item.setOnClickListener(view -> {
-            if (tab != destination) {
-                cancelSpeech();
-                tab = destination;
-                render();
-            }
-        });
-
-        FrameLayout pill = new FrameLayout(this);
-        if (selected) {
-            pill.setBackground(ui.shape(ACCENT_CONTAINER, 999));
-        }
-        pill.addView(ui.icon(drawable, selected ? ACCENT : TEXT_TERTIARY, 24),
-            new FrameLayout.LayoutParams(ui.dp(24), ui.dp(24), Gravity.CENTER));
-        item.addView(pill, new LinearLayout.LayoutParams(ui.dp(64), ui.dp(32)));
-
-        TextView text = ui.text(getString(label), Type.CAPTION, selected ? TEXT : TEXT_TERTIARY);
-        text.setTypeface(selected ? Ui.MEDIUM : Ui.REGULAR);
-        text.setPadding(0, ui.dp(4), 0, 0);
-        text.setGravity(Gravity.CENTER);
-        text.setSingleLine(true);
-        item.addView(text, new LinearLayout.LayoutParams(-2, -2));
-        navigation.addView(item, new LinearLayout.LayoutParams(0, -2, 1));
-    }
-
     private void renderLibrary() {
+        LinearLayout bar = topBar(0, null, null);
+        barAction(bar, R.drawable.ic_settings, R.string.settings_tab, view -> show(Screen.SETTINGS));
         List<ScriptLibrary.Script> scripts = library.list();
         if (scripts.isEmpty()) {
             renderEmptyLibrary();
@@ -821,7 +779,7 @@ public final class MainActivity extends Activity {
         count.setPadding(0, ui.dp(4), 0, 0);
         titles.addView(count);
         heading.addView(titles, new LinearLayout.LayoutParams(0, -2, 1));
-        content.addView(heading, ui.spaced(20));
+        content.addView(heading, ui.spaced(0));
 
         LinearLayout.LayoutParams first = ui.spaced(20);
         boolean isFirst = true;
@@ -1082,7 +1040,15 @@ public final class MainActivity extends Activity {
     }
 
     private void renderSettings() {
-        pageTitle(getString(R.string.app_name), getString(R.string.settings_tab), null);
+        topBar(R.drawable.ic_back, getString(R.string.settings_tab), this::returnToLibrary);
+
+        sectionLabel(R.string.premium_tab);
+        LinearLayout premiumCard = ui.card(premium() ? ACCENT_CONTAINER : SURFACE, null);
+        premiumCard.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        premiumCard.addView(ui.listRow(R.drawable.ic_star, getString(R.string.app_name) + " " + getString(R.string.premium_tab),
+            getString(premium() ? R.string.premium_active_chip : R.string.premium_see_plans),
+            view -> openPremium()), Ui.matchWidth());
+        content.addView(premiumCard, ui.spaced(10));
 
         sectionLabel(R.string.settings_general);
         LinearLayout general = ui.card(SURFACE, null);
@@ -1128,15 +1094,6 @@ public final class MainActivity extends Activity {
 
         renderAiVoiceSettings();
 
-        sectionLabel(R.string.plan_title);
-        LinearLayout plan = ui.card(SURFACE, null);
-        plan.setPadding(0, ui.dp(4), 0, ui.dp(4));
-        plan.addView(ui.listRow(R.drawable.ic_star, getString(R.string.plan_title),
-            getString(premium() ? R.string.plan_premium : R.string.plan_free), view -> {
-                tab = Tab.PREMIUM;
-                render();
-            }), Ui.matchWidth());
-        content.addView(plan, ui.spaced(10));
 
         sectionLabel(R.string.backup_title);
         content.addView(ui.text(getString(R.string.backup_description), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
@@ -1837,7 +1794,7 @@ public final class MainActivity extends Activity {
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-1, -2, Gravity.BOTTOM);
         params.setMargins(ui.dp(12), 0, ui.dp(12), ui.dp(12));
         // Sit above the floating create button on the library.
-        if (screen == Screen.HOME && tab == Tab.SCRIPTS && !library.list().isEmpty()) {
+        if (screen == Screen.HOME && !library.list().isEmpty()) {
             params.bottomMargin = ui.dp(84);
         }
         overlay.addView(bar, params);
@@ -2516,10 +2473,7 @@ public final class MainActivity extends Activity {
         new AlertDialog.Builder(this)
             .setTitle(feature)
             .setMessage(getString(R.string.paywall_message, getString(feature)))
-            .setPositiveButton(R.string.paywall_open, (dialog, which) -> {
-                tab = Tab.PREMIUM;
-                show(Screen.HOME);
-            })
+            .setPositiveButton(R.string.paywall_open, (dialog, which) -> openPremium())
             .setNegativeButton(android.R.string.cancel, null)
             .show();
     }
@@ -2536,7 +2490,7 @@ public final class MainActivity extends Activity {
     private void renderPremium() {
         boolean active = premium();
         boolean purchased = Premium.isPurchased(preferences);
-        pageTitle(getString(R.string.app_name), getString(R.string.premium_tab), null);
+        topBar(R.drawable.ic_back, getString(R.string.premium_tab), () -> show(premiumReturn));
 
         LinearLayout hero = new LinearLayout(this);
         hero.setOrientation(LinearLayout.VERTICAL);
@@ -2717,7 +2671,7 @@ public final class MainActivity extends Activity {
         if (!premium()) {
             stopListening();
         }
-        if ((screen == Screen.HOME && (tab == Tab.PREMIUM || tab == Tab.SETTINGS)) || screen == Screen.SETUP) {
+        if (screen == Screen.PREMIUM || screen == Screen.SETTINGS || screen == Screen.SETUP) {
             render();
         }
     }
@@ -2957,7 +2911,7 @@ public final class MainActivity extends Activity {
         if (state == NeuralVoice.State.READY && screen == Screen.REHEARSAL) {
             prefetchAhead();
         }
-        if ((screen == Screen.HOME && tab == Tab.SETTINGS) || screen == Screen.VOICES || screen == Screen.SETUP
+        if (screen == Screen.SETTINGS || screen == Screen.VOICES || screen == Screen.SETUP
             || (screen == Screen.REHEARSAL && activeUtterance == null)) {
             render();
         }

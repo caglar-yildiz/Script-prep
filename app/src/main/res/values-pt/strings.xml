@@ -183,9 +183,6 @@
     <string name="premium_switch_off">Voltar para o Gratuito</string>
     <string name="premium_now_on">Premium ativado</string>
     <string name="premium_now_off">De volta ao plano Gratuito</string>
-    <string name="plan_title">Plano</string>
-    <string name="plan_free">Gratuito</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s faz parte do Premium.</string>
     <string name="paywall_open">Ver Premium</string>
     <string name="cast_title">Vozes dos personagens</string>
@@ -368,4 +365,5 @@
         <item quantity="many">%d textos importados</item>
         <item quantity="other">%d textos importados</item>
     </plurals>
+    <string name="premium_see_plans">Ver planos e recursos</string>
 </resources>

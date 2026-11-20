@@ -179,9 +179,6 @@
     <string name="premium_switch_off">Ücretsiz plana dön</string>
     <string name="premium_now_on">Premium açıldı</string>
     <string name="premium_now_off">Ücretsiz plana dönüldü</string>
-    <string name="plan_title">Plan</string>
-    <string name="plan_free">Ücretsiz</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s, Premium’a dahil bir özellik.</string>
     <string name="paywall_open">Premium’u gör</string>
     <string name="cast_title">Karakter sesleri</string>
@@ -356,4 +353,5 @@
         <item quantity="one">%d metin içe aktarıldı</item>
         <item quantity="other">%d metin içe aktarıldı</item>
     </plurals>
+    <string name="premium_see_plans">Planları ve özellikleri gör</string>
 </resources>

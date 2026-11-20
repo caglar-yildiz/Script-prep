@@ -183,9 +183,6 @@
     <string name="premium_switch_off">Torna a Gratis</string>
     <string name="premium_now_on">Premium attivato</string>
     <string name="premium_now_off">Di nuovo nel piano Gratis</string>
-    <string name="plan_title">Piano</string>
-    <string name="plan_free">Gratis</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s fa parte di Premium.</string>
     <string name="paywall_open">Scopri Premium</string>
     <string name="cast_title">Voci dei personaggi</string>
@@ -368,4 +365,5 @@
         <item quantity="many">%d testi importati</item>
         <item quantity="other">%d testi importati</item>
     </plurals>
+    <string name="premium_see_plans">Vedi piani e funzioni</string>
 </resources>

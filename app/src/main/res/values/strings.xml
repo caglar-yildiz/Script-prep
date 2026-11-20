@@ -180,9 +180,6 @@
     <string name="premium_switch_off">Back to Free</string>
     <string name="premium_now_on">Premium enabled</string>
     <string name="premium_now_off">Back on the Free plan</string>
-    <string name="plan_title">Plan</string>
-    <string name="plan_free">Free</string>
-    <string name="plan_premium">Premium</string>
     <string name="paywall_message">%1$s is part of Premium.</string>
     <string name="paywall_open">See Premium</string>
     <string name="cast_title">Character voices</string>
@@ -362,4 +359,5 @@
         <item quantity="one">%d text imported</item>
         <item quantity="other">%d texts imported</item>
     </plurals>
+    <string name="premium_see_plans">See plans and features</string>
 </resources>
