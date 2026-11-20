@@ -40,7 +40,8 @@ android {
     defaultConfig {
         // The store identity; the Java package keeps its original name.
         applicationId = "com.memoeverything.app"
-        minSdk = 23
+        // Google Play automatic protection requires Android 7.0 (API 24) or newer.
+        minSdk = 24
         targetSdk = 36
         // Release builds get these from the release workflow so every upload counts up.
         versionCode = (System.getenv("VERSION_CODE") ?: "2").toInt()
