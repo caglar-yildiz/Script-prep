@@ -36,6 +36,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Keeps downloaded Gradle dependencies between runs, so builds rarely need Maven Central.
+          cache: gradle
 
       - name: Ensure Android SDK packages are installed
         run: |
@@ -75,7 +77,8 @@ jobs:
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: |
-          ./gradlew --no-daemon --stacktrace :app:bundleRelease
+          # Dependency downloads occasionally fail on CI runners; try once more before giving up.
+          ./gradlew --no-daemon --stacktrace :app:bundleRelease || ./gradlew --no-daemon --stacktrace --refresh-dependencies :app:bundleRelease
           bundle="app/build/outputs/bundle/release/app-release.aab"
           jarsigner -verify "$bundle" | grep -q "jar verified" || { echo "::error::The bundle is not signed."; exit 1; }
           cp "$bundle" "Memo-Everything-$VERSION_NAME-$VERSION_CODE.aab"
