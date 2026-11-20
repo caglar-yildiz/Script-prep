@@ -29,10 +29,11 @@ jobs:
           packages: 'platform-tools platforms;android-36 build-tools;36.0.0'
 
       - name: Build release bundle
-        env:
+        run: |
           # Every upload to Google Play needs a larger version code than the last one.
-          VERSION_CODE: ${{ 100 + github.run_number }}
-        run: ./gradlew --no-daemon :app:testReleaseUnitTest :app:bundleRelease
+          export VERSION_CODE=$((100 + GITHUB_RUN_NUMBER))
+          echo "Version code $VERSION_CODE"
+          ./gradlew --no-daemon :app:testReleaseUnitTest :app:bundleRelease
 
       - name: Sign bundle with the Play upload key
         env:
