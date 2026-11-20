@@ -42,11 +42,11 @@ jobs:
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
           "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify app/build/outputs/apk/debug/app-debug.apk
           "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -Fx "targetSdkVersion:'36'"
-          cp app/build/outputs/apk/debug/app-debug.apk Script-Prep-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk Memo-Everything.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Script-Prep-debug
-          path: Script-Prep-debug.apk
+          name: Memo-Everything
+          path: Memo-Everything.apk
           if-no-files-found: error
           retention-days: 30
