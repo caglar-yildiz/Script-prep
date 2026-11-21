@@ -108,7 +108,7 @@ public final class MainActivity extends Activity {
     private static final double LINE_SAID = 0.6;
     private static final double LINE_CLEAN = 0.8;
     private static final int LISTEN_RETRIES = 6;
-    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM }
+    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM, LINES }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -172,6 +172,8 @@ public final class MainActivity extends Activity {
     private String savedTitle = "";
     private String savedScript = "";
     private Screen editorReturn = Screen.HOME;
+    /** Where the line editor goes back to. */
+    private Screen linesReturn = Screen.SETUP;
     private Scene fullScene;
     private Scene scene;
     private int sectionIndex = -1;
@@ -216,6 +218,7 @@ public final class MainActivity extends Activity {
             String restoredScreen = state.getString("screen", Screen.HOME.name());
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
             premiumReturn = Screen.valueOf(state.getString("premium_return", Screen.SETTINGS.name()));
+            linesReturn = Screen.valueOf(state.getString("lines_return", Screen.SETUP.name()));
             category = TextCategory.fromSavedValue(state.getString("category"));
             language = ScriptLanguage.fromCode(state.getString("language"));
             fullScene = parseScript(script);
@@ -234,7 +237,7 @@ public final class MainActivity extends Activity {
             lineVisibility = Visibility.valueOf(state.getString("line_visibility", Visibility.FULL.name()));
             revealLine = state.getBoolean("reveal_line");
             if (screen == Screen.SETUP || screen == Screen.READER || screen == Screen.REHEARSAL
-                || screen == Screen.VOICES) {
+                || screen == Screen.VOICES || screen == Screen.LINES) {
                 ensureRole();
             }
         }
@@ -283,6 +286,7 @@ public final class MainActivity extends Activity {
         state.putString("language", language.code);
         state.putString("screen", screen.name());
         state.putString("premium_return", premiumReturn.name());
+        state.putString("lines_return", linesReturn.name());
         state.putString("role", role);
         state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
@@ -349,6 +353,8 @@ public final class MainActivity extends Activity {
             leaveEditor();
         } else if (screen == Screen.SETUP && hasNamedSections()) {
             show(Screen.SECTIONS);
+        } else if (screen == Screen.LINES) {
+            show(linesReturn);
         } else if (screen == Screen.PREMIUM) {
             show(premiumReturn);
         } else if (screen != Screen.HOME) {
@@ -655,6 +661,7 @@ public final class MainActivity extends Activity {
             case READER -> renderReader();
             case REHEARSAL -> renderRehearsal();
             case VOICES -> renderVoices();
+            case LINES -> renderLines();
         }
         if (snackbarMessage != null) {
             addSnackbar();
@@ -1849,7 +1856,7 @@ public final class MainActivity extends Activity {
 
     private void renderSections() {
         LinearLayout bar = topBar(R.drawable.ic_back, null, this::returnToLibrary);
-        barAction(bar, R.drawable.ic_edit, R.string.edit_scene, view -> editCurrent());
+        barAction(bar, R.drawable.ic_edit, R.string.edit_scene, view -> editLines());
         pageTitle(scriptTitle, getString(R.string.choose_scene), null);
 
         LinearLayout whole = ui.card(ACCENT_CONTAINER, view -> selectSection(-1));
@@ -1947,7 +1954,7 @@ public final class MainActivity extends Activity {
     private void renderSetup() {
         LinearLayout bar = topBar(R.drawable.ic_back, null, this::onBackPressed);
         barAction(bar, R.drawable.ic_book, R.string.read_script, view -> show(Screen.READER));
-        barAction(bar, R.drawable.ic_edit, R.string.edit_scene, view -> editCurrent());
+        barAction(bar, R.drawable.ic_edit, R.string.edit_scene, view -> editLines());
         if (scriptId != null) {
             barAction(bar, R.drawable.ic_delete, R.string.action_delete, view -> deleteCurrent());
         }
@@ -2124,6 +2131,349 @@ public final class MainActivity extends Activity {
             .setNegativeButton(android.R.string.cancel, null).show();
     }
 
+    // ---------------------------------------------------------------- Line editor
+
+    /** Role texts open line by line; speeches and poems keep the plain text editor. */
+    private void editLines() {
+        if (!category.hasRoles()) {
+            editCurrent();
+            return;
+        }
+        linesReturn = screen;
+        show(Screen.LINES);
+    }
+
+    private void renderLines() {
+        LinearLayout bar = topBar(R.drawable.ic_back, getString(R.string.lines_title), () -> show(linesReturn));
+        barAction(bar, R.drawable.ic_texts, R.string.edit_as_text, view -> editCurrent());
+        content.addView(ui.text(getString(R.string.lines_hint), Type.BODY, TEXT_SECONDARY), ui.spaced(4));
+
+        List<Scene.Line> lines = fullScene.lines;
+        String section = "";
+        for (int i = 0; i < lines.size(); i++) {
+            Scene.Line line = lines.get(i);
+            if (!line.section.equals(section) && !line.section.isEmpty()) {
+                content.addView(ui.text(line.section, Type.OVERLINE, TEXT_TERTIARY), ui.spaced(24));
+            }
+            section = line.section;
+            content.addView(lineCard(i, line), ui.spaced(8));
+        }
+
+        LinearLayout actions = footerBar();
+        actions.addView(ui.button(getString(R.string.line_add), R.drawable.ic_add, Kind.PRIMARY,
+            view -> editLine(lines.size(), null, true)), Ui.matchWidth());
+    }
+
+    private LinearLayout lineCard(int index, Scene.Line line) {
+        boolean mine = line.role.equals(role);
+        LinearLayout card = ui.card(mine ? ACCENT_CONTAINER : SURFACE, view -> editLine(index, line, false));
+        card.setPadding(ui.dp(16), ui.dp(10), ui.dp(4), ui.dp(12));
+        LinearLayout heading = horizontal();
+        TextView who = ui.text(line.role, Type.LABEL, mine ? ACCENT : VIOLET);
+        heading.addView(who, new LinearLayout.LayoutParams(0, -2, 1));
+        FrameLayout more = ui.iconButton(R.drawable.ic_more, getString(R.string.text_actions, line.role),
+            TEXT_SECONDARY, 0, 40, null);
+        more.setOnClickListener(view -> showLineMenu(view, index, line));
+        heading.addView(more);
+        card.addView(heading, Ui.matchWidth());
+        TextView text = ui.serif(line.text, 16, mine ? ON_ACCENT_CONTAINER : TEXT);
+        text.setPadding(0, 0, ui.dp(12), 0);
+        card.addView(text, Ui.matchWidth());
+        for (String note : line.notes) {
+            TextView direction = ui.serif(note, 14, TEXT_TERTIARY);
+            direction.setTypeface(Typeface.SERIF, Typeface.ITALIC);
+            direction.setPadding(0, ui.dp(4), ui.dp(12), 0);
+            card.addView(direction, Ui.matchWidth());
+        }
+        card.setOnLongClickListener(view -> {
+            showLineMenu(more, index, line);
+            return true;
+        });
+        return card;
+    }
+
+    private void showLineMenu(View anchor, int index, Scene.Line line) {
+        PopupMenu menu = new PopupMenu(this, anchor, Gravity.END);
+        menu.getMenu().add(0, 1, 0, R.string.line_edit);
+        menu.getMenu().add(0, 2, 1, R.string.line_add_below);
+        menu.getMenu().add(0, 3, 2, R.string.line_note_below);
+        menu.getMenu().add(0, 4, 3, R.string.line_add_above);
+        menu.getMenu().add(0, 5, 4, R.string.line_delete);
+        menu.setOnMenuItemClickListener(item -> {
+            switch (item.getItemId()) {
+                case 1 -> editLine(index, line, false);
+                case 2 -> editLine(index + 1, line, true);
+                case 3 -> addNote(index, line);
+                case 4 -> editLine(index, line, true);
+                case 5 -> deleteLine(index);
+                default -> {
+                    return false;
+                }
+            }
+            return true;
+        });
+        menu.show();
+    }
+
+    /**
+     * Opens the line dialog. With {@code insert} a new line goes in at {@code index}, taking the
+     * scene of {@code near}; otherwise the line at {@code index} changes.
+     */
+    private void editLine(int index, Scene.Line near, boolean insert) {
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+
+        form.addView(ui.text(getString(R.string.line_role), Type.LABEL, TEXT_SECONDARY));
+        EditText roleField = field(R.string.line_role, insert ? suggestedRole(index) : near.role,
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS, 40);
+        roleField.setSingleLine(true);
+        form.addView(roleField, ui.spaced(6));
+        android.widget.HorizontalScrollView roleScroll = new android.widget.HorizontalScrollView(this);
+        roleScroll.setHorizontalScrollBarEnabled(false);
+        LinearLayout roles = horizontal();
+        for (String name : fullScene.roles) {
+            TextView option = ui.chip(name, TEXT, SURFACE_HIGHEST);
+            option.setBackground(ui.ripple(ui.shape(SURFACE_HIGHEST, 999), 0x22FFFFFF));
+            option.setOnClickListener(view -> {
+                roleField.setText(name);
+                roleField.setSelection(name.length());
+            });
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, -2);
+            params.rightMargin = ui.dp(6);
+            roles.addView(option, params);
+        }
+        roleScroll.addView(roles);
+        form.addView(roleScroll, ui.spaced(8));
+
+        form.addView(ui.text(getString(R.string.line_text), Type.LABEL, TEXT_SECONDARY), ui.spaced(16));
+        EditText textField = field(R.string.line_text, insert ? "" : near.text,
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            4000);
+        textField.setMinLines(3);
+        textField.setGravity(Gravity.TOP | Gravity.START);
+        textField.setTypeface(Typeface.SERIF);
+        form.addView(textField, ui.spaced(6));
+
+        form.addView(ui.text(getString(R.string.line_notes), Type.LABEL, TEXT_SECONDARY), ui.spaced(16));
+        EditText notesField = field(R.string.line_note, insert ? "" : TextUtils.join("\n", near.notes),
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            2000);
+        notesField.setGravity(Gravity.TOP | Gravity.START);
+        form.addView(notesField, ui.spaced(6));
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(form);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(insert ? R.string.line_add : R.string.line_edit)
+            .setView(scroll)
+            .setPositiveButton(R.string.script_save, null)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            String name = roleField.getText().toString().trim().replaceAll("\\s+", " ");
+            String spoken = textField.getText().toString().trim().replaceAll("\\s+", " ");
+            if (!Scene.isRoleName(name)) {
+                roleField.setError(getString(R.string.line_role_invalid));
+                roleField.requestFocus();
+                return;
+            }
+            if (spoken.isEmpty()) {
+                textField.setError(getString(R.string.line_text_required));
+                textField.requestFocus();
+                return;
+            }
+            List<String> notes = new ArrayList<>();
+            for (String note : notesField.getText().toString().split("\n")) {
+                if (!note.trim().isEmpty()) {
+                    notes.add(note.trim());
+                }
+            }
+            List<Scene.Line> lines = new ArrayList<>(fullScene.lines);
+            String section = near != null ? near.section : lines.isEmpty() ? "" : lines.get(lines.size() - 1).section;
+            Scene.Line changed = Scene.Line.of(existingRole(name), spoken, section, notes);
+            if (insert) {
+                lines.add(Math.max(0, Math.min(index, lines.size())), changed);
+            } else {
+                lines.set(index, changed);
+            }
+            if (saveLines(lines)) {
+                dialog.dismiss();
+            }
+        }));
+        dialog.show();
+    }
+
+    /** A new line most likely belongs to whoever answers the line before it. */
+    private String suggestedRole(int index) {
+        List<Scene.Line> lines = fullScene.lines;
+        if (index > 0 && index - 2 >= 0 && index - 2 < lines.size()) {
+            return lines.get(index - 2).role;
+        }
+        return role == null ? "" : role;
+    }
+
+    /** Reuses the spelling of a character that already exists, whatever case was typed. */
+    private String existingRole(String name) {
+        for (String existing : fullScene.roles) {
+            if (existing.toLowerCase(language.locale).equals(name.toLowerCase(language.locale))) {
+                return existing;
+            }
+        }
+        return name;
+    }
+
+    private void addNote(int index, Scene.Line line) {
+        EditText noteField = field(R.string.line_note, "",
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            2000);
+        FrameLayout frame = new FrameLayout(this);
+        frame.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        frame.addView(noteField);
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.line_note_below)
+            .setView(frame)
+            .setPositiveButton(R.string.script_save, (dialog, which) -> {
+                String note = noteField.getText().toString().trim().replaceAll("\\s+", " ");
+                if (note.isEmpty()) {
+                    return;
+                }
+                List<String> notes = new ArrayList<>(line.notes);
+                notes.add(note);
+                List<Scene.Line> lines = new ArrayList<>(fullScene.lines);
+                lines.set(index, Scene.Line.of(line.role, line.text, line.section, notes));
+                saveLines(lines);
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+        noteField.requestFocus();
+    }
+
+    private void deleteLine(int index) {
+        String before = script;
+        List<Scene.Line> lines = new ArrayList<>(fullScene.lines);
+        lines.remove(index);
+        if (saveLines(lines)) {
+            showSnackbar(getString(R.string.line_deleted), getString(R.string.undo), () -> saveText(before));
+        }
+    }
+
+    /** Writes edited lines back as the text, saves it and keeps the rehearsal state in step. */
+    private boolean saveLines(List<Scene.Line> lines) {
+        if (lines.isEmpty()) {
+            notifyUser(R.string.invalid_scene);
+            return false;
+        }
+        return saveText(Scene.toText(lines));
+    }
+
+    private boolean saveText(String text) {
+        if (text.length() > MAX_SCRIPT_LENGTH) {
+            notifyUser(R.string.import_too_long);
+            return false;
+        }
+        String title = scriptTitle.trim().isEmpty() ? getString(R.string.sample_title) : scriptTitle;
+        scriptId = library.save(scriptId, title, text, category, language);
+        scriptTitle = title;
+        script = text;
+        savedTitle = title;
+        savedScript = text;
+        fullScene = parseScript(text);
+        if (sectionIndex >= fullScene.sections.size()) {
+            sectionIndex = -1;
+        }
+        scene = fullScene.forSection(sectionIndex);
+        reviewBase = null;
+        position = Math.min(position, scene.lines.size());
+        ensureRole();
+        parsedCache.clear();
+        render();
+        return true;
+    }
+
+    // ---------------------------------------------------------------- Rehearsal navigation
+
+    /** The next line the actor says after the current one, or -1 when there is none. */
+    private int nextTurn() {
+        for (int i = position + 1; i < scene.lines.size(); i++) {
+            if (!RehearsalOptions.shouldSpeak(mode, role, scene.lines.get(i).role)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /** Lists every line of the scene; tapping one rehearses from there. */
+    private void showOverview() {
+        List<Scene.Line> lines = scene.lines;
+        android.widget.ListView list = new android.widget.ListView(this);
+        list.setDivider(null);
+        list.setPadding(ui.dp(12), ui.dp(4), ui.dp(12), ui.dp(8));
+        list.setClipToPadding(false);
+        AlertDialog[] dialog = new AlertDialog[1];
+        list.setAdapter(new android.widget.BaseAdapter() {
+            @Override
+            public int getCount() {
+                return lines.size();
+            }
+
+            @Override
+            public Object getItem(int index) {
+                return lines.get(index);
+            }
+
+            @Override
+            public long getItemId(int index) {
+                return index;
+            }
+
+            @Override
+            public View getView(int index, View reuse, android.view.ViewGroup parent) {
+                Scene.Line line = lines.get(index);
+                boolean mine = mode == Mode.PRACTICE && line.role.equals(role);
+                boolean current = index == position;
+                LinearLayout item = new LinearLayout(MainActivity.this);
+                item.setOrientation(LinearLayout.VERTICAL);
+                item.setPadding(ui.dp(14), ui.dp(10), ui.dp(14), ui.dp(10));
+                GradientDrawable shape = ui.shape(mine ? ACCENT_CONTAINER : 0x00000000, 14);
+                if (current) {
+                    shape.setStroke(ui.dp(2), ACCENT);
+                }
+                item.setBackground(shape);
+                LinearLayout top = horizontal();
+                top.addView(ui.text(String.valueOf(index + 1), Type.CAPTION, TEXT_TERTIARY),
+                    new LinearLayout.LayoutParams(ui.dp(34), -2));
+                TextView who = ui.text(line.role, Type.LABEL, mine ? ACCENT : VIOLET);
+                top.addView(who, new LinearLayout.LayoutParams(0, -2, 1));
+                item.addView(top, Ui.matchWidth());
+                TextView text = ui.text(line.text, Type.BODY, mine ? ON_ACCENT_CONTAINER : TEXT_SECONDARY);
+                text.setMaxLines(2);
+                text.setEllipsize(TextUtils.TruncateAt.END);
+                text.setPadding(ui.dp(34), ui.dp(2), 0, 0);
+                item.addView(text, Ui.matchWidth());
+                android.widget.AbsListView.LayoutParams params = new android.widget.AbsListView.LayoutParams(-1, -2);
+                item.setLayoutParams(params);
+                FrameLayout spaced = new FrameLayout(MainActivity.this);
+                spaced.setPadding(0, ui.dp(2), 0, ui.dp(2));
+                spaced.addView(item);
+                return spaced;
+            }
+        });
+        list.setOnItemClickListener((parent, view, index, id) -> {
+            if (dialog[0] != null) {
+                dialog[0].dismiss();
+            }
+            moveTo(index, true);
+        });
+        dialog[0] = new AlertDialog.Builder(this)
+            .setTitle(R.string.overview_title)
+            .setMessage(R.string.overview_hint)
+            .setView(list)
+            .setNegativeButton(R.string.action_close, null)
+            .show();
+        list.setSelection(Math.max(0, position - 2));
+    }
+
     private void showRoleOptions() {
         String[] choices = scene.roles.toArray(new String[0]);
         new AlertDialog.Builder(this).setTitle(R.string.choose_practice_role)
@@ -2216,6 +2566,9 @@ public final class MainActivity extends Activity {
         String title = reviewBase != null ? getString(R.string.results_struggled)
             : hasNamedSections() ? currentSectionTitle() : scriptTitle;
         LinearLayout bar = topBar(R.drawable.ic_close, title, () -> show(Screen.SETUP));
+        if (total > 0) {
+            barAction(bar, R.drawable.ic_list, R.string.overview_title, view -> showOverview());
+        }
         if (mode == Mode.PRACTICE && position < total) {
             boolean on = handsFreeEnabled();
             barAction(bar, on ? R.drawable.ic_mic : R.drawable.ic_mic_off,
@@ -2299,6 +2652,14 @@ public final class MainActivity extends Activity {
             status.setGravity(Gravity.CENTER);
             status.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
             content.addView(status, ui.spaced(18));
+        }
+        // A long wait for the actor's next line: jump to three lines before it to hear the cues.
+        int nextLine = mode == Mode.PRACTICE && !myTurn ? nextTurn() : -1;
+        if (nextLine - position > 3) {
+            int away = nextLine - position;
+            LinearLayout skip = ui.button(getResources().getQuantityString(R.plurals.jump_to_turn, away, away),
+                R.drawable.ic_next, Kind.TONAL, view -> moveTo(nextLine - 3, true));
+            content.addView(skip, ui.spaced(16));
         }
 
         LinearLayout controls = footerBar();

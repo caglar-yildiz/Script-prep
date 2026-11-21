@@ -354,4 +354,26 @@
         <item quantity="other">%d Texte importiert</item>
     </plurals>
     <string name="premium_see_plans">Tarife und Funktionen ansehen</string>
+    <string name="overview_title">Szenenübersicht</string>
+    <string name="overview_hint">Tippe auf eine Replik, um ab dort zu proben.</string>
+    <string name="lines_title">Repliken bearbeiten</string>
+    <string name="lines_hint">Tippe auf eine Replik, um sie zu ändern. Über ⋮ fügst du dazwischen eine Replik oder Notiz ein oder löschst sie.</string>
+    <string name="line_edit">Replik bearbeiten</string>
+    <string name="line_add_below">Replik darunter einfügen</string>
+    <string name="line_note_below">Notiz darunter einfügen</string>
+    <string name="line_add_above">Replik darüber einfügen</string>
+    <string name="line_delete">Replik löschen</string>
+    <string name="line_deleted">Replik gelöscht</string>
+    <string name="line_role">Figur</string>
+    <string name="line_text">Replik</string>
+    <string name="line_notes">Notizen und Regieanweisungen nach der Replik (optional, eine pro Zeile)</string>
+    <string name="line_note">Notiz oder Regieanweisung</string>
+    <string name="line_role_invalid">Verwende einen Namen aus Buchstaben, höchstens 40 Zeichen.</string>
+    <string name="line_text_required">Schreibe die Replik.</string>
+    <string name="line_add">Replik hinzufügen</string>
+    <string name="edit_as_text">Als Text bearbeiten</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Zu deiner Replik · noch %d Replik</item>
+        <item quantity="other">Zu deiner Replik · noch %d Repliken</item>
+    </plurals>
 </resources>

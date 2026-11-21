@@ -44,6 +44,9 @@ final class Scene {
     private static final Pattern LINK = Pattern.compile("https?://", Pattern.CASE_INSENSITIVE);
     private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE|PAGINA|SEITE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
 
+    /** Joins an act and a scene heading in a section title, as in "I. PERDE · 2. Sahne". */
+    static final String SECTION_JOIN = " · ";
+
     final List<Line> lines;
     final List<String> roles;
     final List<Section> sections;
@@ -338,7 +341,7 @@ final class Scene {
                 finishSection();
                 section = act;
             } else {
-                String next = act.isEmpty() ? title : act + " · " + title;
+                String next = act.isEmpty() ? title : act + SECTION_JOIN + title;
                 if (!fold(section).equals(fold(next))) {
                     finishSection();
                     section = next;
@@ -436,6 +439,74 @@ final class Scene {
         }
     }
 
+    /**
+     * Writes lines back as script text that {@link #parse} reads into the same lines: headings
+     * on their own rows, "ROLE: text" for dialogue and each line's notes in parentheses after it.
+     */
+    static String toText(List<Line> lines) {
+        StringBuilder text = new StringBuilder();
+        String act = "";
+        String section = "";
+        for (Line line : lines) {
+            if (!line.section.equals(section)) {
+                int split = line.section.indexOf(SECTION_JOIN);
+                String lineAct = split < 0 ? line.section : line.section.substring(0, split);
+                String scene = split < 0 ? "" : line.section.substring(split + SECTION_JOIN.length());
+                boolean actHeading = split >= 0 || ACT.matcher(fold(lineAct)).matches();
+                if (actHeading && !lineAct.equals(act)) {
+                    blankLine(text);
+                    text.append(lineAct).append('\n');
+                    act = lineAct;
+                }
+                String own = actHeading ? scene : line.section;
+                if (!own.isEmpty()) {
+                    blankLine(text);
+                    text.append(own).append('\n');
+                }
+                text.append('\n');
+                section = line.section;
+            }
+            // The parser gives a line every note that follows it until the next cue.
+            text.append(line.role).append(": ").append(balanced(line.text.trim())).append('\n');
+            for (String note : line.notes) {
+                String clean = balanced(note.trim());
+                if (clean.isEmpty()) {
+                    continue;
+                }
+                boolean wrapped = (clean.startsWith("(") && clean.endsWith(")"))
+                    || (clean.startsWith("[") && clean.endsWith("]"));
+                text.append(wrapped ? clean : "(" + clean + ")").append('\n');
+            }
+        }
+        return text.toString().trim();
+    }
+
+    /**
+     * An unclosed bracket would make the parser read every following row as part of one note,
+     * so brackets that do not pair up are dropped.
+     */
+    static String balanced(String value) {
+        StringBuilder open = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char character = value.charAt(i);
+            if (character == '(' || character == '[') {
+                open.append(character == '(' ? ')' : ']');
+            } else if (character == ')' || character == ']') {
+                if (open.length() == 0 || open.charAt(open.length() - 1) != character) {
+                    return value.replaceAll("[()\\[\\]]", "").replaceAll("\\s+", " ").trim();
+                }
+                open.setLength(open.length() - 1);
+            }
+        }
+        return open.length() == 0 ? value : value.replaceAll("[()\\[\\]]", "").replaceAll("\\s+", " ").trim();
+    }
+
+    private static void blankLine(StringBuilder text) {
+        if (text.length() > 0 && !text.toString().endsWith("\n\n")) {
+            text.append('\n');
+        }
+    }
+
     static final class Line {
         final String role;
         final String text;
@@ -447,6 +518,11 @@ final class Scene {
             this.text = text;
             this.section = section;
             this.notes = Collections.unmodifiableList(new ArrayList<>(notes));
+        }
+
+        /** A line written or changed by the user in the line editor. */
+        static Line of(String role, String text, String section, List<String> notes) {
+            return new Line(role, text, section, notes);
         }
     }
 

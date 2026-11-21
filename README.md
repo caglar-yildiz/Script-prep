@@ -45,6 +45,11 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 
 İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. Metin katmanlı PDF veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler ana ekrandaki **Yeni metin** düğmesiyle eklenir; Ayarlar sağ üstteki dişli simgesinden açılır. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
 
+### Prova ve düzenleme
+
+- Provada sıra oyuncuya uzaksa **Repliğine geç** düğmesi, oyuncunun sıradaki repliğinden 3 replik öncesine atlar; böylece ipucu replikleri duyulur. Üst çubuktaki liste simgesi **Sahne akışı**nı açar: bütün replikler kaydırılabilir listede, oyuncunun replikleri vurgulu; dokunulan replikten prova devam eder.
+- Rol metinleri **Replikleri düzenle** ekranında replik replik düzenlenir: karakter, metin ve repliğin ardından gelen notlar değiştirilebilir; ⋮ menüsüyle araya replik veya not eklenir, replik silinir (geri alınabilir). Düzenlenen replikler `Scene.toText` ile metne geri yazılır ve aynı satırlar olarak yeniden okunur. Düz metin düzenleyicisi üst çubuktan açılmaya devam eder.
+
 ### Yedekleme
 
 Metinler ve ayarlar Android otomatik yedeklemesine dahil (yapay zekâ ses modeli ve indirme kayıtları hariç), böylece yeniden kurulumda ya da yeni telefonda geri gelir. **Ayarlar → Yedekleme** ile metinler bir JSON dosyasına dışa aktarılıp içe aktarılabilir; içe aktarma aynı kimlikli metinleri günceller, diğerlerini ekler, hiçbir şeyi silmez. Debug derlemeleri depodaki sabit `app/debug.keystore` ile imzalanır; böylece CI'dan gelen her APK öncekinin üzerine güncelleme olarak kurulur.

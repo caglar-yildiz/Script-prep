@@ -354,4 +354,26 @@
         <item quantity="other">%d metin içe aktarıldı</item>
     </plurals>
     <string name="premium_see_plans">Planları ve özellikleri gör</string>
+    <string name="overview_title">Sahne akışı</string>
+    <string name="overview_hint">Oradan prova yapmak için bir repliğe dokun.</string>
+    <string name="lines_title">Replikleri düzenle</string>
+    <string name="lines_hint">Değiştirmek için bir repliğe dokun. Araya replik ya da not eklemek veya silmek için ⋮ menüsünü kullan.</string>
+    <string name="line_edit">Repliği düzenle</string>
+    <string name="line_add_below">Altına replik ekle</string>
+    <string name="line_note_below">Altına not ekle</string>
+    <string name="line_add_above">Üstüne replik ekle</string>
+    <string name="line_delete">Repliği sil</string>
+    <string name="line_deleted">Replik silindi</string>
+    <string name="line_role">Karakter</string>
+    <string name="line_text">Replik</string>
+    <string name="line_notes">Replikten sonraki notlar ve sahne yönergeleri (isteğe bağlı, her satıra bir tane)</string>
+    <string name="line_note">Not ya da sahne yönergesi</string>
+    <string name="line_role_invalid">Harflerden oluşan, en fazla 40 karakterlik bir ad yaz.</string>
+    <string name="line_text_required">Repliği yaz.</string>
+    <string name="line_add">Replik ekle</string>
+    <string name="edit_as_text">Düz metin olarak düzenle</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Repliğine geç · %d replik sonra</item>
+        <item quantity="other">Repliğine geç · %d replik sonra</item>
+    </plurals>
 </resources>

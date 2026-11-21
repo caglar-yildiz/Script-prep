@@ -366,4 +366,27 @@
         <item quantity="other">%d textos importados</item>
     </plurals>
     <string name="premium_see_plans">Ver planes y funciones</string>
+    <string name="overview_title">Vista de la escena</string>
+    <string name="overview_hint">Toca una réplica para ensayar desde ahí.</string>
+    <string name="lines_title">Editar réplicas</string>
+    <string name="lines_hint">Toca una réplica para cambiarla. Usa ⋮ para añadir una réplica o una nota en medio, o para borrarla.</string>
+    <string name="line_edit">Editar réplica</string>
+    <string name="line_add_below">Añadir réplica debajo</string>
+    <string name="line_note_below">Añadir nota debajo</string>
+    <string name="line_add_above">Añadir réplica encima</string>
+    <string name="line_delete">Borrar réplica</string>
+    <string name="line_deleted">Réplica borrada</string>
+    <string name="line_role">Personaje</string>
+    <string name="line_text">Réplica</string>
+    <string name="line_notes">Notas y acotaciones después de la réplica (opcional, una por fila)</string>
+    <string name="line_note">Nota o acotación</string>
+    <string name="line_role_invalid">Usa un nombre de letras, de hasta 40 caracteres.</string>
+    <string name="line_text_required">Escribe la réplica.</string>
+    <string name="line_add">Añadir réplica</string>
+    <string name="edit_as_text">Editar como texto</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Ir a tu réplica · a %d réplica</item>
+        <item quantity="many">Ir a tu réplica · a %d réplicas</item>
+        <item quantity="other">Ir a tu réplica · a %d réplicas</item>
+    </plurals>
 </resources>

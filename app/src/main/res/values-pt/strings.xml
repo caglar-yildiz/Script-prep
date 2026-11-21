@@ -366,4 +366,27 @@
         <item quantity="other">%d textos importados</item>
     </plurals>
     <string name="premium_see_plans">Ver planos e recursos</string>
+    <string name="overview_title">Visão da cena</string>
+    <string name="overview_hint">Toque numa fala para ensaiar a partir dela.</string>
+    <string name="lines_title">Editar falas</string>
+    <string name="lines_hint">Toque numa fala para mudá-la. Use ⋮ para inserir uma fala ou nota no meio, ou para excluí-la.</string>
+    <string name="line_edit">Editar fala</string>
+    <string name="line_add_below">Adicionar fala abaixo</string>
+    <string name="line_note_below">Adicionar nota abaixo</string>
+    <string name="line_add_above">Adicionar fala acima</string>
+    <string name="line_delete">Excluir fala</string>
+    <string name="line_deleted">Fala excluída</string>
+    <string name="line_role">Personagem</string>
+    <string name="line_text">Fala</string>
+    <string name="line_notes">Notas e rubricas depois da fala (opcional, uma por linha)</string>
+    <string name="line_note">Nota ou rubrica</string>
+    <string name="line_role_invalid">Use um nome com letras, de até 40 caracteres.</string>
+    <string name="line_text_required">Escreva a fala.</string>
+    <string name="line_add">Adicionar fala</string>
+    <string name="edit_as_text">Editar como texto</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Ir para a sua fala · daqui a %d fala</item>
+        <item quantity="many">Ir para a sua fala · daqui a %d falas</item>
+        <item quantity="other">Ir para a sua fala · daqui a %d falas</item>
+    </plurals>
 </resources>
