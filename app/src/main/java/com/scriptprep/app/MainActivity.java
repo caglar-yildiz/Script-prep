@@ -59,6 +59,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -673,6 +674,20 @@ public final class MainActivity extends Activity {
         setContentView(root);
         if (keptScroll > 0) {
             scroll.post(() -> scroll.scrollTo(0, keptScroll));
+        }
+        keepScreenOnWhileRehearsing();
+    }
+
+    /**
+     * Like a video player, keeps the screen on while a rehearsal runs, so the phone does not
+     * lock in the middle of a scene; it may sleep again once the scene ends or the user leaves.
+     */
+    private void keepScreenOnWhileRehearsing() {
+        boolean rehearsing = screen == Screen.REHEARSAL && scene != null && position < scene.lines.size();
+        if (rehearsing) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
 
