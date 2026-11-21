@@ -20,9 +20,12 @@ import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -66,7 +69,7 @@ final class Ensemble {
         void failed(Failure failure);
     }
 
-    enum Failure { CANCELLED, NOT_CONFIGURED, NO_ACCOUNT, NETWORK, NOT_FOUND, DENIED, UNKNOWN }
+    enum Failure { CANCELLED, NOT_CONFIGURED, NO_ACCOUNT, COLLISION, NETWORK, NOT_FOUND, DENIED, UNKNOWN }
 
     static final class Production {
         final String id;
@@ -148,7 +151,95 @@ final class Ensemble {
         return auth().getCurrentUser();
     }
 
-    // ------------------------------------------------------------ Sign-in
+    // ------------------------------------------------------------ Identity
+    //
+    // Everyone starts with an anonymous identity kept on the device, under the name they type.
+    // Linking a Google account keeps that identity, so the same groups, roles and recordings
+    // open on a tablet or a new phone after signing in with Google there.
+
+    /** What connecting a Google account did. */
+    enum Connection {
+        /** This device's identity is now linked to the Google account. */
+        LINKED,
+        /** Signed in to the identity that Google account already had. */
+        SIGNED_IN
+    }
+
+    private static final String NAME_PREFERENCE = "ensemble_name";
+    static final int MAX_NAME_LENGTH = 40;
+    /** A Google credential already linked to another identity, kept until the user decides. */
+    private AuthCredential pendingCredential;
+
+    /** Whether the identity survives on other devices through a Google account. */
+    boolean linked() {
+        FirebaseUser user = user();
+        return user != null && !user.isAnonymous();
+    }
+
+    String name() {
+        String saved = context.getSharedPreferences("script_prep", Context.MODE_PRIVATE)
+            .getString(NAME_PREFERENCE, "");
+        if (!saved.isEmpty()) {
+            return saved;
+        }
+        FirebaseUser user = user();
+        String name = user == null ? null : user.getDisplayName();
+        return name == null ? "" : name.trim();
+    }
+
+    private void saveName(String name) {
+        context.getSharedPreferences("script_prep", Context.MODE_PRIVATE).edit()
+            .putString(NAME_PREFERENCE, name).apply();
+    }
+
+    /** Starts with an anonymous identity on this device. */
+    void start(String name, Callback<FirebaseUser> callback) {
+        String clean = cleanName(name);
+        saveName(clean);
+        auth().signInAnonymously()
+            .addOnSuccessListener(mainExecutor, result -> {
+                // The profile name follows the identity to other devices once it is linked.
+                result.getUser().updateProfile(new UserProfileChangeRequest.Builder()
+                    .setDisplayName(clean).build());
+                callback.done(result.getUser());
+            })
+            .addOnFailureListener(mainExecutor, error -> callback.failed(failure(error)));
+    }
+
+    /** Changes the user's name here and in every group they belong to. */
+    void rename(String name, Callback<Void> callback) {
+        FirebaseUser user = user();
+        if (user == null) {
+            callback.failed(Failure.DENIED);
+            return;
+        }
+        String clean = cleanName(name);
+        saveName(clean);
+        user.updateProfile(new UserProfileChangeRequest.Builder().setDisplayName(clean).build());
+        list(new Callback<>() {
+            @Override
+            public void done(List<Entry> entries) {
+                WriteBatch batch = store().batch();
+                for (Entry entry : entries) {
+                    batch.update(store().collection("productions").document(entry.id)
+                        .collection("members").document(user.getUid()), "name", clean);
+                }
+                batch.commit()
+                    .addOnSuccessListener(mainExecutor, ignored -> callback.done(null))
+                    .addOnFailureListener(mainExecutor, error -> callback.failed(failure(error)));
+            }
+
+            @Override
+            public void failed(Failure failure) {
+                callback.failed(failure);
+            }
+        });
+    }
+
+    static String cleanName(String name) {
+        String clean = name == null ? "" : name.trim().replaceAll("\\s+", " ");
+        return clean.length() > MAX_NAME_LENGTH ? clean.substring(0, MAX_NAME_LENGTH).trim() : clean;
+    }
 
     /**
      * The OAuth web client the Firebase project created for Google sign-in, if any. Looked up by
@@ -160,7 +251,12 @@ final class Ensemble {
         return id == 0 ? null : context.getString(id);
     }
 
-    void signIn(Activity activity, Callback<FirebaseUser> callback) {
+    /**
+     * Links a Google account to this device's identity, or signs in with it when nobody is
+     * signed in yet. Fails with {@link Failure#COLLISION} when that Google account already has
+     * its own identity; {@link #switchToPending} then moves to it.
+     */
+    void connectGoogle(Activity activity, Callback<Connection> callback) {
         String clientId = webClientId();
         if (clientId == null || clientId.isEmpty()) {
             callback.failed(Failure.NOT_CONFIGURED);
@@ -180,9 +276,7 @@ final class Ensemble {
                         return;
                     }
                     String token = GoogleIdTokenCredential.createFrom(custom.getData()).getIdToken();
-                    auth().signInWithCredential(GoogleAuthProvider.getCredential(token, null))
-                        .addOnSuccessListener(mainExecutor, result -> callback.done(result.getUser()))
-                        .addOnFailureListener(mainExecutor, error -> callback.failed(failure(error)));
+                    useGoogle(GoogleAuthProvider.getCredential(token, null), callback);
                 }
 
                 @Override
@@ -198,8 +292,50 @@ final class Ensemble {
             });
     }
 
+    private void useGoogle(AuthCredential credential, Callback<Connection> callback) {
+        FirebaseUser user = user();
+        if (user == null) {
+            signInWith(credential, callback);
+            return;
+        }
+        user.linkWithCredential(credential)
+            .addOnSuccessListener(mainExecutor, result -> callback.done(Connection.LINKED))
+            .addOnFailureListener(mainExecutor, error -> {
+                if (error instanceof FirebaseAuthUserCollisionException) {
+                    pendingCredential = credential;
+                    callback.failed(Failure.COLLISION);
+                } else {
+                    callback.failed(failure(error));
+                }
+            });
+    }
+
+    /** Leaves this device's identity for the one the Google account already has. */
+    void switchToPending(Callback<Connection> callback) {
+        AuthCredential credential = pendingCredential;
+        pendingCredential = null;
+        if (credential == null) {
+            callback.failed(Failure.UNKNOWN);
+            return;
+        }
+        signInWith(credential, callback);
+    }
+
+    private void signInWith(AuthCredential credential, Callback<Connection> callback) {
+        auth().signInWithCredential(credential)
+            .addOnSuccessListener(mainExecutor, result -> {
+                // Use the name this identity had, not the one typed on this device.
+                String name = result.getUser().getDisplayName();
+                saveName(name == null ? "" : cleanName(name));
+                callback.done(Connection.SIGNED_IN);
+            })
+            .addOnFailureListener(mainExecutor, error -> callback.failed(failure(error)));
+    }
+
+    /** Signs out of a Google-linked identity; it comes back by signing in with Google again. */
     void signOut(Activity activity, Runnable done) {
         auth().signOut();
+        saveName("");
         CredentialManager.create(activity).clearCredentialStateAsync(new ClearCredentialStateRequest(),
             new CancellationSignal(), mainExecutor, new CredentialManagerCallback<Void, ClearCredentialException>() {
                 @Override
@@ -215,12 +351,7 @@ final class Ensemble {
     }
 
     private String displayName() {
-        FirebaseUser user = user();
-        String name = user == null ? null : user.getDisplayName();
-        if (name == null || name.trim().isEmpty()) {
-            name = user == null || user.getEmail() == null ? "" : user.getEmail().split("@")[0];
-        }
-        return name.trim();
+        return name();
     }
 
     // ------------------------------------------------------------ Productions

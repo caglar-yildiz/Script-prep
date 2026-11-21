@@ -49,6 +49,8 @@ import java.util.Map;
 public final class EnsembleActivity extends Activity {
     static final String RESULT_SCRIPT_ID = "script_id";
     static final String RESULT_ROLE = "role";
+    /** Invite links: https://…/join/?c=CODE opens memoeverything://join/CODE. */
+    static final String INVITE_PAGE = "https://caglar-yildiz.github.io/Script-prep/join/?c=";
 
     private enum Screen { LIST, PICK, DETAIL }
 
@@ -62,6 +64,8 @@ public final class EnsembleActivity extends Activity {
     private Ensemble.Production production;
     private List<Ensemble.Member> members;
     private String openId;
+    /** An invite code from a link, joined once the user has an identity. */
+    private String pendingCode;
 
     private LinearLayout header;
     private LinearLayout content;
@@ -81,8 +85,13 @@ public final class EnsembleActivity extends Activity {
         if (state != null) {
             screen = Screen.valueOf(state.getString("screen", Screen.LIST.name()));
             openId = state.getString("open_id");
+            pendingCode = state.getString("pending_code");
+        } else {
+            pendingCode = inviteCode(getIntent());
         }
-        if (screen == Screen.DETAIL && openId != null) {
+        if (pendingCode != null && ensemble.user() != null) {
+            join(pendingCode);
+        } else if (screen == Screen.DETAIL && openId != null) {
             open(openId);
         } else {
             if (screen == Screen.DETAIL) {
@@ -97,6 +106,33 @@ public final class EnsembleActivity extends Activity {
         super.onSaveInstanceState(state);
         state.putString("screen", screen.name());
         state.putString("open_id", openId);
+        state.putString("pending_code", pendingCode);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String code = inviteCode(intent);
+        if (code == null) {
+            return;
+        }
+        if (ensemble.user() == null) {
+            pendingCode = code;
+            render();
+        } else {
+            join(code);
+        }
+    }
+
+    /** The invite code in memoeverything://join/CODE or an invite page link, if any. */
+    static String inviteCode(Intent intent) {
+        android.net.Uri data = intent == null ? null : intent.getData();
+        if (data == null) {
+            return null;
+        }
+        String code = "join".equals(data.getHost()) ? data.getLastPathSegment() : data.getQueryParameter("c");
+        code = code == null ? "" : Ensemble.normalizeCode(code);
+        return code.length() == Ensemble.CODE_LENGTH ? code : null;
     }
 
     @Override
@@ -284,30 +320,61 @@ public final class EnsembleActivity extends Activity {
         content.addView(progress, params);
     }
 
-    // ------------------------------------------------------------ Sign-in
+    // ------------------------------------------------------------ Identity
+
+    private EditText nameField;
 
     private void renderSignIn() {
         topBar(null, this::finish);
-        pageTitle(getString(R.string.ensemble_title), getString(R.string.ensemble_sign_in_title),
+        pageTitle(getString(R.string.ensemble_title), getString(pendingCode == null
+            ? R.string.ensemble_sign_in_title : R.string.ensemble_invited_title),
             getString(R.string.ensemble_sign_in_body));
         if (busy) {
             spinner();
             return;
         }
-        content.addView(ui.button(getString(R.string.ensemble_sign_in), R.drawable.ic_person, Kind.PRIMARY,
-            view -> signIn()), ui.spaced(28));
-        TextView note = ui.text(getString(R.string.ensemble_privacy_note), Type.CAPTION, TEXT_TERTIARY);
-        content.addView(note, ui.spaced(16));
+        String typed = nameField == null ? ensemble.name() : nameField.getText().toString();
+        nameField = new EditText(this);
+        nameField.setHint(R.string.ensemble_name_hint);
+        nameField.setSingleLine(true);
+        nameField.setText(typed);
+        nameField.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        nameField.setFilters(new InputFilter[] {new InputFilter.LengthFilter(Ensemble.MAX_NAME_LENGTH)});
+        nameField.setTextColor(TEXT);
+        nameField.setHintTextColor(TEXT_TERTIARY);
+        nameField.setTextSize(17);
+        nameField.setBackground(ui.fieldBackground());
+        nameField.setPadding(ui.dp(16), ui.dp(14), ui.dp(16), ui.dp(14));
+        content.addView(ui.text(getString(R.string.ensemble_name_label), Type.LABEL, TEXT_SECONDARY), ui.spaced(28));
+        content.addView(nameField, ui.spaced(8));
+
+        content.addView(ui.button(getString(pendingCode == null ? R.string.ensemble_start
+            : R.string.ensemble_join_action), R.drawable.ic_next, Kind.PRIMARY, view -> start()), ui.spaced(20));
+        TextView note = ui.text(getString(R.string.ensemble_device_note), Type.CAPTION, TEXT_TERTIARY);
+        content.addView(note, ui.spaced(14));
+
+        sectionLabel(getString(R.string.ensemble_returning));
+        content.addView(ui.button(getString(R.string.ensemble_sign_in), R.drawable.ic_person, Kind.TONAL,
+            view -> connectGoogle()), ui.spaced(10));
+        TextView privacy = ui.text(getString(R.string.ensemble_privacy_note), Type.CAPTION, TEXT_TERTIARY);
+        content.addView(privacy, ui.spaced(16));
     }
 
-    private void signIn() {
+    private void start() {
+        String name = Ensemble.cleanName(nameField.getText().toString());
+        if (name.isEmpty()) {
+            nameField.setError(getString(R.string.ensemble_name_needed));
+            nameField.requestFocus();
+            return;
+        }
         busy = true;
         render();
-        ensemble.signIn(this, new Ensemble.Callback<>() {
+        ensemble.start(name, new Ensemble.Callback<>() {
             @Override
             public void done(FirebaseUser value) {
                 busy = false;
-                refreshList();
+                afterSignIn();
             }
 
             @Override
@@ -319,12 +386,136 @@ public final class EnsembleActivity extends Activity {
         });
     }
 
+    private void afterSignIn() {
+        nameField = null;
+        if (pendingCode != null) {
+            join(pendingCode);
+        } else {
+            showList();
+        }
+    }
+
+    /** Signs in with Google, or links it to this device's identity when there is one. */
+    private void connectGoogle() {
+        boolean linking = ensemble.user() != null;
+        busy = true;
+        render();
+        ensemble.connectGoogle(this, new Ensemble.Callback<>() {
+            @Override
+            public void done(Ensemble.Connection value) {
+                busy = false;
+                if (value == Ensemble.Connection.LINKED) {
+                    Toast.makeText(EnsembleActivity.this, R.string.ensemble_linked, Toast.LENGTH_LONG).show();
+                    render();
+                } else if (linking) {
+                    showList();
+                } else {
+                    afterSignIn();
+                }
+            }
+
+            @Override
+            public void failed(Ensemble.Failure failure) {
+                busy = false;
+                render();
+                if (failure == Ensemble.Failure.COLLISION) {
+                    confirmSwitch();
+                } else {
+                    report(failure);
+                }
+            }
+        });
+    }
+
+    /** The Google account already has its own identity, for example from the user's tablet. */
+    private void confirmSwitch() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.ensemble_switch_title)
+            .setMessage(R.string.ensemble_switch_body)
+            .setPositiveButton(R.string.ensemble_switch_action, (dialog, which) -> {
+                busy = true;
+                render();
+                ensemble.switchToPending(new Ensemble.Callback<>() {
+                    @Override
+                    public void done(Ensemble.Connection value) {
+                        busy = false;
+                        showList();
+                    }
+
+                    @Override
+                    public void failed(Ensemble.Failure failure) {
+                        busy = false;
+                        report(failure);
+                        render();
+                    }
+                });
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
     private void signOut() {
         ensemble.signOut(this, () -> {
             entries = null;
             screen = Screen.LIST;
             render();
         });
+    }
+
+    private void showAccount() {
+        FirebaseUser user = ensemble.user();
+        boolean linked = ensemble.linked();
+        String status = linked
+            ? getString(R.string.ensemble_account_linked, user == null || user.getEmail() == null ? "" : user.getEmail())
+            : getString(R.string.ensemble_account_device);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this)
+            .setTitle(ensemble.name().isEmpty() ? getString(R.string.ensemble_account) : ensemble.name())
+            .setMessage(status)
+            .setNeutralButton(R.string.ensemble_rename, (d, which) -> askName());
+        if (linked) {
+            dialog.setPositiveButton(R.string.ensemble_sign_out, (d, which) -> signOut());
+        } else {
+            dialog.setPositiveButton(R.string.ensemble_link, (d, which) -> connectGoogle());
+        }
+        dialog.setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private void askName() {
+        EditText field = new EditText(this);
+        field.setSingleLine(true);
+        field.setText(ensemble.name());
+        field.setSelection(field.getText().length());
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
+            | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+        field.setFilters(new InputFilter[] {new InputFilter.LengthFilter(Ensemble.MAX_NAME_LENGTH)});
+        field.setTextColor(TEXT);
+        FrameLayout frame = new FrameLayout(this);
+        frame.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        frame.addView(field);
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.ensemble_rename)
+            .setView(frame)
+            .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                String name = Ensemble.cleanName(field.getText().toString());
+                if (name.isEmpty()) {
+                    return;
+                }
+                ensemble.rename(name, new Ensemble.Callback<>() {
+                    @Override
+                    public void done(Void value) {
+                        if (production != null) {
+                            loadMembers();
+                        }
+                    }
+
+                    @Override
+                    public void failed(Ensemble.Failure failure) {
+                        report(failure);
+                    }
+                });
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
     }
 
     // ------------------------------------------------------------ List
@@ -375,17 +566,6 @@ public final class EnsembleActivity extends Activity {
         }
     }
 
-    private void showAccount() {
-        FirebaseUser user = ensemble.user();
-        String who = user == null ? "" : (user.getEmail() == null ? "" : user.getEmail());
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.ensemble_account)
-            .setMessage(getString(R.string.ensemble_signed_in_as, who))
-            .setPositiveButton(R.string.ensemble_sign_out, (dialog, which) -> signOut())
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
-    }
-
     private void askCode() {
         EditText field = new EditText(this);
         field.setHint(R.string.ensemble_join_hint);
@@ -409,6 +589,7 @@ public final class EnsembleActivity extends Activity {
     }
 
     private void join(String code) {
+        pendingCode = null;
         busy = true;
         render();
         ensemble.join(code, new Ensemble.Callback<>() {
@@ -654,7 +835,7 @@ public final class EnsembleActivity extends Activity {
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/plain");
         send.putExtra(Intent.EXTRA_TEXT, getString(R.string.ensemble_share_message,
-            production.title, production.inviteCode));
+            production.title, production.inviteCode) + "\n" + INVITE_PAGE + production.inviteCode);
         startActivity(Intent.createChooser(send, getString(R.string.ensemble_send_code)));
     }
 
@@ -714,7 +895,14 @@ public final class EnsembleActivity extends Activity {
         if (role != null) {
             result.putExtra(RESULT_ROLE, role);
         }
-        setResult(RESULT_OK, result);
+        if (getCallingActivity() == null) {
+            // Opened from an invite link: start the rehearsal app instead of returning to it.
+            result.setClass(this, MainActivity.class);
+            result.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(result);
+        } else {
+            setResult(RESULT_OK, result);
+        }
         finish();
     }
 
@@ -725,6 +913,7 @@ public final class EnsembleActivity extends Activity {
             case CANCELLED -> 0;
             case NOT_CONFIGURED -> R.string.ensemble_error_config;
             case NO_ACCOUNT -> R.string.ensemble_error_no_account;
+            case COLLISION -> R.string.ensemble_error_unknown;
             case NETWORK -> R.string.ensemble_error_network;
             case NOT_FOUND -> R.string.ensemble_error_not_found;
             case DENIED -> R.string.ensemble_error_denied;

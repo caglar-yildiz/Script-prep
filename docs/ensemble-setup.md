@@ -2,7 +2,7 @@
 
 Ekip provası Firebase'in **ücretsiz Spark planında** çalışır; kart tanımlamaya gerek yok. Kota dolarsa servis o gün durur, fatura gelmez.
 
-Kullanılan servisler: **Authentication** (Google ile giriş) ve **Cloud Firestore** (gruplar, roller, replik kayıtları). Cloud Storage kullanılmıyor, çünkü Spark planında açılamıyor. Replik kayıtları kısa olduğu için Firestore belgelerinde saklanıyor (kayıt başına en fazla ~900 KB).
+Kullanılan servisler: **Authentication** (anonim kimlik, isteğe bağlı Google hesabı) ve **Cloud Firestore** (gruplar, roller, replik kayıtları). Cloud Storage kullanılmıyor, çünkü Spark planında açılamıyor. Replik kayıtları kısa olduğu için Firestore belgelerinde saklanıyor (kayıt başına en fazla ~900 KB).
 
 ## 1. Proje ve Android uygulaması
 
@@ -18,9 +18,14 @@ Proje: `memo-70a45`. Android uygulaması: `com.memoeverything.app`.
 
 Play Store'dan kurulan uygulama Play'in imzalama anahtarıyla imzalanır. Bu anahtarın SHA-1'i eklenmezse mağaza sürümünde Google ile giriş çalışmaz.
 
-## 2. Google ile giriş
+## 2. Giriş yöntemleri
 
-**Authentication → Sign-in method → Google → Etkinleştir**, bir destek e-postası seç ve kaydet.
+Kullanıcılar hesap açmaz: adını yazar, uygulama bu kuruluma **anonim** bir kimlik verir. Aynı kimliği tablette ya da yeni telefonda kullanmak isteyen, **Google hesabını bağlar**. Kimlik değişmez, başka cihazda Google ile giriş yapınca aynı gruplar, roller ve kayıtlar açılır.
+
+**Authentication → Sign-in method** sekmesinde:
+
+1. **Anonymous → Etkinleştir → Kaydet.** Bu olmadan kimse başlayamaz.
+2. **Google → Etkinleştir**, bir destek e-postası seç ve **Kaydet**. Bu yalnızca hesap bağlama ve başka cihazdan giriş için gerekiyor.
 
 Ardından **`google-services.json` dosyasını yeniden indir** ve `app/google-services.json` dosyasının yerine koy. Google girişi açılmadan indirilen dosyada `oauth_client` listesi boş oluyor. O durumda uygulama "Google ile giriş bu uygulama için henüz ayarlanmadı" uyarısı verir.
 
@@ -54,11 +59,12 @@ Kullanımı **Firestore Database → Kullanım** sekmesinden takip edebilirsin.
 
 ## Uygulamada akış
 
-1. Ana ekranda **Ekip provası** → **Google ile giriş yap**.
+1. Ana ekranda **Ekip provası** → adını yaz → **Başla**. Davet linkiyle gelen kişi doğrudan katılır.
 2. **Metin paylaş** → kütüphanedeki karakterli bir metni seç. Grup oluşur ve 6 haneli bir davet kodu çıkar.
-3. **Kodu gönder** ile kodu ekibe yolla. Ekip üyeleri **Kodla katıl** ile gruba girer.
+3. **Kodu gönder** ile kodu ve davet linkini ekibe yolla. Link (`https://caglar-yildiz.github.io/Script-prep/join/?c=KOD`) uygulamayı açar, uygulama yüklü değilse Google Play'e götürür. Linkle gelmeyenler **Kodla katıl** ile kodu yazar. Link sayfası `docs/join/index.html`; GitHub Pages `main` dalından yayımladığı için birleştirmeden sonra çalışır.
 4. Herkes **Rollerini seç** ile rollerini işaretler. Grup ekranında hangi rolü kimin aldığı görünür.
-5. **Prova et**, metnin bir kopyasını kütüphaneye kaydeder (`ensemble:` önekiyle, çevrimdışı çalışır) ve seçilen ilk rolle provayı açar.
+5. Sağ üstteki menüden ad değiştirilir ve **Google hesabını bağla** seçilir. Tablette **Google ile giriş yap** aynı kimliği açar.
+6. **Prova et**, metnin bir kopyasını kütüphaneye kaydeder (`ensemble:` önekiyle, çevrimdışı çalışır) ve seçilen ilk rolle provayı açar.
 
 ## Sıradaki aşama
 

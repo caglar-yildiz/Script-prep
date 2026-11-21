@@ -244,6 +244,24 @@ public final class MainActivity extends Activity {
         }
         render();
         speech = new TextToSpeech(this, status -> main.post(() -> prepareSpeech(status)));
+        if (state == null) {
+            openFromIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openFromIntent(intent);
+    }
+
+    /** A shared text the ensemble screen asks to rehearse when it was opened from an invite link. */
+    private void openFromIntent(Intent intent) {
+        if (intent != null && intent.hasExtra(EnsembleActivity.RESULT_SCRIPT_ID)) {
+            openEnsembleCopy(intent.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
+                intent.getStringExtra(EnsembleActivity.RESULT_ROLE));
+            intent.removeExtra(EnsembleActivity.RESULT_SCRIPT_ID);
+        }
     }
 
     @SuppressWarnings("deprecation")
