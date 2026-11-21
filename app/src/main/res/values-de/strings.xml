@@ -376,4 +376,5 @@
         <item quantity="one">Zu deiner Replik · noch %d Replik</item>
         <item quantity="other">Zu deiner Replik · noch %d Repliken</item>
     </plurals>
+    <string name="resume_title">Dort weitermachen, wo du aufgehört hast</string>
 </resources>

@@ -389,4 +389,5 @@
         <item quantity="many">Ir para a sua fala · daqui a %d falas</item>
         <item quantity="other">Ir para a sua fala · daqui a %d falas</item>
     </plurals>
+    <string name="resume_title">Continuar de onde parou</string>
 </resources>
