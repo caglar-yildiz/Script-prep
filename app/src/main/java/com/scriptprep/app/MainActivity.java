@@ -96,6 +96,7 @@ public final class MainActivity extends Activity {
     private static final int IMPORT_PDF = 2;
     private static final int EXPORT_BACKUP = 3;
     private static final int IMPORT_BACKUP = 4;
+    private static final int ENSEMBLE = 5;
     private static final String SPEED_PREFERENCE = "reading_speed";
     private static final float[] SPEEDS = {0.75f, 1f, 1.25f, 1.5f};
     private static final int SNACKBAR_DURATION = 6000;
@@ -368,6 +369,13 @@ public final class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ENSEMBLE) {
+            if (resultCode == RESULT_OK && data != null) {
+                openEnsembleCopy(data.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
+                    data.getStringExtra(EnsembleActivity.RESULT_ROLE));
+            }
+            return;
+        }
         if ((requestCode == EXPORT_BACKUP || requestCode == IMPORT_BACKUP)
             && resultCode == RESULT_OK && data != null && data.getData() != null) {
             if (requestCode == EXPORT_BACKUP) {
@@ -826,6 +834,7 @@ public final class MainActivity extends Activity {
         sampleText.addView(sampleDetail);
         sample.addView(sampleText, weighted(14, ui));
         content.addView(sample, ui.spaced(10));
+        addEnsembleCard();
 
         // Leave room for the floating create button.
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, ui.dp(72)));
@@ -964,7 +973,52 @@ public final class MainActivity extends Activity {
         LinearLayout sample = ui.button(getString(R.string.sample_button), R.drawable.ic_play,
             Kind.TEXT, view -> openSample());
         content.addView(sample, ui.spaced(4));
+        if (Ensemble.available(this)) {
+            content.addView(ui.button(getString(R.string.ensemble_title), R.drawable.ic_people,
+                Kind.TEXT, view -> openEnsemble()), ui.spaced(0));
+        }
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, 0, 1));
+    }
+
+    /** Entry to ensemble rehearsal, shown when this build carries a Firebase project. */
+    private void addEnsembleCard() {
+        if (!Ensemble.available(this)) {
+            return;
+        }
+        LinearLayout card = ui.card(SURFACE, view -> openEnsemble());
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.addView(ui.iconTile(R.drawable.ic_people, VIOLET, VIOLET_CONTAINER, 44));
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        labels.addView(ui.text(getString(R.string.ensemble_title), Type.SUBTITLE, TEXT));
+        TextView detail = ui.text(getString(R.string.ensemble_home_detail), Type.BODY, TEXT_TERTIARY);
+        detail.setPadding(0, ui.dp(2), 0, 0);
+        labels.addView(detail);
+        card.addView(labels, weighted(14, ui));
+        card.addView(ui.icon(R.drawable.ic_chevron_right, TEXT_TERTIARY, 22));
+        content.addView(card, ui.spaced(10));
+    }
+
+    @SuppressWarnings("deprecation")
+    private void openEnsemble() {
+        startActivityForResult(new Intent(this, EnsembleActivity.class), ENSEMBLE);
+    }
+
+    /** Opens the local copy of a shared text, starting with the actor's first role. */
+    private void openEnsembleCopy(String id, String ensembleRole) {
+        if (id == null) {
+            return;
+        }
+        for (ScriptLibrary.Script entry : library.list()) {
+            if (entry.id.equals(id)) {
+                if (ensembleRole != null) {
+                    role = ensembleRole;
+                }
+                openSavedScript(entry);
+                return;
+            }
+        }
     }
 
     private void onboardingStep(LinearLayout parent, int drawable, int label) {

@@ -383,4 +383,55 @@
         <item quantity="other">Skip to your line · %d lines away</item>
     </plurals>
     <string name="resume_title">Continue where you left off</string>
+
+    <!-- Ensemble rehearsal -->
+    <string name="ensemble_title">Ensemble rehearsal</string>
+    <string name="ensemble_home_detail">Share a text with your cast and rehearse together.</string>
+    <string name="ensemble_sign_in_title">Rehearse with your cast</string>
+    <string name="ensemble_sign_in_body">Share a text with your cast or join one with an invite code. Everyone takes their own roles, so the cast knows who plays whom.</string>
+    <string name="ensemble_sign_in">Sign in with Google</string>
+    <string name="ensemble_privacy_note">Your name and the texts you share are visible to the members of your group.</string>
+    <string name="ensemble_account">Account</string>
+    <string name="ensemble_sign_out">Sign out</string>
+    <string name="ensemble_signed_in_as">Signed in as %1$s</string>
+    <string name="ensemble_groups">Your groups</string>
+    <string name="ensemble_empty">No groups yet. Share one of your texts or join with an invite code.</string>
+    <string name="ensemble_share">Share a text</string>
+    <string name="ensemble_join">Join with a code</string>
+    <string name="ensemble_join_hint">Invite code</string>
+    <string name="ensemble_join_action">Join</string>
+    <string name="ensemble_pick_text">Choose a text to share</string>
+    <string name="ensemble_pick_text_detail">Your cast will see this text and its roles.</string>
+    <string name="ensemble_no_texts">Add a text with characters first, then share it.</string>
+    <string name="ensemble_invite_code">Invite code</string>
+    <string name="ensemble_invite_detail">Send this code to your cast. Anyone with it can join the group.</string>
+    <string name="ensemble_send_code">Send code</string>
+    <string name="ensemble_copy_code">Copy</string>
+    <string name="ensemble_share_message">Join “%1$s” in Memo Everything with the code %2$s</string>
+    <string name="ensemble_code_copied">Code copied</string>
+    <string name="ensemble_my_roles">My roles</string>
+    <string name="ensemble_choose_roles">Choose your roles</string>
+    <string name="ensemble_no_roles">No role chosen</string>
+    <string name="ensemble_rehearse">Rehearse</string>
+    <string name="ensemble_recordings_soon">Recording your lines comes next. For now, take your roles so the cast knows who plays whom.</string>
+    <string name="ensemble_roles">Roles</string>
+    <string name="ensemble_role_open">Not taken</string>
+    <string name="ensemble_owner">Owner</string>
+    <string name="ensemble_unnamed">Unnamed member</string>
+    <string name="ensemble_you">%1$s (you)</string>
+    <string name="ensemble_group_actions">Group actions</string>
+    <string name="ensemble_leave">Leave group</string>
+    <string name="ensemble_leave_confirm">Leave “%1$s”? Your recordings in this group are deleted.</string>
+    <string name="ensemble_delete">Delete group</string>
+    <string name="ensemble_delete_confirm">Delete “%1$s” for the whole cast? Every member’s recordings are deleted.</string>
+    <string name="ensemble_error_config">Google sign-in isn’t set up for this app yet.</string>
+    <string name="ensemble_error_no_account">Add a Google account to this phone in Settings, then try again.</string>
+    <string name="ensemble_error_network">No connection. Check your internet and try again.</string>
+    <string name="ensemble_error_not_found">No group found with this code.</string>
+    <string name="ensemble_error_denied">You don’t have access to this group.</string>
+    <string name="ensemble_error_unknown">Something went wrong. Try again.</string>
+    <plurals name="ensemble_member_count">
+        <item quantity="one">%d member</item>
+        <item quantity="other">%d members</item>
+    </plurals>
 </resources>

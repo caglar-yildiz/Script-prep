@@ -67,13 +67,13 @@ Kimlikler kodla birebir aynı olmalı (`Billing.java`). İstersen bir temel plan
 ## 5. Mağaza sayfası ve politikalar
 
 - **Gizlilik politikası URL'si** zorunlu (mikrofon/kamera izni): `https://caglar-yildiz.github.io/Script-prep/`. Kaynağı `docs/index.html`. Yayınlamak için: GitHub → depo → Settings → Pages → *Deploy from a branch* → `main` / `docs` → Save (birkaç dakika sürer).
-- **Uygulama erişimi**: giriş gerekmez.
+- **Uygulama erişimi**: giriş gerekmez. Ekip provası Google ile giriş istiyor; inceleme için bir test hesabı ve bir davet kodu verilebilir ya da "bu özellik isteğe bağlı" diye açıklanabilir.
 - **Reklamlar**: yok.
 - **İçerik derecelendirmesi** anketi: şiddet/kumar vb. yok → genelde "Herkes/3+" çıkar.
 - **Hedef kitle**: 13+ (uygulama çocuklara yönelik değil).
 - **Data safety** (önerilen yanıtlar, son kararı Play'in açıklamalarına bakarak ver):
-  - Toplanan/paylaşılan veri: geliştirici sunucusuna gönderilen veri yok.
-  - Ses: konuşma tanıma için cihazın Google hizmeti kullanılıyor; uygulama sesi saklamıyor veya göndermiyor.
+  - Toplanan/paylaşılan veri: yalnızca **ekip provası** kullanılırsa, Firebase'de (Google) ad, e-posta, kullanıcı kimliği (hesap yönetimi, uygulama işlevi), paylaşılan metin (diğer kullanıcı içeriği) ve replik ses kayıtları (ses kayıtları, uygulama işlevi). Hepsi isteğe bağlı; satılmıyor, reklam için kullanılmıyor.
+  - Ses: konuşma tanıma için cihazın Google hizmeti kullanılıyor; uygulama bu sesi saklamıyor veya göndermiyor. Ekip provasında kaydedilen replikler ise grup üyeleri dinlesin diye Firebase'e yükleniyor.
   - Fotoğraf/video: yalnızca cihazda saklanıyor.
   - Satın alma geçmişi: Google Play Billing üzerinden; Play'in kendi işlediği veriler.
   - Veriler aktarım sırasında şifreleniyor: evet (HTTPS). Kullanıcı verileri silebilir: evet (uygulama içinden).

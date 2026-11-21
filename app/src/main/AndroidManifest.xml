@@ -42,5 +42,10 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.ScriptPrep" />
+        <activity
+            android:name=".EnsembleActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.ScriptPrep" />
     </application>
 </manifest>

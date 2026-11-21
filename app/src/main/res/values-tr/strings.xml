@@ -377,4 +377,55 @@
         <item quantity="other">Repliğine geç · %d replik sonra</item>
     </plurals>
     <string name="resume_title">Kaldığın yerden devam et</string>
+
+    <!-- Ensemble rehearsal -->
+    <string name="ensemble_title">Ekip provası</string>
+    <string name="ensemble_home_detail">Metni ekibinle paylaş, birlikte prova edin.</string>
+    <string name="ensemble_sign_in_title">Ekibinle prova et</string>
+    <string name="ensemble_sign_in_body">Metnini ekibinle paylaş ya da davet koduyla bir gruba katıl. Herkes kendi rollerini seçer, böylece kimin kimi oynadığı belli olur.</string>
+    <string name="ensemble_sign_in">Google ile giriş yap</string>
+    <string name="ensemble_privacy_note">Adın ve paylaştığın metinler grubundaki üyelere görünür.</string>
+    <string name="ensemble_account">Hesap</string>
+    <string name="ensemble_sign_out">Çıkış yap</string>
+    <string name="ensemble_signed_in_as">%1$s olarak giriş yapıldı</string>
+    <string name="ensemble_groups">Grupların</string>
+    <string name="ensemble_empty">Henüz grup yok. Metinlerinden birini paylaş ya da davet koduyla katıl.</string>
+    <string name="ensemble_share">Metin paylaş</string>
+    <string name="ensemble_join">Kodla katıl</string>
+    <string name="ensemble_join_hint">Davet kodu</string>
+    <string name="ensemble_join_action">Katıl</string>
+    <string name="ensemble_pick_text">Paylaşılacak metni seç</string>
+    <string name="ensemble_pick_text_detail">Ekibin bu metni ve rollerini görecek.</string>
+    <string name="ensemble_no_texts">Önce karakterli bir metin ekle, sonra paylaş.</string>
+    <string name="ensemble_invite_code">Davet kodu</string>
+    <string name="ensemble_invite_detail">Bu kodu ekibine gönder. Kodu bilen herkes gruba katılabilir.</string>
+    <string name="ensemble_send_code">Kodu gönder</string>
+    <string name="ensemble_copy_code">Kopyala</string>
+    <string name="ensemble_share_message">Memo Everything’de “%1$s” grubuna %2$s koduyla katıl</string>
+    <string name="ensemble_code_copied">Kod kopyalandı</string>
+    <string name="ensemble_my_roles">Rollerim</string>
+    <string name="ensemble_choose_roles">Rollerini seç</string>
+    <string name="ensemble_no_roles">Rol seçilmedi</string>
+    <string name="ensemble_rehearse">Prova et</string>
+    <string name="ensemble_recordings_soon">Replik kaydı bir sonraki adımda geliyor. Şimdilik rollerini seç ki ekip kimin kimi oynadığını bilsin.</string>
+    <string name="ensemble_roles">Roller</string>
+    <string name="ensemble_role_open">Boş</string>
+    <string name="ensemble_owner">Grup sahibi</string>
+    <string name="ensemble_unnamed">Adsız üye</string>
+    <string name="ensemble_you">%1$s (sen)</string>
+    <string name="ensemble_group_actions">Grup işlemleri</string>
+    <string name="ensemble_leave">Gruptan ayrıl</string>
+    <string name="ensemble_leave_confirm">“%1$s” grubundan ayrılsın mı? Bu gruptaki kayıtların silinir.</string>
+    <string name="ensemble_delete">Grubu sil</string>
+    <string name="ensemble_delete_confirm">“%1$s” bütün ekip için silinsin mi? Tüm üyelerin kayıtları silinir.</string>
+    <string name="ensemble_error_config">Google ile giriş bu uygulama için henüz ayarlanmadı.</string>
+    <string name="ensemble_error_no_account">Telefonun Ayarlar bölümünden bir Google hesabı ekleyip tekrar dene.</string>
+    <string name="ensemble_error_network">Bağlantı yok. İnternetini kontrol edip tekrar dene.</string>
+    <string name="ensemble_error_not_found">Bu koda ait grup bulunamadı.</string>
+    <string name="ensemble_error_denied">Bu gruba erişimin yok.</string>
+    <string name="ensemble_error_unknown">Bir sorun oluştu. Tekrar dene.</string>
+    <plurals name="ensemble_member_count">
+        <item quantity="one">%d üye</item>
+        <item quantity="other">%d üye</item>
+    </plurals>
 </resources>

@@ -390,4 +390,56 @@
         <item quantity="other">Aller à ta réplique · dans %d répliques</item>
     </plurals>
     <string name="resume_title">Reprendre là où tu t’es arrêté</string>
+
+    <!-- Ensemble rehearsal -->
+    <string name="ensemble_title">Répétition en troupe</string>
+    <string name="ensemble_home_detail">Partage un texte avec ta troupe et répétez ensemble.</string>
+    <string name="ensemble_sign_in_title">Répète avec ta troupe</string>
+    <string name="ensemble_sign_in_body">Partage un texte avec ta troupe ou rejoins un groupe avec un code d’invitation. Chacun choisit ses rôles, pour que tout le monde sache qui joue qui.</string>
+    <string name="ensemble_sign_in">Se connecter avec Google</string>
+    <string name="ensemble_privacy_note">Ton nom et les textes que tu partages sont visibles par les membres de ton groupe.</string>
+    <string name="ensemble_account">Compte</string>
+    <string name="ensemble_sign_out">Se déconnecter</string>
+    <string name="ensemble_signed_in_as">Connecté en tant que %1$s</string>
+    <string name="ensemble_groups">Tes groupes</string>
+    <string name="ensemble_empty">Aucun groupe pour l’instant. Partage un de tes textes ou rejoins un groupe avec un code d’invitation.</string>
+    <string name="ensemble_share">Partager un texte</string>
+    <string name="ensemble_join">Rejoindre avec un code</string>
+    <string name="ensemble_join_hint">Code d’invitation</string>
+    <string name="ensemble_join_action">Rejoindre</string>
+    <string name="ensemble_pick_text">Choisis un texte à partager</string>
+    <string name="ensemble_pick_text_detail">Ta troupe verra ce texte et ses rôles.</string>
+    <string name="ensemble_no_texts">Ajoute d’abord un texte avec des personnages, puis partage-le.</string>
+    <string name="ensemble_invite_code">Code d’invitation</string>
+    <string name="ensemble_invite_detail">Envoie ce code à ta troupe. Toute personne qui l’a peut rejoindre le groupe.</string>
+    <string name="ensemble_send_code">Envoyer le code</string>
+    <string name="ensemble_copy_code">Copier</string>
+    <string name="ensemble_share_message">Rejoins « %1$s » dans Memo Everything avec le code %2$s</string>
+    <string name="ensemble_code_copied">Code copié</string>
+    <string name="ensemble_my_roles">Mes rôles</string>
+    <string name="ensemble_choose_roles">Choisis tes rôles</string>
+    <string name="ensemble_no_roles">Aucun rôle choisi</string>
+    <string name="ensemble_rehearse">Répéter</string>
+    <string name="ensemble_recordings_soon">L’enregistrement de tes répliques arrive à l’étape suivante. Pour l’instant, choisis tes rôles pour que la troupe sache qui joue qui.</string>
+    <string name="ensemble_roles">Rôles</string>
+    <string name="ensemble_role_open">Libre</string>
+    <string name="ensemble_owner">Propriétaire</string>
+    <string name="ensemble_unnamed">Membre sans nom</string>
+    <string name="ensemble_you">%1$s (toi)</string>
+    <string name="ensemble_group_actions">Actions du groupe</string>
+    <string name="ensemble_leave">Quitter le groupe</string>
+    <string name="ensemble_leave_confirm">Quitter « %1$s » ? Tes enregistrements dans ce groupe seront supprimés.</string>
+    <string name="ensemble_delete">Supprimer le groupe</string>
+    <string name="ensemble_delete_confirm">Supprimer « %1$s » pour toute la troupe ? Les enregistrements de tous les membres seront supprimés.</string>
+    <string name="ensemble_error_config">La connexion Google n’est pas encore configurée pour cette app.</string>
+    <string name="ensemble_error_no_account">Ajoute un compte Google à ce téléphone dans les Paramètres, puis réessaie.</string>
+    <string name="ensemble_error_network">Pas de connexion. Vérifie ton internet et réessaie.</string>
+    <string name="ensemble_error_not_found">Aucun groupe trouvé avec ce code.</string>
+    <string name="ensemble_error_denied">Tu n’as pas accès à ce groupe.</string>
+    <string name="ensemble_error_unknown">Un problème est survenu. Réessaie.</string>
+    <plurals name="ensemble_member_count">
+        <item quantity="one">%d membre</item>
+        <item quantity="many">%d membres</item>
+        <item quantity="other">%d membres</item>
+    </plurals>
 </resources>
