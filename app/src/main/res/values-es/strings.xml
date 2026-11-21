@@ -389,4 +389,5 @@
         <item quantity="many">Ir a tu réplica · a %d réplicas</item>
         <item quantity="other">Ir a tu réplica · a %d réplicas</item>
     </plurals>
+    <string name="resume_title">Continuar donde lo dejaste</string>
 </resources>

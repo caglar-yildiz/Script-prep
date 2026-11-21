@@ -538,6 +538,7 @@ public final class MainActivity extends Activity {
         cancelSpeech();
         stopListening();
         position = target;
+        rememberPosition();
         revealLine = false;
         playbackFailed = false;
         if (autoPlay && position < scene.lines.size()
@@ -1984,6 +1985,7 @@ public final class MainActivity extends Activity {
         }
         hero.addView(stats, ui.spaced(18));
         content.addView(hero, ui.spaced(4));
+        resumeCard();
 
         sectionLabel(R.string.mode_label);
         LinearLayout modes = new LinearLayout(this);
@@ -2472,6 +2474,110 @@ public final class MainActivity extends Activity {
             .setNegativeButton(R.string.action_close, null)
             .show();
         list.setSelection(Math.max(0, position - 2));
+    }
+
+    // ---------------------------------------------------------------- Resume
+
+    private static final String RESUME_PREFIX = "resume_";
+
+    private String resumeKey() {
+        return RESUME_PREFIX + (scriptId == null ? "sample" : scriptId);
+    }
+
+    /** Saves where the rehearsal is, so the text can continue from there later; a finished scene clears it. */
+    private void rememberPosition() {
+        if (screen != Screen.REHEARSAL || reviewBase != null) {
+            return;
+        }
+        if (position >= scene.lines.size()) {
+            preferences.edit().remove(resumeKey()).apply();
+            return;
+        }
+        if (position <= 0) {
+            // Starting over keeps the old place until the new run moves past the first line.
+            return;
+        }
+        try {
+            preferences.edit().putString(resumeKey(), new org.json.JSONObject()
+                .put("section", sectionIndex)
+                .put("position", position)
+                .put("total", scene.lines.size())
+                .put("role", role == null ? "" : role)
+                .put("mode", mode.name())
+                .toString()).apply();
+        } catch (org.json.JSONException ignored) {
+            // Resuming is a convenience; the rehearsal goes on without it.
+        }
+    }
+
+    /** The saved place in this text, or null when there is none or the text no longer has it. */
+    private org.json.JSONObject savedPosition() {
+        String value = preferences.getString(resumeKey(), null);
+        if (value == null || fullScene == null) {
+            return null;
+        }
+        try {
+            org.json.JSONObject saved = new org.json.JSONObject(value);
+            int section = saved.optInt("section", -1);
+            if (section >= fullScene.sections.size()) {
+                return null;
+            }
+            int lines = fullScene.forSection(section).lines.size();
+            return saved.optInt("position") > 0 && saved.optInt("position") < lines ? saved : null;
+        } catch (org.json.JSONException error) {
+            return null;
+        }
+    }
+
+    private void resumeCard() {
+        org.json.JSONObject saved = savedPosition();
+        if (saved == null) {
+            return;
+        }
+        int section = saved.optInt("section", -1);
+        Scene target = fullScene.forSection(section);
+        int line = saved.optInt("position");
+        String savedRole = saved.optString("role");
+        Mode savedMode = "LISTEN".equals(saved.optString("mode")) ? Mode.LISTEN : Mode.PRACTICE;
+        StringBuilder detail = new StringBuilder(getString(R.string.line_progress, line + 1, target.lines.size()));
+        if (section >= 0) {
+            String title = fullScene.sections.get(section).title;
+            detail.append(" · ").append(title.isEmpty() ? getString(R.string.untitled_scene, section + 1) : title);
+        }
+        if (category.hasRoles() && savedMode == Mode.PRACTICE && target.roles.contains(savedRole)) {
+            detail.append(" · ").append(savedRole);
+        }
+        LinearLayout card = ui.card(ACCENT_CONTAINER, view -> {
+            sectionIndex = section;
+            scene = target;
+            reviewBase = null;
+            mode = savedMode;
+            if (target.roles.contains(savedRole)) {
+                role = savedRole;
+            }
+            ensureRole();
+            resetReport();
+            screen = Screen.REHEARSAL;
+            moveTo(line, true);
+        });
+        card.setBackground(ui.ripple(ui.outlined(ACCENT_CONTAINER, 20, 0x80F4A98A), 0x22FFFFFF));
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.addView(ui.iconTile(R.drawable.ic_play, Ui.ON_ACCENT, ACCENT, 44));
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        labels.addView(ui.text(getString(R.string.resume_title), Type.SUBTITLE, ON_ACCENT_CONTAINER));
+        TextView info = ui.text(detail.toString(), Type.BODY, ON_ACCENT_CONTAINER);
+        info.setAlpha(0.8f);
+        labels.addView(info, ui.spaced(2));
+        TextView preview = ui.serif(target.lines.get(line).text, 14, ON_ACCENT_CONTAINER);
+        preview.setAlpha(0.7f);
+        preview.setMaxLines(2);
+        preview.setEllipsize(TextUtils.TruncateAt.END);
+        labels.addView(preview, ui.spaced(4));
+        card.addView(labels, weighted(14, ui));
+        card.addView(ui.icon(R.drawable.ic_chevron_right, ON_ACCENT_CONTAINER, 22));
+        content.addView(card, ui.spaced(12));
     }
 
     private void showRoleOptions() {

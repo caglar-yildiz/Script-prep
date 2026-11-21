@@ -389,4 +389,5 @@
         <item quantity="many">Vai alla tua battuta · fra %d battute</item>
         <item quantity="other">Vai alla tua battuta · fra %d battute</item>
     </plurals>
+    <string name="resume_title">Riprendi da dove eri rimasto</string>
 </resources>

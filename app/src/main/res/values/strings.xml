@@ -382,4 +382,5 @@
         <item quantity="one">Skip to your line · %d line away</item>
         <item quantity="other">Skip to your line · %d lines away</item>
     </plurals>
+    <string name="resume_title">Continue where you left off</string>
 </resources>

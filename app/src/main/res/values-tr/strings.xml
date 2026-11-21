@@ -376,4 +376,5 @@
         <item quantity="one">Repliğine geç · %d replik sonra</item>
         <item quantity="other">Repliğine geç · %d replik sonra</item>
     </plurals>
+    <string name="resume_title">Kaldığın yerden devam et</string>
 </resources>
