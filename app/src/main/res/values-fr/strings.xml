@@ -366,4 +366,27 @@
         <item quantity="other">%d textes importés</item>
     </plurals>
     <string name="premium_see_plans">Voir les offres et fonctionnalités</string>
+    <string name="overview_title">Vue de la scène</string>
+    <string name="overview_hint">Touche une réplique pour répéter à partir de là.</string>
+    <string name="lines_title">Modifier les répliques</string>
+    <string name="lines_hint">Touche une réplique pour la modifier. Utilise ⋮ pour insérer une réplique ou une note, ou pour la supprimer.</string>
+    <string name="line_edit">Modifier la réplique</string>
+    <string name="line_add_below">Ajouter une réplique dessous</string>
+    <string name="line_note_below">Ajouter une note dessous</string>
+    <string name="line_add_above">Ajouter une réplique dessus</string>
+    <string name="line_delete">Supprimer la réplique</string>
+    <string name="line_deleted">Réplique supprimée</string>
+    <string name="line_role">Personnage</string>
+    <string name="line_text">Réplique</string>
+    <string name="line_notes">Notes et didascalies après la réplique (facultatif, une par ligne)</string>
+    <string name="line_note">Note ou didascalie</string>
+    <string name="line_role_invalid">Utilise un nom en lettres, 40 caractères maximum.</string>
+    <string name="line_text_required">Écris la réplique.</string>
+    <string name="line_add">Ajouter une réplique</string>
+    <string name="edit_as_text">Modifier en texte brut</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Aller à ta réplique · dans %d réplique</item>
+        <item quantity="many">Aller à ta réplique · dans %d répliques</item>
+        <item quantity="other">Aller à ta réplique · dans %d répliques</item>
+    </plurals>
 </resources>

@@ -366,4 +366,27 @@
         <item quantity="other">%d testi importati</item>
     </plurals>
     <string name="premium_see_plans">Vedi piani e funzioni</string>
+    <string name="overview_title">Panoramica della scena</string>
+    <string name="overview_hint">Tocca una battuta per provare da lì.</string>
+    <string name="lines_title">Modifica battute</string>
+    <string name="lines_hint">Tocca una battuta per cambiarla. Usa ⋮ per inserire una battuta o una nota in mezzo, o per eliminarla.</string>
+    <string name="line_edit">Modifica battuta</string>
+    <string name="line_add_below">Aggiungi battuta sotto</string>
+    <string name="line_note_below">Aggiungi nota sotto</string>
+    <string name="line_add_above">Aggiungi battuta sopra</string>
+    <string name="line_delete">Elimina battuta</string>
+    <string name="line_deleted">Battuta eliminata</string>
+    <string name="line_role">Personaggio</string>
+    <string name="line_text">Battuta</string>
+    <string name="line_notes">Note e didascalie dopo la battuta (facoltative, una per riga)</string>
+    <string name="line_note">Nota o didascalia</string>
+    <string name="line_role_invalid">Usa un nome di lettere, al massimo 40 caratteri.</string>
+    <string name="line_text_required">Scrivi la battuta.</string>
+    <string name="line_add">Aggiungi battuta</string>
+    <string name="edit_as_text">Modifica come testo</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Vai alla tua battuta · fra %d battuta</item>
+        <item quantity="many">Vai alla tua battuta · fra %d battute</item>
+        <item quantity="other">Vai alla tua battuta · fra %d battute</item>
+    </plurals>
 </resources>

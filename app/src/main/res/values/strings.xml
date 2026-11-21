@@ -360,4 +360,26 @@
         <item quantity="other">%d texts imported</item>
     </plurals>
     <string name="premium_see_plans">See plans and features</string>
+    <string name="overview_title">Scene overview</string>
+    <string name="overview_hint">Tap a line to rehearse from there.</string>
+    <string name="lines_title">Edit lines</string>
+    <string name="lines_hint">Tap a line to change it. Use ⋮ to add a line or a note in between, or to delete one.</string>
+    <string name="line_edit">Edit line</string>
+    <string name="line_add_below">Add a line below</string>
+    <string name="line_note_below">Add a note below</string>
+    <string name="line_add_above">Add a line above</string>
+    <string name="line_delete">Delete line</string>
+    <string name="line_deleted">Line deleted</string>
+    <string name="line_role">Character</string>
+    <string name="line_text">Line</string>
+    <string name="line_notes">Notes and stage directions after the line (optional, one per row)</string>
+    <string name="line_note">Note or stage direction</string>
+    <string name="line_role_invalid">Use a name of letters, up to 40 characters.</string>
+    <string name="line_text_required">Write the line.</string>
+    <string name="line_add">Add line</string>
+    <string name="edit_as_text">Edit as plain text</string>
+    <plurals name="jump_to_turn">
+        <item quantity="one">Skip to your line · %d line away</item>
+        <item quantity="other">Skip to your line · %d lines away</item>
+    </plurals>
 </resources>
