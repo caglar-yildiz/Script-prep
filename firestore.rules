@@ -50,6 +50,7 @@ service cloud.firestore {
       allow update: if isOwner(p)
         && request.resource.data.ownerUid == resource.data.ownerUid
         && request.resource.data.inviteCode == resource.data.inviteCode
+        && request.resource.data.title is string && request.resource.data.title.size() <= 200
         && request.resource.data.text is string && request.resource.data.text.size() <= 300000;
       allow delete: if isOwner(p);
 

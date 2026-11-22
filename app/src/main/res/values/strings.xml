@@ -113,7 +113,6 @@
     <string name="action_delete">Delete</string>
     <string name="action_practice">Practice</string>
     <string name="text_actions">More options for %1$s</string>
-    <string name="sample_details">Try the app with a ready-made two-person scene.</string>
     <string name="onboarding_add">Add a script, speech or poem</string>
     <string name="onboarding_role">Pick the part you’re learning</string>
     <string name="onboarding_rehearse">Rehearse with a voice partner</string>
@@ -474,6 +473,9 @@
     <string name="ensemble_add_text">Add a text</string>
     <string name="ensemble_share_sample">Try with the sample scene</string>
     <string name="ensemble_invited_question">Did someone invite you? Join with their code instead.</string>
+    <string name="ensemble_group_name_title">Name the group</string>
+    <string name="ensemble_rename_group">Rename group</string>
+    <string name="ensemble_group_name_needed">Type a name for the group</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>

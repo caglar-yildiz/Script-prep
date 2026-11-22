@@ -112,7 +112,6 @@
     <string name="action_delete">Löschen</string>
     <string name="action_practice">Proben</string>
     <string name="text_actions">Weitere Optionen für %1$s</string>
-    <string name="sample_details">Probier die App mit einer fertigen Szene für zwei Personen aus.</string>
     <string name="onboarding_add">Füge ein Skript, eine Rede oder ein Gedicht hinzu</string>
     <string name="onboarding_role">Wähle die Rolle, die du lernst</string>
     <string name="onboarding_rehearse">Probe mit einem Sprechpartner</string>
@@ -467,6 +466,9 @@
     <string name="ensemble_add_text">Text hinzufügen</string>
     <string name="ensemble_share_sample">Mit der Beispielszene ausprobieren</string>
     <string name="ensemble_invited_question">Hat dich jemand eingeladen? Tritt stattdessen mit dem Code bei.</string>
+    <string name="ensemble_group_name_title">Gruppe benennen</string>
+    <string name="ensemble_rename_group">Gruppe umbenennen</string>
+    <string name="ensemble_group_name_needed">Gib einen Namen für die Gruppe ein</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d Mitglied</item>
         <item quantity="other">%d Mitglieder</item>

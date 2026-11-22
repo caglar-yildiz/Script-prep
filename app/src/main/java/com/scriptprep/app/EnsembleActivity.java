@@ -53,6 +53,7 @@ public final class EnsembleActivity extends Activity {
     static final String RESULT_ADD_TEXT = "add_text";
     /** Extra: a text just saved in the library, to share right away. */
     static final String EXTRA_SHARE_SCRIPT = "share_script";
+    private static final int MAX_GROUP_NAME = 80;
     /** Invite links: https://…/join/?c=CODE opens memoeverything://join/CODE. */
     static final String INVITE_PAGE = "https://caglar-yildiz.github.io/Script-prep/join/?c=";
 
@@ -674,14 +675,21 @@ public final class EnsembleActivity extends Activity {
         return null;
     }
 
+    /** Asks for the group's name, starting from the text's title, then creates the group. */
     private void share(ScriptLibrary.Script script) {
+        String suggested = script.title.isEmpty() ? getString(R.string.imported_title) : script.title;
+        askGroupName(R.string.ensemble_group_name_title, suggested, name -> create(script, name));
+    }
+
+    private void create(ScriptLibrary.Script script, String title) {
         busy = true;
         render();
-        String title = script.title.isEmpty() ? getString(R.string.imported_title) : script.title;
         ensemble.create(title, script.text, script.category, script.language, new Ensemble.Callback<>() {
             @Override
             public void done(String productionId) {
                 busy = false;
+                // The shared text becomes the group's copy, so the library lists it once.
+                library.rekey(script.id, Ensemble.LOCAL_PREFIX + productionId, title);
                 open(productionId);
             }
 
@@ -891,14 +899,79 @@ public final class EnsembleActivity extends Activity {
 
     private void showGroupActions() {
         boolean owner = isOwner();
+        String[] items = owner
+            ? new String[] {getString(R.string.ensemble_rename_group), getString(R.string.ensemble_delete)}
+            : new String[] {getString(R.string.ensemble_leave)};
         new AlertDialog.Builder(this)
             .setTitle(production.title)
+            .setItems(items, (dialog, which) -> {
+                if (owner && which == 0) {
+                    askGroupName(R.string.ensemble_rename_group, production.title, this::renameGroup);
+                } else {
+                    confirmLeaveOrDelete(owner);
+                }
+            })
+            .show();
+    }
+
+    private void confirmLeaveOrDelete(boolean owner) {
+        new AlertDialog.Builder(this)
             .setMessage(getString(owner ? R.string.ensemble_delete_confirm : R.string.ensemble_leave_confirm,
                 production.title))
             .setPositiveButton(owner ? R.string.ensemble_delete : R.string.ensemble_leave,
                 (dialog, which) -> leaveOrDelete(owner))
             .setNegativeButton(android.R.string.cancel, null)
             .show();
+    }
+
+    private void askGroupName(int title, String suggested, java.util.function.Consumer<String> chosen) {
+        EditText field = new EditText(this);
+        field.setSingleLine(true);
+        field.setText(suggested);
+        field.setSelectAllOnFocus(true);
+        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        field.setFilters(new InputFilter[] {new InputFilter.LengthFilter(MAX_GROUP_NAME)});
+        field.setTextColor(TEXT);
+        FrameLayout frame = new FrameLayout(this);
+        frame.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        frame.addView(field);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(title)
+            .setView(frame)
+            .setPositiveButton(android.R.string.ok, null)
+            .setNegativeButton(android.R.string.cancel, null)
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            String name = field.getText().toString().trim().replaceAll("\\s+", " ");
+            if (name.isEmpty()) {
+                field.setError(getString(R.string.ensemble_group_name_needed));
+                return;
+            }
+            dialog.dismiss();
+            chosen.accept(name);
+        }));
+        dialog.show();
+        field.requestFocus();
+    }
+
+    private void renameGroup(String name) {
+        Ensemble.Production target = production;
+        busy = true;
+        render();
+        ensemble.rename(target.id, name, new Ensemble.Callback<>() {
+            @Override
+            public void done(Void value) {
+                busy = false;
+                open(target.id);
+            }
+
+            @Override
+            public void failed(Ensemble.Failure failure) {
+                busy = false;
+                report(failure);
+                render();
+            }
+        });
     }
 
     private void leaveOrDelete(boolean owner) {
@@ -908,7 +981,9 @@ public final class EnsembleActivity extends Activity {
             @Override
             public void done(Void value) {
                 busy = false;
-                library.delete(Ensemble.LOCAL_PREFIX + target.id);
+                // The text stays in the library as an ordinary text.
+                library.rekey(Ensemble.LOCAL_PREFIX + target.id, java.util.UUID.randomUUID().toString(),
+                    target.title);
                 recordings.forget(target.id);
                 showList();
             }
@@ -927,7 +1002,19 @@ public final class EnsembleActivity extends Activity {
     }
 
     private void saveLocalCopy(Ensemble.Production value) {
-        library.save(Ensemble.LOCAL_PREFIX + value.id, value.title, value.text, value.category, value.language);
+        FirebaseUser user = ensemble.user();
+        if (user != null && user.getUid().equals(value.ownerUid)) {
+            // Groups shared before the library kept one copy left the original behind; fold it in.
+            for (ScriptLibrary.Script script : library.list()) {
+                if (!script.id.startsWith(Ensemble.LOCAL_PREFIX) && script.text.equals(value.text)
+                    && findScript(Ensemble.LOCAL_PREFIX + value.id) != null) {
+                    library.delete(script.id);
+                } else if (!script.id.startsWith(Ensemble.LOCAL_PREFIX) && script.text.equals(value.text)) {
+                    library.rekey(script.id, Ensemble.LOCAL_PREFIX + value.id, value.title);
+                }
+            }
+        }
+        library.put(Ensemble.LOCAL_PREFIX + value.id, value.title, value.text, value.category, value.language);
     }
 
     private void rehearse(String role) {

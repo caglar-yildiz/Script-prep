@@ -112,7 +112,6 @@
     <string name="action_delete">Eliminar</string>
     <string name="action_practice">Ensayar</string>
     <string name="text_actions">Más opciones para %1$s</string>
-    <string name="sample_details">Prueba la app con una escena para dos personas ya preparada.</string>
     <string name="onboarding_add">Añade un guion, discurso o poema</string>
     <string name="onboarding_role">Elige el papel que estás aprendiendo</string>
     <string name="onboarding_rehearse">Ensaya con un compañero de voz</string>
@@ -480,6 +479,9 @@
     <string name="ensemble_add_text">Añadir un texto</string>
     <string name="ensemble_share_sample">Probar con la escena de ejemplo</string>
     <string name="ensemble_invited_question">¿Te han invitado? Únete con su código.</string>
+    <string name="ensemble_group_name_title">Ponle nombre al grupo</string>
+    <string name="ensemble_rename_group">Renombrar grupo</string>
+    <string name="ensemble_group_name_needed">Escribe un nombre para el grupo</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d miembro</item>
         <item quantity="many">%d miembros</item>

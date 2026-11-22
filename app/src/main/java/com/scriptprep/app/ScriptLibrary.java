@@ -52,6 +52,49 @@ final class ScriptLibrary {
         return scriptId;
     }
 
+    /**
+     * Saves a text without moving it: an existing one keeps its place, a new one goes on top.
+     * Used for the copy of a shared text, which is refreshed every time the group opens.
+     */
+    void put(String id, String title, String text, TextCategory category, ScriptLanguage language) {
+        List<Script> scripts = list();
+        Script updated = new Script(id, title, text, category, language);
+        for (int i = 0; i < scripts.size(); i++) {
+            if (scripts.get(i).id.equals(id)) {
+                scripts.set(i, updated);
+                write(scripts);
+                return;
+            }
+        }
+        scripts.add(0, updated);
+        write(scripts);
+    }
+
+    /**
+     * Gives a text a new id in place, with its character voices; returns false if it is not
+     * in the library. A shared text becomes the group's copy this way, and back again.
+     */
+    boolean rekey(String oldId, String newId, String title) {
+        List<Script> scripts = list();
+        for (int i = 0; i < scripts.size(); i++) {
+            Script old = scripts.get(i);
+            if (old.id.equals(oldId)) {
+                scripts.removeIf(script -> script.id.equals(newId));
+                int index = Math.min(i, scripts.size());
+                scripts.removeIf(script -> script.id.equals(oldId));
+                scripts.add(Math.min(index, scripts.size()), new Script(newId, title, old.text, old.category, old.language));
+                write(scripts);
+                String cast = VoiceCast.raw(preferences, oldId);
+                if (cast != null) {
+                    VoiceCast.putRaw(preferences, newId, cast);
+                    VoiceCast.reset(preferences, oldId);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** Removes a saved text and returns its former position, or -1 if it was not found. */
     int delete(String id) {
         List<Script> scripts = list();

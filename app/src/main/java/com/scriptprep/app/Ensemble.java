@@ -473,7 +473,13 @@ final class Ensemble {
         store().collection("productions").document(productionId).get()
             .addOnSuccessListener(mainExecutor, document -> {
                 if (document.exists()) {
-                    callback.done(new Production(document));
+                    Production production = new Production(document);
+                    // Keep the name in the user's own list current after the owner renames it.
+                    FirebaseUser user = user();
+                    if (user != null) {
+                        index(user.getUid(), productionId).update("title", production.title);
+                    }
+                    callback.done(production);
                 } else {
                     forget(productionId);
                     callback.failed(Failure.NOT_FOUND);
@@ -487,6 +493,16 @@ final class Ensemble {
                 }
                 callback.failed(failure);
             });
+    }
+
+    /** Renames a group; only its owner may. */
+    void rename(String productionId, String title, Callback<Void> callback) {
+        Map<String, Object> update = new HashMap<>();
+        update.put("title", title);
+        update.put("updatedAt", Timestamp.now());
+        store().collection("productions").document(productionId).update(update)
+            .addOnSuccessListener(mainExecutor, ignored -> callback.done(null))
+            .addOnFailureListener(mainExecutor, error -> callback.failed(failure(error)));
     }
 
     void members(String productionId, Callback<List<Member>> callback) {

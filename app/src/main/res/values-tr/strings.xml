@@ -112,7 +112,6 @@
     <string name="action_delete">Sil</string>
     <string name="action_practice">Prova yap</string>
     <string name="text_actions">%1$s için diğer seçenekler</string>
-    <string name="sample_details">Uygulamayı hazır, iki kişilik bir sahneyle dene.</string>
     <string name="onboarding_add">Oyun, konuşma veya şiir metni ekle</string>
     <string name="onboarding_role">Çalışacağın rolü seç</string>
     <string name="onboarding_rehearse">Sesli bir partnerle prova yap</string>
@@ -467,6 +466,9 @@
     <string name="ensemble_add_text">Metin ekle</string>
     <string name="ensemble_share_sample">Örnek sahneyle dene</string>
     <string name="ensemble_invited_question">Biri seni davet mi etti? Onun koduyla katıl.</string>
+    <string name="ensemble_group_name_title">Gruba bir ad ver</string>
+    <string name="ensemble_rename_group">Grubu yeniden adlandır</string>
+    <string name="ensemble_group_name_needed">Grup için bir ad yaz</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d üye</item>
         <item quantity="other">%d üye</item>

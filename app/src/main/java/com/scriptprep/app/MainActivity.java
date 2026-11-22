@@ -926,22 +926,11 @@ public final class MainActivity extends Activity {
             isFirst = false;
         }
 
-        LinearLayout sample = ui.card(0x00000000, view -> openSample());
-        GradientDrawable dashed = ui.shape(0x00000000, 20);
-        dashed.setStroke(ui.dp(1), Ui.OUTLINE, ui.dp(6), ui.dp(4));
-        sample.setBackground(ui.ripple(dashed, 0x22FFFFFF));
-        sample.setOrientation(LinearLayout.HORIZONTAL);
-        sample.setGravity(Gravity.CENTER_VERTICAL);
-        sample.addView(ui.iconTile(R.drawable.ic_play, TEXT_SECONDARY, SURFACE_HIGH, 44));
-        LinearLayout sampleText = new LinearLayout(this);
-        sampleText.setOrientation(LinearLayout.VERTICAL);
-        sampleText.addView(ui.text(getString(R.string.sample_button), Type.SUBTITLE, TEXT));
-        TextView sampleDetail = ui.text(getString(R.string.sample_details), Type.BODY, TEXT_TERTIARY);
-        sampleDetail.setPadding(0, ui.dp(2), 0, 0);
-        sampleText.addView(sampleDetail);
-        sample.addView(sampleText, weighted(14, ui));
-        content.addView(sample, ui.spaced(10));
         addEnsembleCard();
+        // The library is not empty, so the sample scene is only a small link now.
+        LinearLayout sample = ui.button(getString(R.string.sample_button), R.drawable.ic_play, Kind.TEXT,
+            view -> openSample());
+        content.addView(sample, ui.wrapSpaced(6));
 
         // Leave room for the floating create button.
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, ui.dp(72)));
@@ -961,8 +950,10 @@ public final class MainActivity extends Activity {
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setPadding(ui.dp(16), ui.dp(14), ui.dp(4), ui.dp(14));
 
-        int[] colors = categoryColors(entry.category);
-        card.addView(ui.iconTile(categoryIcon(entry.category), colors[0], colors[1], 48));
+        boolean shared = entry.id.startsWith(Ensemble.LOCAL_PREFIX);
+        int[] colors = shared ? new int[] {VIOLET, VIOLET_CONTAINER} : categoryColors(entry.category);
+        card.addView(ui.iconTile(shared ? R.drawable.ic_people : categoryIcon(entry.category),
+            colors[0], colors[1], 48));
 
         LinearLayout labels = new LinearLayout(this);
         labels.setOrientation(LinearLayout.VERTICAL);
@@ -1024,7 +1015,8 @@ public final class MainActivity extends Activity {
             }
             parsedCache.put(key, parsed);
         }
-        StringBuilder summary = new StringBuilder(getString(categoryTitle(entry.category)));
+        StringBuilder summary = new StringBuilder(getString(entry.id.startsWith(Ensemble.LOCAL_PREFIX)
+            ? R.string.ensemble_title : categoryTitle(entry.category)));
         if (entry.language != interfaceLanguage()) {
             summary.append(" · ").append(getString(entry.language.label));
         }
