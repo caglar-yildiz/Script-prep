@@ -472,6 +472,10 @@
     <string name="record_delete_confirm">Excluir esta gravação para todo o elenco?</string>
     <string name="ensemble_recordings_hint">As falas gravadas tocam no ensaio de todos com a voz de quem gravou; o resto é lido pela voz do dispositivo.</string>
     <string name="ensemble_recording_playing">Tocando a gravação do elenco…</string>
+    <string name="ensemble_account_section">Conta do ensaio em grupo</string>
+    <string name="ensemble_account_none">Você ainda não começou o ensaio em grupo neste dispositivo. Se usou em outro e vinculou o Google, entre com a mesma conta do Google.</string>
+    <string name="ensemble_sign_out_body">Você pode voltar aos seus grupos entrando de novo com o Google.</string>
+    <string name="ensemble_link_detail">Abra seus grupos também em um tablet ou celular novo</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d membro</item>
         <item quantity="many">%d membros</item>

@@ -428,124 +428,64 @@ public final class EnsembleActivity extends Activity {
     /** Signs in with Google, or links it to this device's identity when there is one. */
     private void connectGoogle() {
         boolean linking = ensemble.user() != null;
-        busy = true;
-        render();
-        ensemble.connectGoogle(this, new Ensemble.Callback<>() {
+        EnsembleAccount.connectGoogle(this, ensemble, new EnsembleAccount.Listener() {
             @Override
-            public void done(Ensemble.Connection value) {
-                busy = false;
-                if (value == Ensemble.Connection.LINKED) {
-                    Toast.makeText(EnsembleActivity.this, R.string.ensemble_linked, Toast.LENGTH_LONG).show();
-                    render();
-                } else if (linking) {
-                    showList();
-                } else {
-                    afterSignIn();
-                }
-            }
-
-            @Override
-            public void failed(Ensemble.Failure failure) {
-                busy = false;
-                render();
-                if (failure == Ensemble.Failure.COLLISION) {
-                    confirmSwitch();
-                } else {
-                    report(failure);
-                }
-            }
-        });
-    }
-
-    /** The Google account already has its own identity, for example from the user's tablet. */
-    private void confirmSwitch() {
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.ensemble_switch_title)
-            .setMessage(R.string.ensemble_switch_body)
-            .setPositiveButton(R.string.ensemble_switch_action, (dialog, which) -> {
+            public void busy() {
                 busy = true;
                 render();
-                ensemble.switchToPending(new Ensemble.Callback<>() {
-                    @Override
-                    public void done(Ensemble.Connection value) {
-                        busy = false;
-                        showList();
-                    }
+            }
 
-                    @Override
-                    public void failed(Ensemble.Failure failure) {
-                        busy = false;
-                        report(failure);
-                        render();
-                    }
-                });
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
-    }
-
-    private void signOut() {
-        ensemble.signOut(this, () -> {
-            entries = null;
-            screen = Screen.LIST;
-            render();
+            @Override
+            public void changed(Ensemble.Connection connection) {
+                busy = false;
+                if (connection == Ensemble.Connection.SIGNED_IN && !linking) {
+                    afterSignIn();
+                } else if (connection == Ensemble.Connection.SIGNED_IN) {
+                    showList();
+                } else {
+                    render();
+                }
+            }
         });
     }
 
+    /** Redraws after an account change made from a dialog. */
+    private final EnsembleAccount.Listener accountChanged = new EnsembleAccount.Listener() {
+        @Override
+        public void busy() {
+            busy = true;
+            render();
+        }
+
+        @Override
+        public void changed(Ensemble.Connection connection) {
+            busy = false;
+            if (ensemble.user() == null) {
+                entries = null;
+                screen = Screen.LIST;
+                render();
+            } else if (production != null) {
+                loadMembers();
+            } else {
+                render();
+            }
+        }
+    };
+
     private void showAccount() {
-        FirebaseUser user = ensemble.user();
         boolean linked = ensemble.linked();
-        String status = linked
-            ? getString(R.string.ensemble_account_linked, user == null || user.getEmail() == null ? "" : user.getEmail())
-            : getString(R.string.ensemble_account_device);
         AlertDialog.Builder dialog = new AlertDialog.Builder(this)
             .setTitle(ensemble.name().isEmpty() ? getString(R.string.ensemble_account) : ensemble.name())
-            .setMessage(status)
-            .setNeutralButton(R.string.ensemble_rename, (d, which) -> askName());
+            .setMessage(EnsembleAccount.status(this, ensemble))
+            .setNeutralButton(R.string.ensemble_rename,
+                (d, which) -> EnsembleAccount.askName(this, ensemble, accountChanged));
         if (linked) {
-            dialog.setPositiveButton(R.string.ensemble_sign_out, (d, which) -> signOut());
+            dialog.setPositiveButton(R.string.ensemble_sign_out,
+                (d, which) -> EnsembleAccount.confirmSignOut(this, ensemble, accountChanged));
         } else {
             dialog.setPositiveButton(R.string.ensemble_link, (d, which) -> connectGoogle());
         }
         dialog.setNegativeButton(android.R.string.cancel, null).show();
-    }
-
-    private void askName() {
-        EditText field = new EditText(this);
-        field.setSingleLine(true);
-        field.setText(ensemble.name());
-        field.setSelection(field.getText().length());
-        field.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_WORDS
-            | InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
-        field.setFilters(new InputFilter[] {new InputFilter.LengthFilter(Ensemble.MAX_NAME_LENGTH)});
-        field.setTextColor(TEXT);
-        FrameLayout frame = new FrameLayout(this);
-        frame.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
-        frame.addView(field);
-        new AlertDialog.Builder(this)
-            .setTitle(R.string.ensemble_rename)
-            .setView(frame)
-            .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                String name = Ensemble.cleanName(field.getText().toString());
-                if (name.isEmpty()) {
-                    return;
-                }
-                ensemble.rename(name, new Ensemble.Callback<>() {
-                    @Override
-                    public void done(Void value) {
-                        if (production != null) {
-                            loadMembers();
-                        }
-                    }
-
-                    @Override
-                    public void failed(Ensemble.Failure failure) {
-                        report(failure);
-                    }
-                });
-            })
-            .setNegativeButton(android.R.string.cancel, null)
-            .show();
     }
 
     // ------------------------------------------------------------ List
@@ -964,18 +904,8 @@ public final class EnsembleActivity extends Activity {
     // ------------------------------------------------------------ Errors
 
     private void report(Ensemble.Failure failure) {
-        int message = switch (failure) {
-            case CANCELLED -> 0;
-            case NOT_CONFIGURED -> R.string.ensemble_error_config;
-            case NO_ACCOUNT -> R.string.ensemble_error_no_account;
-            case COLLISION -> R.string.ensemble_error_unknown;
-            case NETWORK -> R.string.ensemble_error_network;
-            case NOT_FOUND -> R.string.ensemble_error_not_found;
-            case DENIED -> R.string.ensemble_error_denied;
-            case UNKNOWN -> R.string.ensemble_error_unknown;
-        };
-        if (message != 0 && !isDestroyed()) {
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (!isDestroyed()) {
+            EnsembleAccount.report(this, failure);
         }
     }
 }

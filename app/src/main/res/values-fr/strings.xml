@@ -472,6 +472,10 @@
     <string name="record_delete_confirm">Supprimer cet enregistrement pour toute la troupe ?</string>
     <string name="ensemble_recordings_hint">Les répliques enregistrées sont jouées dans les répétitions de tous avec la voix de la personne ; le reste est lu par la voix de l’appareil.</string>
     <string name="ensemble_recording_playing">Lecture de l’enregistrement de la troupe…</string>
+    <string name="ensemble_account_section">Compte de répétition en troupe</string>
+    <string name="ensemble_account_none">Tu n’as pas encore commencé la répétition en troupe sur cet appareil. Si tu l’as utilisée ailleurs et associé Google, connecte-toi avec le même compte Google.</string>
+    <string name="ensemble_sign_out_body">Tu peux retrouver tes groupes en te reconnectant avec Google.</string>
+    <string name="ensemble_link_detail">Ouvre tes groupes aussi sur une tablette ou un nouveau téléphone</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d membre</item>
         <item quantity="many">%d membres</item>

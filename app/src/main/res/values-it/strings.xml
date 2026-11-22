@@ -472,6 +472,10 @@
     <string name="record_delete_confirm">Eliminare questa registrazione per tutta la compagnia?</string>
     <string name="ensemble_recordings_hint">Le battute registrate suonano nelle prove di tutti con la voce di chi le ha registrate; il resto lo legge la voce del dispositivo.</string>
     <string name="ensemble_recording_playing">Riproduzione della registrazione della compagnia…</string>
+    <string name="ensemble_account_section">Account della prova di gruppo</string>
+    <string name="ensemble_account_none">Non hai ancora iniziato la prova di gruppo su questo dispositivo. Se l’hai usata altrove e hai collegato Google, accedi con lo stesso account Google.</string>
+    <string name="ensemble_sign_out_body">Puoi tornare ai tuoi gruppi accedendo di nuovo con Google.</string>
+    <string name="ensemble_link_detail">Apri i tuoi gruppi anche su un tablet o un nuovo telefono</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d membro</item>
         <item quantity="many">%d membri</item>

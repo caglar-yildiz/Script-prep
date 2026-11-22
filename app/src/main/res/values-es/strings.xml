@@ -472,6 +472,10 @@
     <string name="record_delete_confirm">¿Borrar esta grabación para todo el elenco?</string>
     <string name="ensemble_recordings_hint">Las réplicas grabadas suenan en el ensayo de todos con la voz de quien las grabó; el resto lo lee la voz del dispositivo.</string>
     <string name="ensemble_recording_playing">Reproduciendo la grabación del elenco…</string>
+    <string name="ensemble_account_section">Cuenta de ensayo en grupo</string>
+    <string name="ensemble_account_none">Aún no has empezado el ensayo en grupo en este dispositivo. Si lo usaste en otro y vinculaste Google, inicia sesión con la misma cuenta de Google.</string>
+    <string name="ensemble_sign_out_body">Puedes volver a tus grupos iniciando sesión de nuevo con Google.</string>
+    <string name="ensemble_link_detail">Abre tus grupos también en una tableta o un teléfono nuevo</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d miembro</item>
         <item quantity="many">%d miembros</item>

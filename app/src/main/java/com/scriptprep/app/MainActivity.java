@@ -1094,6 +1094,53 @@ public final class MainActivity extends Activity {
         content.addView(card, ui.spaced(10));
     }
 
+    /** Settings: the ensemble identity, Google linking and sign-in, name and sign-out. */
+    private void renderEnsembleAccount() {
+        if (!Ensemble.available(this)) {
+            return;
+        }
+        Ensemble ensemble = new Ensemble(this);
+        EnsembleAccount.Listener redraw = new EnsembleAccount.Listener() {
+            @Override
+            public void busy() {}
+
+            @Override
+            public void changed(Ensemble.Connection connection) {
+                if (screen == Screen.SETTINGS && !isDestroyed()) {
+                    render();
+                }
+            }
+        };
+        sectionLabel(R.string.ensemble_account_section);
+        content.addView(ui.text(EnsembleAccount.status(this, ensemble), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout account = ui.card(SURFACE, null);
+        account.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        if (ensemble.user() == null) {
+            account.addView(ui.listRow(R.drawable.ic_people, getString(R.string.ensemble_title),
+                getString(R.string.ensemble_home_detail), view -> openEnsemble()), Ui.matchWidth());
+            account.addView(ui.divider(70));
+            account.addView(ui.listRow(R.drawable.ic_person, getString(R.string.ensemble_sign_in),
+                getString(R.string.ensemble_returning), view -> EnsembleAccount.connectGoogle(this, ensemble, redraw)),
+                Ui.matchWidth());
+        } else {
+            String name = ensemble.name();
+            account.addView(ui.listRow(R.drawable.ic_person, getString(R.string.ensemble_rename),
+                name.isEmpty() ? getString(R.string.ensemble_unnamed) : name,
+                view -> EnsembleAccount.askName(this, ensemble, redraw)), Ui.matchWidth());
+            account.addView(ui.divider(70));
+            if (ensemble.linked()) {
+                account.addView(ui.listRow(R.drawable.ic_close, getString(R.string.ensemble_sign_out),
+                    ensemble.user().getEmail(), view -> EnsembleAccount.confirmSignOut(this, ensemble, redraw)),
+                    Ui.matchWidth());
+            } else {
+                account.addView(ui.listRow(R.drawable.ic_people, getString(R.string.ensemble_link),
+                    getString(R.string.ensemble_link_detail), view -> EnsembleAccount.connectGoogle(this, ensemble, redraw)),
+                    Ui.matchWidth());
+            }
+        }
+        content.addView(account, ui.spaced(10));
+    }
+
     @SuppressWarnings("deprecation")
     private void openEnsemble() {
         startActivityForResult(new Intent(this, EnsembleActivity.class), ENSEMBLE);
@@ -1229,6 +1276,8 @@ public final class MainActivity extends Activity {
         general.addView(ui.listRow(R.drawable.ic_translate, getString(R.string.language_title),
             getString(AppLanguage.current(this).label), view -> showLanguageOptions()), Ui.matchWidth());
         content.addView(general, ui.spaced(10));
+
+        renderEnsembleAccount();
 
         sectionLabel(R.string.voice_settings);
         TextView explanation = ui.text(getString(R.string.voice_settings_description), Type.BODY, TEXT_SECONDARY);

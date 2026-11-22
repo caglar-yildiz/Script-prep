@@ -459,6 +459,10 @@
     <string name="record_delete_confirm">Diese Aufnahme für das ganze Ensemble löschen?</string>
     <string name="ensemble_recordings_hint">Aufgenommene Repliken laufen in den Proben aller mit der Stimme der jeweiligen Person; den Rest liest die Gerätestimme.</string>
     <string name="ensemble_recording_playing">Aufnahme aus dem Ensemble wird abgespielt…</string>
+    <string name="ensemble_account_section">Konto für Ensembleproben</string>
+    <string name="ensemble_account_none">Du hast auf diesem Gerät noch keine Ensembleprobe begonnen. Wenn du sie auf einem anderen Gerät genutzt und Google verknüpft hast, melde dich mit demselben Google-Konto an.</string>
+    <string name="ensemble_sign_out_body">Du kommst zu deinen Gruppen zurück, indem du dich wieder mit Google anmeldest.</string>
+    <string name="ensemble_link_detail">Öffne deine Gruppen auch auf einem Tablet oder neuen Telefon</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d Mitglied</item>
         <item quantity="other">%d Mitglieder</item>

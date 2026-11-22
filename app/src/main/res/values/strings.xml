@@ -466,6 +466,10 @@
     <string name="record_delete_confirm">Delete this recording for the whole cast?</string>
     <string name="ensemble_recordings_hint">Recorded lines play in everyone’s rehearsal in the actor’s own voice; the rest are read by the device voice.</string>
     <string name="ensemble_recording_playing">Playing the cast member’s recording…</string>
+    <string name="ensemble_account_section">Ensemble rehearsal account</string>
+    <string name="ensemble_account_none">You haven’t started ensemble rehearsal on this device. If you used it on another device and linked Google, sign in with the same Google account.</string>
+    <string name="ensemble_sign_out_body">You can come back to your groups by signing in with Google again.</string>
+    <string name="ensemble_link_detail">Open your groups on a tablet or a new phone too</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>

@@ -459,6 +459,10 @@
     <string name="record_delete_confirm">Bu kayıt bütün ekip için silinsin mi?</string>
     <string name="ensemble_recordings_hint">Kaydedilen replikler herkesin provasında oyuncunun kendi sesiyle çalar; kalanları cihaz sesi okur.</string>
     <string name="ensemble_recording_playing">Ekip arkadaşının kaydı çalıyor…</string>
+    <string name="ensemble_account_section">Ekip provası hesabı</string>
+    <string name="ensemble_account_none">Bu cihazda ekip provasına henüz başlamadın. Başka bir cihazda kullanıp Google hesabını bağladıysan aynı Google hesabıyla giriş yap.</string>
+    <string name="ensemble_sign_out_body">Google ile yeniden giriş yaparak gruplarına dönebilirsin.</string>
+    <string name="ensemble_link_detail">Gruplarına tablette ve yeni telefonda da ulaş</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d üye</item>
         <item quantity="other">%d üye</item>
