@@ -185,6 +185,12 @@ public final class MainActivity extends Activity {
     private boolean revealLine;
     /** Whether the line being read now uses the AI voice. */
     private boolean aiSpeaking;
+    /** Whether the line being read now is a cast member's recording. */
+    private boolean recordingSpeaking;
+    private android.media.MediaPlayer recordingPlayer;
+    /** Cast recordings of the open shared text, loaded once per text. */
+    private EnsembleRecordings.Voices castRecordings;
+    private String castRecordingsFor;
 
     private String snackbarMessage;
     private String snackbarActionLabel;
@@ -520,6 +526,7 @@ public final class MainActivity extends Activity {
 
     private void cancelSpeech() {
         autoPlayPending = false;
+        releaseRecordingPlayer();
         if (activeUtterance != null || activePreview != null) {
             activeUtterance = null;
             activePreview = null;
@@ -536,6 +543,10 @@ public final class MainActivity extends Activity {
         if (!RehearsalOptions.shouldSpeak(mode, role, line.role)) {
             return;
         }
+        java.io.File recorded = castRecording(line);
+        if (recorded != null && playRecording(recorded)) {
+            return;
+        }
         if (useAiVoice() && neural.state() != NeuralVoice.State.FAILED) {
             playWithAiVoice(line);
             return;
@@ -547,6 +558,7 @@ public final class MainActivity extends Activity {
             stopListening();
             playbackFailed = false;
             aiSpeaking = false;
+            recordingSpeaking = false;
             VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
             VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
             speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
@@ -579,6 +591,70 @@ public final class MainActivity extends Activity {
             } else {
                 listenIfNeeded();
             }
+        }
+    }
+
+    /** The cast member's recording of a line in a shared text, if one is on this device. */
+    private java.io.File castRecording(Scene.Line line) {
+        if (scriptId == null || !scriptId.startsWith(Ensemble.LOCAL_PREFIX)) {
+            return null;
+        }
+        if (castRecordings == null || !scriptId.equals(castRecordingsFor)) {
+            castRecordings = EnsembleRecordings.Voices.load(this,
+                scriptId.substring(Ensemble.LOCAL_PREFIX.length()), fullScene);
+            castRecordingsFor = scriptId;
+        }
+        return castRecordings.find(line);
+    }
+
+    /** Plays a recorded line; returns false when it cannot, so a voice reads it instead. */
+    private boolean playRecording(java.io.File file) {
+        cancelSpeech();
+        stopListening();
+        playbackFailed = false;
+        aiSpeaking = false;
+        String id = "line-" + ++utteranceNumber;
+        android.media.MediaPlayer player = new android.media.MediaPlayer();
+        try {
+            player.setDataSource(file.getPath());
+            player.prepare();
+            float speed = readingSpeed();
+            if (speed != 1f) {
+                player.setPlaybackParams(player.getPlaybackParams().setSpeed(speed));
+            }
+        } catch (java.io.IOException | RuntimeException error) {
+            Log.w("ScriptPrep", "Could not play a cast recording", error);
+            player.release();
+            return false;
+        }
+        player.setOnCompletionListener(done -> main.post(() -> {
+            releaseRecordingPlayer();
+            finishSpeech(id, false);
+        }));
+        player.setOnErrorListener((failed, what, extra) -> {
+            main.post(() -> {
+                releaseRecordingPlayer();
+                finishSpeech(id, true);
+            });
+            return true;
+        });
+        recordingPlayer = player;
+        activeUtterance = id;
+        recordingSpeaking = true;
+        player.start();
+        render();
+        return true;
+    }
+
+    private void releaseRecordingPlayer() {
+        if (recordingPlayer != null) {
+            try {
+                recordingPlayer.stop();
+            } catch (RuntimeException ignored) {
+                // Already finished.
+            }
+            recordingPlayer.release();
+            recordingPlayer = null;
         }
     }
 
@@ -1028,6 +1104,8 @@ public final class MainActivity extends Activity {
         if (id == null) {
             return;
         }
+        // The ensemble screen has just synced; read the recordings again.
+        castRecordings = null;
         for (ScriptLibrary.Script entry : library.list()) {
             if (entry.id.equals(id)) {
                 if (ensembleRole != null) {
@@ -2853,7 +2931,8 @@ public final class MainActivity extends Activity {
         previous.setEnabled(position > 0);
         previous.setAlpha(position > 0 ? 1f : 0.5f);
         row.addView(previous);
-        if (!myTurn && (speechState == SpeechState.READY || useAiVoice())) {
+        if (!myTurn && (speechState == SpeechState.READY || useAiVoice()
+            || (position < scene.lines.size() && castRecording(scene.lines.get(position)) != null))) {
             boolean playing = activeUtterance != null;
             FrameLayout play = ui.iconButton(playing ? R.drawable.ic_stop : R.drawable.ic_play,
                 getString(playing ? R.string.stop_line : R.string.play_line), ACCENT, ACCENT_CONTAINER, 56, view -> {
@@ -3484,6 +3563,7 @@ public final class MainActivity extends Activity {
         String id = "line-" + ++utteranceNumber;
         activeUtterance = id;
         aiSpeaking = true;
+        recordingSpeaking = false;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
             (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
@@ -3950,6 +4030,9 @@ public final class MainActivity extends Activity {
             return R.string.ai_voice_loading;
         }
         if (activeUtterance != null) {
+            if (recordingSpeaking) {
+                return R.string.ensemble_recording_playing;
+            }
             if (aiSpeaking) {
                 return R.string.ai_voice_playing;
             }

@@ -56,6 +56,7 @@ public final class EnsembleActivity extends Activity {
 
     private Ui ui;
     private Ensemble ensemble;
+    private EnsembleRecordings recordings;
     private ScriptLibrary library;
     private Screen screen = Screen.LIST;
     private boolean busy;
@@ -80,6 +81,7 @@ public final class EnsembleActivity extends Activity {
         super.onCreate(state);
         ui = new Ui(this);
         ensemble = new Ensemble(this);
+        recordings = new EnsembleRecordings(this);
         library = new ScriptLibrary(getSharedPreferences("script_prep", MODE_PRIVATE));
         drawBehindSystemBars();
         if (state != null) {
@@ -211,6 +213,7 @@ public final class EnsembleActivity extends Activity {
                 busy = false;
                 members = value;
                 render();
+                syncRecordings(null);
             }
 
             @Override
@@ -221,6 +224,33 @@ public final class EnsembleActivity extends Activity {
                 render();
             }
         });
+    }
+
+    /** Fetches the cast's new recordings, then redraws and runs the follow-up, if any. */
+    private void syncRecordings(Runnable then) {
+        if (production == null) {
+            return;
+        }
+        String id = production.id;
+        recordings.sync(id, ok -> {
+            if (isDestroyed() || production == null || !production.id.equals(id)) {
+                return;
+            }
+            if (then != null) {
+                then.run();
+            } else if (screen == Screen.DETAIL && !busy) {
+                render();
+            }
+        });
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        // Back from recording: show the new count.
+        if (screen == Screen.DETAIL && production != null && !busy) {
+            render();
+        }
     }
 
     // ------------------------------------------------------------ Frame
@@ -689,7 +719,7 @@ public final class EnsembleActivity extends Activity {
 
     private void renderDetail() {
         LinearLayout bar = topBar(null, this::showList);
-        if (production == null || members == null) {
+        if (production == null || members == null || busy) {
             spinner();
             return;
         }
@@ -729,11 +759,25 @@ public final class EnsembleActivity extends Activity {
             view -> chooseRoles(parsed.roles, mine)), Ui.matchWidth());
         content.addView(mineCard, ui.spaced(10));
 
+        if (!mine.isEmpty()) {
+            int total = RecordLinesActivity.ownLines(parsed, mine).size();
+            int done = 0;
+            for (Scene.Line[] pair : RecordLinesActivity.ownLines(parsed, mine)) {
+                if (recordings.mine(production.id, EnsembleRecordings.lineKey(pair[0].role, pair[0].text)) != null) {
+                    done++;
+                }
+            }
+            mineCard.addView(ui.divider(70));
+            mineCard.addView(ui.listRow(R.drawable.ic_mic, getString(R.string.record_title),
+                getString(R.string.record_progress, done, total), view -> startActivity(
+                    RecordLinesActivity.intent(this, production, mine, ensemble.name()))), Ui.matchWidth());
+        }
+
         LinearLayout rehearse = ui.button(getString(R.string.ensemble_rehearse), R.drawable.ic_play, Kind.PRIMARY,
             view -> rehearse(mine.isEmpty() ? null : mine.get(0)));
         content.addView(rehearse, ui.spaced(14));
-        TextView soon = ui.text(getString(R.string.ensemble_recordings_soon), Type.CAPTION, TEXT_TERTIARY);
-        content.addView(soon, ui.spaced(10));
+        TextView how = ui.text(getString(R.string.ensemble_recordings_hint), Type.CAPTION, TEXT_TERTIARY);
+        content.addView(how, ui.spaced(10));
 
         // Roles and who plays them
         sectionLabel(getString(R.string.ensemble_roles));
@@ -868,6 +912,7 @@ public final class EnsembleActivity extends Activity {
             public void done(Void value) {
                 busy = false;
                 library.delete(Ensemble.LOCAL_PREFIX + target.id);
+                recordings.forget(target.id);
                 showList();
             }
 
@@ -889,6 +934,16 @@ public final class EnsembleActivity extends Activity {
     }
 
     private void rehearse(String role) {
+        busy = true;
+        render();
+        // Offline the sync fails quickly and the rehearsal uses the recordings already here.
+        syncRecordings(() -> {
+            busy = false;
+            startRehearsal(role);
+        });
+    }
+
+    private void startRehearsal(String role) {
         saveLocalCopy(production);
         Intent result = new Intent();
         result.putExtra(RESULT_SCRIPT_ID, Ensemble.LOCAL_PREFIX + production.id);

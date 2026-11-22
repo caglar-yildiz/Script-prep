@@ -52,7 +52,7 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 
 ### Ekip provası
 
-Ana ekrandaki **Ekip provası** kartı, hesap açmadan (ad yazıp anonim kimlikle) bir metni ekiple paylaşmayı ya da davet linki veya koduyla bir gruba katılmayı sağlar. Google hesabı bağlanırsa aynı kimlik tablette ve yeni telefonda da açılır. Herkes kendi rollerini seçer, grup ekranında rolü kimin aldığı görünür ve **Prova et** metnin çevrimdışı kopyasıyla provayı açar. Replik kayıtları bir sonraki aşamada eklenecek. Altyapı Firebase'in ücretsiz Spark planıdır: Authentication ve Cloud Firestore. Kurulum adımları ve güvenlik kuralları [docs/ensemble-setup.md](docs/ensemble-setup.md) ve [firestore.rules](firestore.rules) dosyalarında. `app/google-services.json` yoksa uygulama derlenir ve kart gizlenir.
+Ana ekrandaki **Ekip provası** kartı, hesap açmadan (ad yazıp anonim kimlikle) bir metni ekiple paylaşmayı ya da davet linki veya koduyla bir gruba katılmayı sağlar. Google hesabı bağlanırsa aynı kimlik tablette ve yeni telefonda da açılır. Herkes kendi rollerini seçer ve **Repliklerimi kaydet** ekranında kendi repliklerini ipucu repliğiyle birlikte kaydeder (replik başına 10 dakikaya kadar). **Prova et** ekibin kayıtlarını indirir ve metnin çevrimdışı kopyasıyla provayı açar: kaydı olan replik oyuncunun sesiyle, olmayan cihaz sesiyle çalar. Altyapı Firebase'in ücretsiz Spark planıdır: Authentication ve Cloud Firestore. Kurulum adımları ve güvenlik kuralları [docs/ensemble-setup.md](docs/ensemble-setup.md) ve [firestore.rules](firestore.rules) dosyalarında. `app/google-services.json` yoksa uygulama derlenir ve kart gizlenir.
 
 ### Yedekleme
 

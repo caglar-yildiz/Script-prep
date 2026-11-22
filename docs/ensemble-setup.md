@@ -2,7 +2,7 @@
 
 Ekip provası Firebase'in **ücretsiz Spark planında** çalışır; kart tanımlamaya gerek yok. Kota dolarsa servis o gün durur, fatura gelmez.
 
-Kullanılan servisler: **Authentication** (anonim kimlik, isteğe bağlı Google hesabı) ve **Cloud Firestore** (gruplar, roller, replik kayıtları). Cloud Storage kullanılmıyor, çünkü Spark planında açılamıyor. Replik kayıtları kısa olduğu için Firestore belgelerinde saklanıyor (kayıt başına en fazla ~900 KB).
+Kullanılan servisler: **Authentication** (anonim kimlik, isteğe bağlı Google hesabı) ve **Cloud Firestore** (gruplar, roller, replik kayıtları). Cloud Storage kullanılmıyor, çünkü Spark planında açılamıyor. Replik kayıtları Firestore belgelerinde saklanıyor: AAC, 32 kbit/s mono, replik başına en fazla 10 dakika. Bir belge en fazla 1 MiB alabildiği için uzun bir monolog 800 KB'lık parçalara bölünüyor (3 dakika ≈ 720 KB tek belge, 10 dakika ≈ 2,4 MB üç belge). Parçalar tek seferde yazılıyor, bu yüzden bir cihaz hiçbir zaman yarım kayıt görmüyor.
 
 ## 1. Proje ve Android uygulaması
 
@@ -53,7 +53,7 @@ Kurallar Firebase emülatöründe uygulamanın yaptığı işlemlerle (oluşturm
 | Belge silme | 20.000 / gün |
 | Ağ çıkışı | 10 GiB / ay |
 
-1000 replikli bir oyunun tüm kayıtları yaklaşık 15–25 MB tutar. Kayıtları ilk kez indiren her üye replik sayısı kadar okuma yapar. Sonrasında yalnızca değişen kayıtlar indirilir (bir sonraki aşama).
+1000 replikli bir oyunun tüm kayıtları yaklaşık 15–25 MB tutar. Kayıtları ilk kez indiren her üye replik sayısı kadar okuma yapar. Sonrasında yalnızca yeni, değişen ya da silinen kayıtlar indirilir ve telefonda saklanır; prova çevrimdışı çalışır.
 
 Kullanımı **Firestore Database → Kullanım** sekmesinden takip edebilirsin.
 
@@ -64,11 +64,13 @@ Kullanımı **Firestore Database → Kullanım** sekmesinden takip edebilirsin.
 3. **Kodu gönder** ile kodu ve davet linkini ekibe yolla. Link (`https://caglar-yildiz.github.io/Script-prep/join/?c=KOD`) uygulamayı açar, uygulama yüklü değilse Google Play'e götürür. Linkle gelmeyenler **Kodla katıl** ile kodu yazar. Link sayfası `docs/join/index.html`; GitHub Pages `main` dalından yayımladığı için birleştirmeden sonra çalışır.
 4. Herkes **Rollerini seç** ile rollerini işaretler. Grup ekranında hangi rolü kimin aldığı görünür.
 5. Sağ üstteki menüden ad değiştirilir ve **Google hesabını bağla** seçilir. Tablette **Google ile giriş yap** aynı kimliği açar.
-6. **Prova et**, metnin bir kopyasını kütüphaneye kaydeder (`ensemble:` önekiyle, çevrimdışı çalışır) ve seçilen ilk rolle provayı açar.
+6. **Repliklerimi kaydet**: oyuncu yalnızca kendi rollerinin repliklerini, üstte ipucu repliğiyle birlikte sırayla görür; kaydeder, dinler, yeniden çeker ya da siler. Aynı replik birden çok yerde geçiyorsa bir kez kaydedilir. Kayıt önce telefona yazılır, sonra yüklenir; internet yoksa bağlantı gelince gönderilir.
+7. **Prova et**: önce ekibin yeni kayıtları indirilir, sonra metnin kopyası kütüphaneye kaydedilir (`ensemble:` önekiyle) ve seçilen ilk rolle prova açılır. Kaydı olan replik oyuncunun sesiyle, olmayan cihaz sesi ya da yapay zekâ sesiyle okunur. Bir rolü birden çok kişi kaydettiyse (A/B kadro) o rolün en çok replik kaydeden kişinin sesi kullanılır, eksik kalan replikler diğerinin sesiyle tamamlanır.
+
+Kayıtlar replik metnine bağlı: metinde bir repliğin sözleri değişirse o kaydı artık eşleşmez, yeniden kaydedilmesi gerekir.
 
 ## Sıradaki aşama
 
-- Replik kaydetme ekranı: kendi repliklerini ipucu repliğiyle birlikte görüp kaydetme, dinleme, yeniden çekme.
-- Provada kaydı olan replikte oyuncunun sesi, olmayanda cihaz sesi.
+- Provada hangi kadronun (A/B) sesinin çalacağını seçme.
 - Grup sahibinin metni güncellemesi ve değişen repliklerin kayıtlarını "güncel değil" olarak işaretleme.
 - Hesabı ve tüm verileri uygulama içinden silme (iOS'a çıkmadan önce zorunlu).

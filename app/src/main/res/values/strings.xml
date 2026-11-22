@@ -412,7 +412,6 @@
     <string name="ensemble_choose_roles">Choose your roles</string>
     <string name="ensemble_no_roles">No role chosen</string>
     <string name="ensemble_rehearse">Rehearse</string>
-    <string name="ensemble_recordings_soon">Recording your lines comes next. For now, take your roles so the cast knows who plays whom.</string>
     <string name="ensemble_roles">Roles</string>
     <string name="ensemble_role_open">Not taken</string>
     <string name="ensemble_owner">Owner</string>
@@ -444,6 +443,29 @@
     <string name="ensemble_account_device">Your identity is only on this device. If you uninstall the app or change phones, you lose access to your groups. Link your Google account to prevent this.</string>
     <string name="ensemble_rename">Change name</string>
     <string name="ensemble_link">Link Google account</string>
+    <string name="record_timer" translatable="false">%1$s / %2$s</string>
+    <string name="record_title">Record my lines</string>
+    <string name="record_progress">%1$d of %2$d lines recorded</string>
+    <string name="record_no_lines">Choose your roles first; then your lines appear here.</string>
+    <string name="record_cue">Cue · %1$s</string>
+    <string name="record_your_line">You · %1$s · %2$d/%3$d</string>
+    <string name="record_recording">Recording…</string>
+    <string name="record_uploading">Uploading…</string>
+    <string name="record_saved">Recorded</string>
+    <string name="record_missing">Not recorded yet</string>
+    <string name="record_stop">Stop</string>
+    <string name="record_listen">Listen</string>
+    <string name="record_again">Record again</string>
+    <string name="record_start">Record</string>
+    <string name="record_next">Next line</string>
+    <string name="record_failed">Couldn’t record. Check that no other app is using the microphone.</string>
+    <string name="record_too_short">Too short. Hold on a little longer.</string>
+    <string name="record_too_long">This take is too long. Keep a line under ten minutes.</string>
+    <string name="record_upload_failed">Couldn’t upload. It’s saved on this phone and will be sent when you’re back online.</string>
+    <string name="record_permission">Allow the microphone to record your lines.</string>
+    <string name="record_delete_confirm">Delete this recording for the whole cast?</string>
+    <string name="ensemble_recordings_hint">Recorded lines play in everyone’s rehearsal in the actor’s own voice; the rest are read by the device voice.</string>
+    <string name="ensemble_recording_playing">Playing the cast member’s recording…</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>

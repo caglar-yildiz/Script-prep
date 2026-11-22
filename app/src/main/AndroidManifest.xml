@@ -56,5 +56,9 @@
                 <data android:scheme="memoeverything" android:host="join" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".RecordLinesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ScriptPrep" />
     </application>
 </manifest>
