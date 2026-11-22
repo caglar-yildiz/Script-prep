@@ -408,7 +408,7 @@
     <string name="ensemble_join_action">Entrar</string>
     <string name="ensemble_pick_text">Escolha um texto para compartilhar</string>
     <string name="ensemble_pick_text_detail">Seu elenco verá este texto e seus papéis.</string>
-    <string name="ensemble_no_texts">Primeiro adicione um texto com personagens e depois compartilhe.</string>
+    <string name="ensemble_no_texts">Cole, digite ou importe sua peça (PDF ou TXT). Ao salvar, o grupo é criado e você recebe um código de convite.</string>
     <string name="ensemble_invite_code">Código de convite</string>
     <string name="ensemble_invite_detail">Envie este código para seu elenco. Quem tiver o código pode entrar no grupo.</string>
     <string name="ensemble_send_code">Enviar código</string>
@@ -476,6 +476,10 @@
     <string name="ensemble_account_none">Você ainda não começou o ensaio em grupo neste dispositivo. Se usou em outro e vinculou o Google, entre com a mesma conta do Google.</string>
     <string name="ensemble_sign_out_body">Você pode voltar aos seus grupos entrando de novo com o Google.</string>
     <string name="ensemble_link_detail">Abra seus grupos também em um tablet ou celular novo</string>
+    <string name="ensemble_no_texts_title">Ainda não há texto para compartilhar</string>
+    <string name="ensemble_add_text">Adicionar um texto</string>
+    <string name="ensemble_share_sample">Testar com a cena de exemplo</string>
+    <string name="ensemble_invited_question">Alguém te convidou? Entre com o código.</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d membro</item>
         <item quantity="many">%d membros</item>

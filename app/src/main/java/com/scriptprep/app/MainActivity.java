@@ -191,6 +191,8 @@ public final class MainActivity extends Activity {
     /** Cast recordings of the open shared text, loaded once per text. */
     private EnsembleRecordings.Voices castRecordings;
     private String castRecordingsFor;
+    /** The text being created goes to ensemble rehearsal to be shared once it is saved. */
+    private boolean shareAfterSave;
 
     private String snackbarMessage;
     private String snackbarActionLabel;
@@ -243,6 +245,7 @@ public final class MainActivity extends Activity {
             mode = Mode.valueOf(state.getString("mode", Mode.PRACTICE.name()));
             lineVisibility = Visibility.valueOf(state.getString("line_visibility", Visibility.FULL.name()));
             revealLine = state.getBoolean("reveal_line");
+            shareAfterSave = state.getBoolean("share_after_save");
             if (screen == Screen.SETUP || screen == Screen.READER || screen == Screen.REHEARSAL
                 || screen == Screen.VOICES || screen == Screen.LINES) {
                 ensureRole();
@@ -263,7 +266,10 @@ public final class MainActivity extends Activity {
 
     /** A shared text the ensemble screen asks to rehearse when it was opened from an invite link. */
     private void openFromIntent(Intent intent) {
-        if (intent != null && intent.hasExtra(EnsembleActivity.RESULT_SCRIPT_ID)) {
+        if (intent != null && intent.getBooleanExtra(EnsembleActivity.RESULT_ADD_TEXT, false)) {
+            intent.removeExtra(EnsembleActivity.RESULT_ADD_TEXT);
+            startTextForEnsemble();
+        } else if (intent != null && intent.hasExtra(EnsembleActivity.RESULT_SCRIPT_ID)) {
             openEnsembleCopy(intent.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
                 intent.getStringExtra(EnsembleActivity.RESULT_ROLE));
             intent.removeExtra(EnsembleActivity.RESULT_SCRIPT_ID);
@@ -318,6 +324,7 @@ public final class MainActivity extends Activity {
         state.putString("mode", mode.name());
         state.putString("line_visibility", lineVisibility.name());
         state.putBoolean("reveal_line", revealLine);
+        state.putBoolean("share_after_save", shareAfterSave);
         state.putIntegerArrayList("review_base", reviewBase);
         state.putIntegerArrayList("revealed_lines", new ArrayList<>(revealedLines));
         state.putIntegerArrayList("retried_lines", new ArrayList<>(retriedLines));
@@ -394,7 +401,9 @@ public final class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ENSEMBLE) {
-            if (resultCode == RESULT_OK && data != null) {
+            if (resultCode == RESULT_OK && data != null && data.getBooleanExtra(EnsembleActivity.RESULT_ADD_TEXT, false)) {
+                startTextForEnsemble();
+            } else if (resultCode == RESULT_OK && data != null) {
                 openEnsembleCopy(data.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
                     data.getStringExtra(EnsembleActivity.RESULT_ROLE));
             }
@@ -680,6 +689,10 @@ public final class MainActivity extends Activity {
     // ---------------------------------------------------------------- Frame
 
     private void show(Screen target) {
+        if (target == Screen.HOME || target == Screen.CATEGORIES) {
+            // Leaving the text creation screens: a text made later is not for the cast.
+            shareAfterSave = false;
+        }
         cancelSpeech();
         stopListening();
         if (target != Screen.REHEARSAL && reviewBase != null) {
@@ -1072,6 +1085,19 @@ public final class MainActivity extends Activity {
                 Kind.TEXT, view -> openEnsemble()), ui.spaced(0));
         }
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, 0, 1));
+    }
+
+    /** Adds a text with characters to share with the cast: paste, type or import it. */
+    private void startTextForEnsemble() {
+        category = TextCategory.ROLE_REHEARSAL;
+        shareAfterSave = true;
+        show(Screen.SOURCE);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void shareWithEnsemble(String id) {
+        startActivityForResult(new Intent(this, EnsembleActivity.class)
+            .putExtra(EnsembleActivity.EXTRA_SHARE_SCRIPT, id), ENSEMBLE);
     }
 
     /** Entry to ensemble rehearsal, shown when this build carries a Firebase project. */
@@ -1797,7 +1823,7 @@ public final class MainActivity extends Activity {
             return;
         }
         Scene parsed = parseScript(candidate);
-        if (rehearse && parsed.roles.isEmpty()) {
+        if ((rehearse || shareAfterSave) && parsed.roles.isEmpty()) {
             editor.requestFocus();
             editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
@@ -1814,6 +1840,12 @@ public final class MainActivity extends Activity {
         savedTitle = title;
         savedScript = candidate;
         hideKeyboard();
+        if (shareAfterSave) {
+            shareAfterSave = false;
+            returnToLibrary();
+            shareWithEnsemble(scriptId);
+            return;
+        }
         if (rehearse || (editorReturn != Screen.HOME && !parsed.roles.isEmpty())) {
             if (!rehearse) {
                 notifyUser(R.string.saved);

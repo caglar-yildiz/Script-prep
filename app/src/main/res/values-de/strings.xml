@@ -395,7 +395,7 @@
     <string name="ensemble_join_action">Beitreten</string>
     <string name="ensemble_pick_text">Text zum Teilen wählen</string>
     <string name="ensemble_pick_text_detail">Dein Ensemble sieht diesen Text und seine Rollen.</string>
-    <string name="ensemble_no_texts">Füge zuerst einen Text mit Figuren hinzu und teile ihn dann.</string>
+    <string name="ensemble_no_texts">Füge dein Stück ein, tippe es oder importiere es als PDF oder TXT. Sobald du es speicherst, entsteht die Gruppe und du bekommst einen Einladungscode.</string>
     <string name="ensemble_invite_code">Einladungscode</string>
     <string name="ensemble_invite_detail">Schick diesen Code an dein Ensemble. Wer ihn hat, kann der Gruppe beitreten.</string>
     <string name="ensemble_send_code">Code senden</string>
@@ -463,6 +463,10 @@
     <string name="ensemble_account_none">Du hast auf diesem Gerät noch keine Ensembleprobe begonnen. Wenn du sie auf einem anderen Gerät genutzt und Google verknüpft hast, melde dich mit demselben Google-Konto an.</string>
     <string name="ensemble_sign_out_body">Du kommst zu deinen Gruppen zurück, indem du dich wieder mit Google anmeldest.</string>
     <string name="ensemble_link_detail">Öffne deine Gruppen auch auf einem Tablet oder neuen Telefon</string>
+    <string name="ensemble_no_texts_title">Noch kein Text zum Teilen</string>
+    <string name="ensemble_add_text">Text hinzufügen</string>
+    <string name="ensemble_share_sample">Mit der Beispielszene ausprobieren</string>
+    <string name="ensemble_invited_question">Hat dich jemand eingeladen? Tritt stattdessen mit dem Code bei.</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d Mitglied</item>
         <item quantity="other">%d Mitglieder</item>

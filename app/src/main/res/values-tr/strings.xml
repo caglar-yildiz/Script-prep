@@ -395,7 +395,7 @@
     <string name="ensemble_join_action">Katıl</string>
     <string name="ensemble_pick_text">Paylaşılacak metni seç</string>
     <string name="ensemble_pick_text_detail">Ekibin bu metni ve rollerini görecek.</string>
-    <string name="ensemble_no_texts">Önce karakterli bir metin ekle, sonra paylaş.</string>
+    <string name="ensemble_no_texts">Oyununu yapıştır, yaz ya da PDF veya TXT olarak içe aktar. Kaydettiğinde grup oluşur ve davet kodun hazır olur.</string>
     <string name="ensemble_invite_code">Davet kodu</string>
     <string name="ensemble_invite_detail">Bu kodu ekibine gönder. Kodu bilen herkes gruba katılabilir.</string>
     <string name="ensemble_send_code">Kodu gönder</string>
@@ -463,6 +463,10 @@
     <string name="ensemble_account_none">Bu cihazda ekip provasına henüz başlamadın. Başka bir cihazda kullanıp Google hesabını bağladıysan aynı Google hesabıyla giriş yap.</string>
     <string name="ensemble_sign_out_body">Google ile yeniden giriş yaparak gruplarına dönebilirsin.</string>
     <string name="ensemble_link_detail">Gruplarına tablette ve yeni telefonda da ulaş</string>
+    <string name="ensemble_no_texts_title">Henüz paylaşılacak metnin yok</string>
+    <string name="ensemble_add_text">Metin ekle</string>
+    <string name="ensemble_share_sample">Örnek sahneyle dene</string>
+    <string name="ensemble_invited_question">Biri seni davet mi etti? Onun koduyla katıl.</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d üye</item>
         <item quantity="other">%d üye</item>

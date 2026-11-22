@@ -49,6 +49,10 @@ import java.util.Map;
 public final class EnsembleActivity extends Activity {
     static final String RESULT_SCRIPT_ID = "script_id";
     static final String RESULT_ROLE = "role";
+    /** Result: the user wants to add a new text, which is shared as soon as it is saved. */
+    static final String RESULT_ADD_TEXT = "add_text";
+    /** Extra: a text just saved in the library, to share right away. */
+    static final String EXTRA_SHARE_SCRIPT = "share_script";
     /** Invite links: https://…/join/?c=CODE opens memoeverything://join/CODE. */
     static final String INVITE_PAGE = "https://caglar-yildiz.github.io/Script-prep/join/?c=";
 
@@ -91,7 +95,11 @@ public final class EnsembleActivity extends Activity {
         } else {
             pendingCode = inviteCode(getIntent());
         }
-        if (pendingCode != null && ensemble.user() != null) {
+        String toShare = state == null ? getIntent().getStringExtra(EXTRA_SHARE_SCRIPT) : null;
+        ScriptLibrary.Script shareNow = toShare == null ? null : findScript(toShare);
+        if (shareNow != null && ensemble.user() != null) {
+            share(shareNow);
+        } else if (pendingCode != null && ensemble.user() != null) {
             join(pendingCode);
         } else if (screen == Screen.DETAIL && openId != null) {
             open(openId);
@@ -596,8 +604,7 @@ public final class EnsembleActivity extends Activity {
             }
         }
         if (shareable.isEmpty()) {
-            content.addView(ui.text(getString(R.string.ensemble_no_texts), Type.BODY_LARGE, TEXT_SECONDARY),
-                ui.spaced(24));
+            renderNoTexts();
             return;
         }
         boolean first = true;
@@ -615,6 +622,56 @@ public final class EnsembleActivity extends Activity {
             content.addView(card, ui.spaced(first ? 24 : 8));
             first = false;
         }
+        content.addView(ui.button(getString(R.string.ensemble_add_text), R.drawable.ic_add, Kind.TONAL,
+            view -> addText()), ui.spaced(16));
+    }
+
+    /** Nothing to share yet: add a text, try the sample scene, or join someone else's group. */
+    private void renderNoTexts() {
+        LinearLayout card = ui.card(SURFACE, null);
+        card.setPadding(ui.dp(20), ui.dp(20), ui.dp(20), ui.dp(20));
+        card.addView(ui.iconTile(R.drawable.ic_texts, ACCENT, ACCENT_CONTAINER, 48));
+        card.addView(ui.text(getString(R.string.ensemble_no_texts_title), Type.TITLE, TEXT), ui.spaced(16));
+        card.addView(ui.text(getString(R.string.ensemble_no_texts), Type.BODY, TEXT_SECONDARY), ui.spaced(6));
+        card.addView(ui.button(getString(R.string.ensemble_add_text), R.drawable.ic_add, Kind.PRIMARY,
+            view -> addText()), ui.spaced(20));
+        card.addView(ui.button(getString(R.string.ensemble_share_sample), R.drawable.ic_play, Kind.TONAL,
+            view -> shareSample()), ui.spaced(10));
+        content.addView(card, ui.spaced(24));
+
+        content.addView(ui.text(getString(R.string.ensemble_invited_question), Type.BODY, TEXT_SECONDARY),
+            ui.spaced(24));
+        content.addView(ui.button(getString(R.string.ensemble_join), R.drawable.ic_people, Kind.TEXT,
+            view -> askCode()), ui.spaced(4));
+    }
+
+    /** Goes to the text creation screens; the new text is shared once saved. */
+    private void addText() {
+        Intent result = new Intent().putExtra(RESULT_ADD_TEXT, true);
+        if (getCallingActivity() == null) {
+            result.setClass(this, MainActivity.class);
+            result.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            startActivity(result);
+        } else {
+            setResult(RESULT_OK, result);
+        }
+        finish();
+    }
+
+    /** Shares the built-in sample scene, so a cast can try ensemble rehearsal right away. */
+    private void shareSample() {
+        ScriptLanguage language = ScriptLanguage.forLocale(getResources().getConfiguration().getLocales().get(0));
+        share(new ScriptLibrary.Script("sample", getString(R.string.sample_title), getString(R.string.sample_script),
+            TextCategory.ROLE_REHEARSAL, language));
+    }
+
+    private ScriptLibrary.Script findScript(String id) {
+        for (ScriptLibrary.Script script : library.list()) {
+            if (script.id.equals(id)) {
+                return script;
+            }
+        }
+        return null;
     }
 
     private void share(ScriptLibrary.Script script) {

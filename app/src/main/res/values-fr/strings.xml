@@ -408,7 +408,7 @@
     <string name="ensemble_join_action">Rejoindre</string>
     <string name="ensemble_pick_text">Choisis un texte à partager</string>
     <string name="ensemble_pick_text_detail">Ta troupe verra ce texte et ses rôles.</string>
-    <string name="ensemble_no_texts">Ajoute d’abord un texte avec des personnages, puis partage-le.</string>
+    <string name="ensemble_no_texts">Colle, écris ou importe ta pièce (PDF ou TXT). Dès que tu l’enregistres, le groupe est créé et tu reçois un code d’invitation.</string>
     <string name="ensemble_invite_code">Code d’invitation</string>
     <string name="ensemble_invite_detail">Envoie ce code à ta troupe. Toute personne qui l’a peut rejoindre le groupe.</string>
     <string name="ensemble_send_code">Envoyer le code</string>
@@ -476,6 +476,10 @@
     <string name="ensemble_account_none">Tu n’as pas encore commencé la répétition en troupe sur cet appareil. Si tu l’as utilisée ailleurs et associé Google, connecte-toi avec le même compte Google.</string>
     <string name="ensemble_sign_out_body">Tu peux retrouver tes groupes en te reconnectant avec Google.</string>
     <string name="ensemble_link_detail">Ouvre tes groupes aussi sur une tablette ou un nouveau téléphone</string>
+    <string name="ensemble_no_texts_title">Pas encore de texte à partager</string>
+    <string name="ensemble_add_text">Ajouter un texte</string>
+    <string name="ensemble_share_sample">Essayer avec la scène d’exemple</string>
+    <string name="ensemble_invited_question">Quelqu’un t’a invité ? Rejoins plutôt avec son code.</string>
     <plurals name="ensemble_member_count">
         <item quantity="one">%d membre</item>
         <item quantity="many">%d membres</item>
