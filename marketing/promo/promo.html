@@ -108,15 +108,15 @@
 <!-- 1. Hook -->
 <div class="layer" id="hook">
   <div class="big" id="hookWords"></div>
-  <div class="answer" id="hookAnswer">Memo Everything senin prova partnerin.</div>
+  <div class="answer" id="hookAnswer" data-t="answer"></div>
 </div>
 
 <!-- Captions -->
-<div class="caption" id="cap1"><h2>Metnini ekle</h2><p>PDF, fotoğraf, Word ya da düz metin. Taranmış sayfalar da olur.</p></div>
-<div class="caption" id="cap2"><h2>Karakterleri ve sahneleri kendisi bulur</h2><p>Rolünü seç, gerisini uygulama hazırlar.</p></div>
-<div class="caption" id="cap3"><h2>Partnerin replikleri sesli okur</h2><p>Her karaktere ayrı ses.</p></div>
-<div class="caption" id="cap4"><h2>Sıra sana gelince seni bekler</h2><p>Takıldığında repliği aç.</p></div>
-<div class="caption" id="cap5"><h2>Repliğini adım adım gizle</h2><p>Tam replikten ezbere.</p></div>
+<div class="caption" id="cap1"><h2 data-t="cap1"></h2><p data-t="cap1s"></p></div>
+<div class="caption" id="cap2"><h2 data-t="cap2"></h2><p data-t="cap2s"></p></div>
+<div class="caption" id="cap3"><h2 data-t="cap3"></h2><p data-t="cap3s"></p></div>
+<div class="caption" id="cap4"><h2 data-t="cap4"></h2><p data-t="cap4s"></p></div>
+<div class="caption" id="cap5"><h2 data-t="cap5"></h2><p data-t="cap5s"></p></div>
 
 <!-- Phone -->
 <div id="phone">
@@ -125,73 +125,71 @@
 
     <!-- Source screen -->
     <div class="page" id="pSource">
-      <div class="bar"><div class="icon"></div>Adım 2 / 2</div>
-      <div class="title">Metnin nereden geliyor?</div>
-      <div class="sub">Rol çalışması</div>
+      <div class="bar"><div class="icon"></div><span data-t="step"></span></div>
+      <div class="title" data-t="source"></div>
+      <div class="sub" data-t="category"></div>
       <div class="grid" id="tiles">
         <div class="card tile" id="tilePdf">
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5z"/></svg></div>
-          <h4>PDF içe aktar</h4><p>Metin içeren ya da taranmış PDF</p>
+          <h4 data-t="pdf"></h4><p data-t="pdfs"></p>
           <div class="ripple" id="ripple"></div>
         </div>
         <div class="card tile">
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></div>
-          <h4>Fotoğraftan</h4><p>Sayfaları çek ya da galeriden seç</p>
+          <h4 data-t="photo"></h4><p data-t="photos"></p>
         </div>
         <div class="card tile">
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg></div>
-          <h4>Dosya içe aktar</h4><p>TXT, Word, Fountain, Final Draft</p>
+          <h4 data-t="file"></h4><p data-t="files"></p>
         </div>
         <div class="card tile">
           <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 3h8v3H8zM5 5h2v3h10V5h2v16H5z"/></svg></div>
-          <h4>Metni yapıştır</h4><p>Panodaki metinden başla</p>
+          <h4 data-t="paste"></h4><p data-t="pastes"></p>
         </div>
       </div>
       <div class="card loading" id="loading" style="margin-top: 26px">
-        <div class="spinner" id="spinner"></div><span id="loadText">Taranmış sayfa okunuyor: 1 / 12…</span>
+        <div class="spinner" id="spinner"></div><span id="loadText"></span>
       </div>
     </div>
 
     <!-- Editor + preview dialog -->
     <div class="page" id="pPreview">
-      <div class="bar"><div class="icon"></div>Yeni metin</div>
-      <div class="title">Kuşlar</div>
-      <div class="card said" style="font-size: 30px; line-height: 1.5; color: var(--text2)">
-        I. PERDE<br>1. Sahne<br>MEHMET: Sabah oldu mu?<br>AYŞE: Pencereyi aç…<br>DOKTOR: Günaydın.<br>…
-      </div>
+      <div class="bar"><div class="icon"></div><span data-t="newText"></span></div>
+      <div class="title" data-t="play"></div>
+      <div class="card said" style="font-size: 30px; line-height: 1.5; color: var(--text2)" data-h="draft"></div>
       <div class="dim" id="dim"></div>
       <div class="dialog" id="dialog">
-        <h3>Sahneleri ve rolleri gözden geçir</h3>
-        <div class="count">3 sahne · 42 replik</div>
-        <div class="label">Karakterler</div>
+        <h3 data-t="review"></h3>
+        <div class="count" data-t="counts"></div>
+        <div class="label" data-t="characters"></div>
         <div id="roleChips"></div>
-        <div class="label" style="margin-top: 22px">Sahneler</div>
-        <div class="section">I. PERDE · 1. Sahne</div>
-        <div class="section">I. PERDE · 2. Sahne</div>
-        <div class="section">II. PERDE · 1. Sahne</div>
+        <div class="label" style="margin-top: 22px" data-t="scenes"></div>
+        <div class="section" data-t="s1"></div>
+        <div class="section" data-t="s2"></div>
+        <div class="section" data-t="s3"></div>
       </div>
     </div>
 
     <!-- Rehearsal -->
     <div class="page" id="pRehearsal">
-      <div class="bar"><div class="icon"></div>I. PERDE · 1. Sahne</div>
+      <div class="bar"><div class="icon"></div><span data-t="s1"></span></div>
       <div class="progress"><i id="prog"></i></div>
       <div class="card line" id="partner">
-        <div class="who" style="color: var(--violet)">MEHMET</div>
+        <div class="who" style="color: var(--violet)" data-t="partner"></div>
         <div class="said" id="partnerText"></div>
         <div class="waves" id="waves"></div>
       </div>
       <div class="card line mine" id="mine">
-        <div class="who">AYŞE · SIRA SENDE</div>
+        <div class="who" data-t="yourTurn"></div>
         <div class="said" id="mineText"></div>
-        <div class="mic" id="mic"><div class="dot"><div class="ring" id="ring"></div></div>Dinliyorum…</div>
+        <div class="mic" id="mic"><div class="dot"><div class="ring" id="ring"></div></div><span data-t="listening"></span></div>
       </div>
       <div id="modes" style="margin-top: 10px; white-space: nowrap"></div>
       <div class="card line" id="upcoming" style="opacity: 0.45">
-        <div class="who" style="color: var(--teal)">DOKTOR</div>
-        <div class="said" style="font-size: 34px">Günaydın. Uyandığınızı görmek ne güzel.</div>
+        <div class="who" style="color: var(--teal)" data-t="third"></div>
+        <div class="said" style="font-size: 34px" data-t="thirdLine"></div>
       </div>
-      <div class="button" id="next">Devam et</div>
+      <div class="button" id="next" data-t="continue"></div>
     </div>
   </div>
 </div>
@@ -200,12 +198,12 @@
 <div class="layer" id="end">
   <div class="mark"><svg viewBox="0 0 108 108"><path fill="#F3BDA4" d="M28,49 C27,43 31,36 38,32 C42,30 46,29 48,31 C50,33 49,35 46,36 C42,38 40,41 40,45 C45,44 50,47 54,51 C54,43 59,35 67,31 C71,29 75,29 76,32 C78,34 76,36 73,37 C69,39 67,42 66,45 C75,44 83,53 83,63 L83,74 C83,77 81,79 78,79 L73,79 C70,79 68,77 68,74 L68,65 C68,62 66,60 64,60 C61,60 59,62 59,65 L59,74 C59,77 57,79 54,79 L51,79 C48,79 46,77 46,74 L46,65 C46,62 44,60 42,60 C39,60 37,62 37,65 L37,74 C37,77 35,79 32,79 L28,79 C25,79 23,77 23,74 L23,62 C23,56 25,52 28,49 Z"/></svg></div>
   <h1>Memo Everything</h1>
-  <div class="tag">Ezber provan, cebinde.</div>
+  <div class="tag" data-t="tag"></div>
   <div class="facts" id="facts">
-    <div>Oyun, konuşma ve şiir</div>
-    <div>7 dil · Metinlerin telefonunda kalır</div>
+    <div data-t="fact1"></div>
+    <div data-t="fact2"></div>
   </div>
-  <div class="store" id="store">Android için</div>
+  <div class="store" id="store" data-t="store"></div>
 </div>
 
 <script>
@@ -223,22 +221,80 @@
     el.style.visibility = o <= 0.001 ? 'hidden' : 'visible';
   };
 
-  const hookWords = 'Replik çalışacak partnerin yok mu?'.split(' ');
+  // Every text in the video, per language; ?lang=en picks English. Phone texts follow the app's strings.
+  const TEXTS = {
+    tr: {
+      hook: 'Replik çalışacak partnerin yok mu?', answer: 'Memo Everything senin prova partnerin.',
+      cap1: 'Metnini ekle', cap1s: 'PDF, fotoğraf, Word ya da düz metin. Taranmış sayfalar da olur.',
+      cap2: 'Karakterleri ve sahneleri kendisi bulur', cap2s: 'Rolünü seç, gerisini uygulama hazırlar.',
+      cap3: 'Partnerin replikleri sesli okur', cap3s: 'Her karaktere ayrı ses.',
+      cap4: 'Sıra sana gelince seni bekler', cap4s: 'Takıldığında repliği aç.',
+      cap5: 'Repliğini adım adım gizle', cap5s: 'Tam replikten ezbere.',
+      step: 'Adım 2 / 2', source: 'Metnini ekle', category: 'Rol provası',
+      pdf: 'PDF içe aktar', pdfs: 'Metin içeren ya da taranmış PDF',
+      photo: 'Fotoğraftan', photos: 'Sayfaların fotoğrafını çek ya da galeriden seç',
+      file: 'Dosya içe aktar', files: 'TXT, Word (DOCX), Fountain ya da Final Draft (FDX)',
+      paste: 'Metin yapıştır', pastes: 'Kopyaladığın metni kullan',
+      scanning: (n, total) => `Taranmış sayfa okunuyor: ${n} / ${total}…`,
+      newText: 'Yeni metin', play: 'Kuşlar',
+      draft: 'I. PERDE<br>1. Sahne<br>MEHMET: Sabah oldu mu?<br>AYŞE: Pencereyi aç…<br>DOKTOR: Günaydın.<br>…',
+      review: 'Sahneleri ve rolleri kontrol et', counts: '3 sahne · 42 replik', characters: 'Karakterler',
+      roles: ['AYŞE', 'MEHMET', 'DOKTOR'], scenes: 'Sahneler',
+      s1: 'I. PERDE · 1. Sahne', s2: 'I. PERDE · 2. Sahne', s3: 'II. PERDE · 1. Sahne',
+      partner: 'MEHMET', partnerLine: 'Sabah oldu mu? Kuşlar çoktan ötmeye başladı.',
+      yourTurn: 'SIRA SENDE · AYŞE', mine: 'Pencereyi aç, bir de sen dinle.', listening: 'Dinliyorum…',
+      hidden: 'Repliğin gizli.', third: 'DOKTOR', thirdLine: 'Günaydın. Uyandığınızı görmek ne güzel.',
+      continue: 'Devam et', modes: ['Tam replik', 'İlk kelime', 'İlk harfler', 'Gizli'],
+      tag: 'Ezber provan, cebinde.', fact1: 'Oyun, konuşma ve şiir', fact2: '7 dil · Metinlerin telefonunda kalır',
+      store: 'Android için'
+    },
+    en: {
+      hook: 'No one to run your lines with?', answer: 'Memo Everything is your rehearsal partner.',
+      cap1: 'Add your script', cap1s: 'PDF, photos, Word or plain text. Scanned pages work too.',
+      cap2: 'It finds the characters and scenes', cap2s: 'Pick your role. The app does the rest.',
+      cap3: 'Your partner reads the other lines aloud', cap3s: 'A different voice for each character.',
+      cap4: 'It waits for your line', cap4s: 'Stuck? Reveal the line.',
+      cap5: 'Hide more as you learn', cap5s: 'From the full line to off book.',
+      step: 'Step 2 of 2', source: 'Add your text', category: 'Role rehearsal',
+      pdf: 'Import PDF', pdfs: 'Text PDF or scanned pages',
+      photo: 'From photos', photos: 'Take photos of the pages or pick them from your gallery',
+      file: 'Import a file', files: 'TXT, Word (DOCX), Fountain or Final Draft (FDX)',
+      paste: 'Paste text', pastes: 'Use the text you copied',
+      scanning: (n, total) => `Reading scanned page ${n} of ${total}…`,
+      newText: 'New text', play: 'Birds',
+      draft: 'ACT I<br>Scene 1<br>MARK: Is it morning yet?<br>ANNA: Open the window…<br>DOCTOR: Good morning.<br>…',
+      review: 'Review scenes and roles', counts: '3 scenes · 42 lines', characters: 'Characters',
+      roles: ['ANNA', 'MARK', 'DOCTOR'], scenes: 'Scenes',
+      s1: 'ACT I · Scene 1', s2: 'ACT I · Scene 2', s3: 'ACT II · Scene 1',
+      partner: 'MARK', partnerLine: 'Is it morning yet? The birds have started singing.',
+      yourTurn: 'YOUR TURN · ANNA', mine: 'Open the window and listen with me.', listening: 'Listening…',
+      hidden: 'Your line is hidden.', third: 'DOCTOR', thirdLine: 'Good morning. How lovely to see you both awake.',
+      continue: 'Continue', modes: ['Full line', 'First word', 'First letters', 'Hidden'],
+      tag: 'Your rehearsal partner, in your pocket.', fact1: 'Scripts, speeches and poems',
+      fact2: '7 languages · Your texts stay on your phone', store: 'For Android'
+    }
+  };
+  const LANG = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'tr';
+  const T = TEXTS[LANG];
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T[el.dataset.t]; });
+  document.querySelectorAll('[data-h]').forEach(el => { el.innerHTML = T[el.dataset.h]; });
+
+  const hookWords = T.hook.split(' ');
   $('hookWords').innerHTML = hookWords.map(w => `<span>${w}</span>`).join(' ');
-  const roles = ['AYŞE', 'MEHMET', 'DOKTOR'];
-  $('roleChips').innerHTML = roles.map(r => `<span class="chip role-chip">${r}</span>`).join('');
-  const partnerWords = 'Sabah oldu mu? Kuşlar çoktan ötmeye başladı.'.split(' ');
+  $('roleChips').innerHTML = T.roles.map(r => `<span class="chip role-chip">${r}</span>`).join('');
+  const partnerWords = T.partnerLine.split(' ');
   $('partnerText').innerHTML = partnerWords.map(w => `<span class="w">${w}</span>`).join(' ');
   $('waves').innerHTML = Array.from({length: 24}, () => '<b></b>').join('');
-  const mineLine = 'Pencereyi aç, bir de sen dinle.';
+  const mineLine = T.mine;
   // Same masks as RehearsalOptions: first word, then initials with a middle dot.
   const views = {
     full: mineLine,
-    hint: 'Pencereyi …',
+    hint: mineLine.split(' ')[0] + ' …',
     initials: mineLine.replace(/[\p{L}]+/gu, w => w.length > 1 ? w[0] + '·' : w),
     hidden: ''
   };
-  const modeNames = [['full', 'Tam replik'], ['hint', 'İlk kelime'], ['initials', 'İlk harfler'], ['hidden', 'Gizli']];
+  const modeNames = ['full', 'hint', 'initials', 'hidden'].map((k, i) => [k, T.modes[i]]);
   $('modes').innerHTML = modeNames.map(([k, n]) =>
     `<span class="chip" data-mode="${k}" style="font-size: 24px; padding: 0 20px; margin-right: 8px">${n}</span>`).join('');
 
@@ -286,7 +342,7 @@
     show($('tiles'), 1 - ramp(t, 5.2, 0.3) * 0.55);
     $('spinner').style.transform = `rotate(${t * 400}deg)`;
     const pageNo = clamp(Math.floor(1 + (t - 5.4) / 2.2 * 11), 1, 12);
-    $('loadText').textContent = `Taranmış sayfa okunuyor: ${pageNo} / 12…`;
+    $('loadText').textContent = T.scanning(pageNo, 12);
 
     // Preview (8.4 – 12.3)
     show($('pPreview'), span(t, 8.4, 12.3, 0.3));
@@ -323,7 +379,7 @@
     }
     const mineText = $('mineText');
     if (view === 'hidden') {
-      mineText.innerHTML = '<span class="hiddenline">Repliğin gizli.</span>';
+      mineText.innerHTML = `<span class="hiddenline">${T.hidden}</span>`;
     } else {
       mineText.textContent = views[view];
     }
