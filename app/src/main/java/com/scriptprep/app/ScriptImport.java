@@ -17,37 +17,78 @@ import java.nio.charset.StandardCharsets;
 final class ScriptImport {
     private ScriptImport() {}
 
-    /** An imported script and how many of its PDF pages were read with text recognition. */
+    /** An imported script; for a PDF also which pages it holds and how many were scanned. */
     static final class Result {
         final ScriptLibrary.Script script;
         final int scannedPages;
+        final int firstPage;
+        final int lastPage;
+        final int requestedLastPage;
 
-        Result(ScriptLibrary.Script script, int scannedPages) {
+        Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
+            int requestedLastPage) {
             this.script = script;
             this.scannedPages = scannedPages;
+            this.firstPage = firstPage;
+            this.lastPage = lastPage;
+            this.requestedLastPage = requestedLastPage;
+        }
+
+        /** The text limit was reached before the last page asked for. */
+        boolean cutShort() {
+            return lastPage < requestedLastPage;
         }
     }
 
-    static Result read(Context context, Uri uri, boolean pdf, int lengthLimit,
-        PdfOcr.Progress progress) throws IOException {
+    /** A picked PDF, copied and counted, waiting for the pages to read. */
+    static final class PdfFile {
+        final PdfScriptReader.Source source;
+        final String title;
+
+        PdfFile(PdfScriptReader.Source source, String title) {
+            this.source = source;
+            this.title = title;
+        }
+    }
+
+    static Result readText(Context context, Uri uri, int lengthLimit) throws IOException {
         ContentResolver resolver = context.getContentResolver();
-        String text;
-        int scannedPages = 0;
         try (InputStream stream = resolver.openInputStream(uri)) {
             if (stream == null) {
                 throw new IOException("Missing stream");
             }
-            if (pdf) {
-                // The text strip reader initializes PDFBox font resources in its superclass.
-                PDFBoxResourceLoader.init(context);
-                PdfScriptReader.Result pdfText = PdfScriptReader.read(context, stream, lengthLimit, progress);
-                text = pdfText.text;
-                scannedPages = pdfText.scannedPages;
-            } else {
-                text = readText(stream, lengthLimit);
-            }
+            String text = readText(stream, lengthLimit);
+            return new Result(new ScriptLibrary.Script(null, readTitle(resolver, uri), text), 0, 0, 0, 0);
         }
-        return new Result(new ScriptLibrary.Script(null, readTitle(resolver, uri), text), scannedPages);
+    }
+
+    static PdfFile openPdf(Context context, Uri uri) throws IOException {
+        ContentResolver resolver = context.getContentResolver();
+        // The text strip reader initializes PDFBox font resources in its superclass.
+        PDFBoxResourceLoader.init(context);
+        try (InputStream stream = resolver.openInputStream(uri)) {
+            if (stream == null) {
+                throw new IOException("Missing stream");
+            }
+            return new PdfFile(PdfScriptReader.open(context, stream), readTitle(resolver, uri));
+        }
+    }
+
+    /** Reads pages {@code firstPage} to {@code lastPage} of the PDF and removes its copy. */
+    static Result readPdf(Context context, PdfFile pdf, int firstPage, int lastPage, int lengthLimit,
+        PdfOcr.Progress progress) throws IOException {
+        try {
+            PdfScriptReader.Result text = PdfScriptReader.read(context, pdf.source, firstPage, lastPage,
+                lengthLimit, progress);
+            String title = pdf.title;
+            if (firstPage > 1 || lastPage < pdf.source.pageCount) {
+                title = (title.isEmpty() ? "" : title + " ") + "(" + text.firstPage + "–" + text.lastPage + ")";
+            }
+            return new Result(new ScriptLibrary.Script(null, title, text.text), text.scannedPages,
+                text.firstPage, text.lastPage, text.requestedLastPage);
+        } finally {
+            pdf.source.close();
+        }
     }
 
     private static String readText(InputStream stream, int lengthLimit) throws IOException {

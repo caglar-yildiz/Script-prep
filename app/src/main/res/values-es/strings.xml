@@ -34,7 +34,7 @@
     <string name="sample_title">Escena de ejemplo</string>
     <string name="imported_title">Texto importado</string>
     <string name="import_failed">No se pudo leer el archivo. Elige un archivo TXT en UTF-8.</string>
-    <string name="import_too_long">El archivo supera el límite de importación. Los límites de PDF son 25 MB, 200 páginas y 150.000 caracteres de texto.</string>
+    <string name="import_too_long">El archivo es demasiado grande. Los PDF pueden tener hasta 100 MB y 1000 páginas; los archivos de texto, hasta 150.000 caracteres.</string>
     <string name="premium_description">Voces naturales para los personajes, avance por voz, resultados detallados y ensayo en vídeo.</string>
     <string name="premium_voices">Voces naturales para personajes</string>
     <string name="premium_voices_description">Elige una voz distinta y natural para cada personaje.</string>
@@ -124,6 +124,14 @@
     <string name="step_counter">Paso %1$d de %2$d</string>
     <string name="importing">Importando tu texto…</string>
     <string name="importing_scanned">Leyendo la página escaneada %1$d de %2$d…</string>
+    <string name="pdf_pages_title">¿Qué páginas?</string>
+    <string name="pdf_pages_message">Este PDF tiene %1$d páginas. Escribe las páginas del PDF donde empieza y termina tu obra, hasta %2$d cada vez. El número de página del PDF puede no coincidir con el impreso en el libro.</string>
+    <string name="pdf_pages_first">Primera página</string>
+    <string name="pdf_pages_last">Última página</string>
+    <string name="pdf_pages_import">Importar</string>
+    <string name="pdf_pages_invalid">Escribe una página entre 1 y %1$d.</string>
+    <string name="pdf_pages_too_many">Elige como máximo %1$d páginas cada vez.</string>
+    <string name="pdf_pages_cut_short">Se importaron las páginas %1$d–%2$d; ahí se alcanzó el límite de texto. Importa las páginas %3$d–%4$d de nuevo como un texto aparte.</string>
     <string name="source_pdf_details">PDF con texto o páginas escaneadas</string>
     <string name="source_txt_details">Archivo de texto UTF-8</string>
     <string name="source_paste_details">Usa el texto que copiaste</string>

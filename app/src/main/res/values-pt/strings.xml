@@ -34,7 +34,7 @@
     <string name="sample_title">Cena de exemplo</string>
     <string name="imported_title">Texto importado</string>
     <string name="import_failed">Não foi possível ler o arquivo. Escolha um arquivo TXT em UTF-8.</string>
-    <string name="import_too_long">Este arquivo ultrapassa o limite de importação. Os limites para PDF são 25 MB, 200 páginas e 150.000 caracteres de texto.</string>
+    <string name="import_too_long">O arquivo é grande demais. PDFs podem ter até 100 MB e 1.000 páginas; arquivos de texto, até 150.000 caracteres.</string>
     <string name="premium_description">Vozes naturais para os personagens, avanço por voz, resultados detalhados e ensaio em vídeo.</string>
     <string name="premium_voices">Vozes naturais para personagens</string>
     <string name="premium_voices_description">Escolha uma voz diferente e natural para cada personagem.</string>
@@ -124,6 +124,14 @@
     <string name="step_counter">Etapa %1$d de %2$d</string>
     <string name="importing">Importando seu texto…</string>
     <string name="importing_scanned">Lendo a página digitalizada %1$d de %2$d…</string>
+    <string name="pdf_pages_title">Quais páginas?</string>
+    <string name="pdf_pages_message">Este PDF tem %1$d páginas. Digite as páginas do PDF onde a sua peça começa e termina, até %2$d por vez. O número da página no PDF pode ser diferente do impresso no livro.</string>
+    <string name="pdf_pages_first">Primeira página</string>
+    <string name="pdf_pages_last">Última página</string>
+    <string name="pdf_pages_import">Importar</string>
+    <string name="pdf_pages_invalid">Digite uma página de 1 a %1$d.</string>
+    <string name="pdf_pages_too_many">Escolha no máximo %1$d páginas por vez.</string>
+    <string name="pdf_pages_cut_short">As páginas %1$d–%2$d foram importadas; o limite de texto foi atingido ali. Importe as páginas %3$d–%4$d de novo como um texto separado.</string>
     <string name="source_pdf_details">PDF com texto ou páginas digitalizadas</string>
     <string name="source_txt_details">Arquivo de texto UTF-8</string>
     <string name="source_paste_details">Use o texto que você copiou</string>

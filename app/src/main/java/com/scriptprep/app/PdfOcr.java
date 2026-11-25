@@ -16,9 +16,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -26,20 +24,24 @@ import java.util.concurrent.ExecutionException;
  * English, Spanish, German, French, Portuguese and Italian). Page images never leave the phone.
  */
 final class PdfOcr {
-    /** Longest side of a rendered page; about 300 dpi for A4 and enough for small print. */
-    private static final int MAX_SIDE = 3000;
+    /** Longest side of a rendered page; about 210 dpi for A4, enough for book print. */
+    private static final int MAX_SIDE = 2500;
     private static final float MAX_SCALE = 300f / 72f;
 
     interface Progress {
         void page(int done, int total);
     }
 
+    /** Receives each page's rows as soon as it is read; returning false stops reading. */
+    interface PageSink {
+        boolean page(int index, List<String> rows);
+    }
+
     private PdfOcr() {}
 
-    /** Script rows for each of the given pages (zero-based), in page order. */
-    static Map<Integer, List<String>> read(File pdf, List<Integer> pages, Progress progress)
+    /** Reads the given pages (zero-based) in order and hands each page's script rows to {@code sink}. */
+    static void read(File pdf, List<Integer> pages, Progress progress, PageSink sink)
         throws IOException {
-        Map<Integer, List<String>> rows = new LinkedHashMap<>();
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         try (ParcelFileDescriptor descriptor =
                  ParcelFileDescriptor.open(pdf, ParcelFileDescriptor.MODE_READ_ONLY);
@@ -49,8 +51,9 @@ final class PdfOcr {
                 if (progress != null) {
                     progress.page(done, pages.size());
                 }
-                if (index < renderer.getPageCount()) {
-                    rows.put(index, readPage(renderer, index, recognizer));
+                if (index < renderer.getPageCount()
+                    && !sink.page(index, readPage(renderer, index, recognizer))) {
+                    break;
                 }
                 done++;
             }
@@ -60,21 +63,20 @@ final class PdfOcr {
         } finally {
             recognizer.close();
         }
-        return rows;
     }
 
     private static List<String> readPage(PdfRenderer renderer, int index, TextRecognizer recognizer)
         throws IOException {
         Bitmap bitmap;
-        try (PdfRenderer.Page page = renderer.openPage(index)) {
-            float scale = Math.min(MAX_SCALE,
-                MAX_SIDE / (float) Math.max(1, Math.max(page.getWidth(), page.getHeight())));
-            int width = Math.max(1, Math.round(page.getWidth() * scale));
-            int height = Math.max(1, Math.round(page.getHeight() * scale));
-            bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            // Pages render onto a transparent bitmap; recognition needs dark text on white.
-            bitmap.eraseColor(Color.WHITE);
-            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+        try {
+            bitmap = render(renderer, index, MAX_SIDE);
+        } catch (OutOfMemoryError error) {
+            // A phone with little memory still gets the page, at a lower resolution.
+            try {
+                bitmap = render(renderer, index, MAX_SIDE / 2);
+            } catch (OutOfMemoryError again) {
+                throw new IOException(again);
+            }
         }
         try {
             Text result = Tasks.await(recognizer.process(InputImage.fromBitmap(bitmap, 0)));
@@ -88,13 +90,27 @@ final class PdfOcr {
                 }
             }
             return OcrText.pageRows(lines, bitmap.getWidth());
-        } catch (ExecutionException error) {
+        } catch (ExecutionException | OutOfMemoryError error) {
             throw new IOException(error);
         } catch (InterruptedException error) {
             Thread.currentThread().interrupt();
             throw new IOException(error);
         } finally {
             bitmap.recycle();
+        }
+    }
+
+    private static Bitmap render(PdfRenderer renderer, int index, int maxSide) {
+        try (PdfRenderer.Page page = renderer.openPage(index)) {
+            float scale = Math.min(MAX_SCALE,
+                maxSide / (float) Math.max(1, Math.max(page.getWidth(), page.getHeight())));
+            int width = Math.max(1, Math.round(page.getWidth() * scale));
+            int height = Math.max(1, Math.round(page.getHeight() * scale));
+            Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            // Pages render onto a transparent bitmap; recognition needs dark text on white.
+            bitmap.eraseColor(Color.WHITE);
+            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY);
+            return bitmap;
         }
     }
 }

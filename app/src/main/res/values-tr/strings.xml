@@ -34,7 +34,7 @@
     <string name="sample_title">Örnek sahne</string>
     <string name="imported_title">İçe aktarılan metin</string>
     <string name="import_failed">Dosya okunamadı. UTF-8 biçiminde bir TXT dosyası seç.</string>
-    <string name="import_too_long">Dosya aktarım sınırını aşıyor. PDF sınırı 25 MB, 200 sayfa ve 150.000 metin karakteri.</string>
+    <string name="import_too_long">Dosya çok büyük. PDF en fazla 100 MB ve 1.000 sayfa, metin dosyası en fazla 150.000 karakter olabilir.</string>
     <string name="premium_description">Doğal karakter sesleri, sesle ilerleme, ayrıntılı sonuçlar ve videolu prova.</string>
     <string name="premium_voices">Doğal karakter sesleri</string>
     <string name="premium_voices_description">Her karaktere farklı, daha doğal bir ses ata.</string>
@@ -124,6 +124,14 @@
     <string name="step_counter">Adım %1$d / %2$d</string>
     <string name="importing">Metnin içe aktarılıyor…</string>
     <string name="importing_scanned">Taranmış sayfa okunuyor: %1$d / %2$d…</string>
+    <string name="pdf_pages_title">Hangi sayfalar?</string>
+    <string name="pdf_pages_message">Bu PDF’de %1$d sayfa var. Oyununun başladığı ve bittiği PDF sayfalarını yaz; bir seferde en fazla %2$d sayfa. PDF sayfa numarası kitapta yazan numaradan farklı olabilir.</string>
+    <string name="pdf_pages_first">İlk sayfa</string>
+    <string name="pdf_pages_last">Son sayfa</string>
+    <string name="pdf_pages_import">İçe aktar</string>
+    <string name="pdf_pages_invalid">1 ile %1$d arasında bir sayfa yaz.</string>
+    <string name="pdf_pages_too_many">Bir seferde en fazla %1$d sayfa seçebilirsin.</string>
+    <string name="pdf_pages_cut_short">%1$d–%2$d. sayfalar aktarıldı; metin sınırına burada ulaşıldı. %3$d–%4$d. sayfaları yeniden, ayrı bir metin olarak aktar.</string>
     <string name="source_pdf_details">Metin içeren ya da taranmış PDF</string>
     <string name="source_txt_details">UTF-8 düz metin dosyası</string>
     <string name="source_paste_details">Kopyaladığın metni kullan</string>

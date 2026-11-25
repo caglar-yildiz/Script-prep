@@ -91,6 +91,8 @@ import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
     private static final int MAX_SCRIPT_LENGTH = 150_000;
+    /** Longer PDFs ask which pages to import. */
+    private static final int PAGE_CHOICE_FROM = 30;
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
     private static final int IMPORT_PDF = 2;
@@ -394,35 +396,171 @@ public final class MainActivity extends Activity {
         importing = true;
         importStatus = null;
         render();
+        runImport(pdf, () -> {
+            if (!pdf) {
+                deliverImport(ScriptImport.readText(getApplicationContext(), uri, MAX_SCRIPT_LENGTH),
+                    false, selectedCategory, narrator);
+                return;
+            }
+            ScriptImport.PdfFile file = ScriptImport.openPdf(getApplicationContext(), uri);
+            int pages = file.source.pageCount;
+            if (pages > PAGE_CHOICE_FROM) {
+                main.post(() -> choosePages(file, selectedCategory, narrator));
+            } else {
+                readPdfPages(file, 1, pages, selectedCategory, narrator);
+            }
+        });
+    }
+
+    /** Work that runs off the main thread while the import spinner shows. */
+    private interface ImportStep {
+        void run() throws IOException;
+    }
+
+    private void runImport(boolean pdf, ImportStep step) {
         imports.execute(() -> {
             try {
-                ScriptImport.Result result = ScriptImport.read(getApplicationContext(), uri, pdf,
-                    MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
-                        getString(R.string.importing_scanned, done + 1, total))));
-                ScriptLibrary.Script imported = result.script;
-                Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
-                main.post(() -> {
-                    finishImport();
-                    if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
-                        String title = imported.title.trim();
-                        openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
-                            : title, imported.text);
-                        savedScript = "";
-                        savedTitle = "";
-                        if (preview != null) {
-                            showParsePreview(preview, result.scannedPages);
-                        }
-                    }
-                });
+                step.run();
             } catch (ScriptImport.LengthLimitException error) {
                 main.post(() -> failImport(R.string.import_too_long));
             } catch (PdfScriptReader.NoTextException error) {
                 main.post(() -> failImport(R.string.pdf_no_text));
-            } catch (IOException | RuntimeException | LinkageError error) {
+            } catch (IOException | RuntimeException | LinkageError | OutOfMemoryError error) {
                 Log.w("ScriptPrep", "Could not import a script", error);
                 main.post(() -> failImport(pdf ? R.string.pdf_import_failed : R.string.import_failed));
             }
         });
+    }
+
+    /** Runs on the import thread. */
+    private void readPdfPages(ScriptImport.PdfFile file, int first, int last,
+        TextCategory selectedCategory, String narrator) throws IOException {
+        ScriptImport.Result result = ScriptImport.readPdf(getApplicationContext(), file, first, last,
+            MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
+                getString(R.string.importing_scanned, done + 1, total))));
+        deliverImport(result, true, selectedCategory, narrator);
+    }
+
+    /** A long PDF often holds more than the play, or the play starts late: ask which pages to read. */
+    private void choosePages(ScriptImport.PdfFile file, TextCategory selectedCategory, String narrator) {
+        if (isDestroyed() || screen != Screen.SOURCE || category != selectedCategory) {
+            file.source.close();
+            finishImport();
+            return;
+        }
+        int pages = file.source.pageCount;
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        form.addView(ui.text(getString(R.string.pdf_pages_message, pages, PdfScriptReader.MAX_RANGE),
+            Type.BODY, TEXT_SECONDARY));
+        LinearLayout row = horizontal();
+        EditText firstField = pageField(R.string.pdf_pages_first, 1);
+        EditText lastField = pageField(R.string.pdf_pages_last, Math.min(pages, PdfScriptReader.MAX_RANGE));
+        LinearLayout firstColumn = new LinearLayout(this);
+        firstColumn.setOrientation(LinearLayout.VERTICAL);
+        firstColumn.addView(ui.text(getString(R.string.pdf_pages_first), Type.LABEL, TEXT_SECONDARY));
+        firstColumn.addView(firstField, ui.spaced(6));
+        LinearLayout lastColumn = new LinearLayout(this);
+        lastColumn.setOrientation(LinearLayout.VERTICAL);
+        lastColumn.addView(ui.text(getString(R.string.pdf_pages_last), Type.LABEL, TEXT_SECONDARY));
+        lastColumn.addView(lastField, ui.spaced(6));
+        row.addView(firstColumn, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout.LayoutParams lastParams = new LinearLayout.LayoutParams(0, -2, 1);
+        lastParams.leftMargin = ui.dp(12);
+        row.addView(lastColumn, lastParams);
+        form.addView(row, ui.spaced(16));
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(form);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(R.string.pdf_pages_title)
+            .setView(scroll)
+            .setPositiveButton(R.string.pdf_pages_import, null)
+            .setNegativeButton(android.R.string.cancel, (shown, which) -> {
+                file.source.close();
+                finishImport();
+            })
+            .setOnCancelListener(shown -> {
+                file.source.close();
+                finishImport();
+            })
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            int first = pageNumber(firstField);
+            int last = pageNumber(lastField);
+            if (first < 1 || first > pages) {
+                firstField.setError(getString(R.string.pdf_pages_invalid, pages));
+                firstField.requestFocus();
+                return;
+            }
+            if (last < first || last > pages) {
+                lastField.setError(getString(R.string.pdf_pages_invalid, pages));
+                lastField.requestFocus();
+                return;
+            }
+            if (last - first + 1 > PdfScriptReader.MAX_RANGE) {
+                lastField.setError(getString(R.string.pdf_pages_too_many, PdfScriptReader.MAX_RANGE));
+                lastField.requestFocus();
+                return;
+            }
+            dialog.dismiss();
+            hideKeyboard();
+            runImport(true, () -> readPdfPages(file, first, last, selectedCategory, narrator));
+        }));
+        dialog.show();
+    }
+
+    private EditText pageField(int hint, int value) {
+        EditText field = field(hint, String.valueOf(value), InputType.TYPE_CLASS_NUMBER, 4);
+        field.setSingleLine(true);
+        field.setSelectAllOnFocus(true);
+        return field;
+    }
+
+    private static int pageNumber(EditText field) {
+        try {
+            return Integer.parseInt(field.getText().toString().trim());
+        } catch (NumberFormatException error) {
+            return -1;
+        }
+    }
+
+    /** Runs on the import thread: parses the result and opens it in the editor. */
+    private void deliverImport(ScriptImport.Result result, boolean pdf, TextCategory selectedCategory,
+        String narrator) {
+        ScriptLibrary.Script imported = result.script;
+        Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
+        main.post(() -> {
+            finishImport();
+            if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
+                String title = imported.title.trim();
+                openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
+                    : title, imported.text);
+                savedScript = "";
+                savedTitle = "";
+                if (preview != null) {
+                    showParsePreview(preview, importNotice(result));
+                }
+            }
+        });
+    }
+
+    /** What the preview should say about scanned pages and pages left for another import. */
+    private String importNotice(ScriptImport.Result result) {
+        StringBuilder notice = new StringBuilder();
+        if (result.cutShort()) {
+            notice.append(getString(R.string.pdf_pages_cut_short, result.firstPage, result.lastPage,
+                result.lastPage + 1, result.requestedLastPage));
+        }
+        if (result.scannedPages > 0) {
+            if (notice.length() > 0) {
+                notice.append("\n\n");
+            }
+            notice.append(getResources().getQuantityString(R.plurals.scanned_pages_notice,
+                result.scannedPages, result.scannedPages));
+        }
+        return notice.toString();
     }
 
     private void showImportStatus(String status) {
@@ -1645,12 +1783,11 @@ public final class MainActivity extends Activity {
     }
 
     private void showParsePreview(Scene parsed) {
-        showParsePreview(parsed, 0);
+        showParsePreview(parsed, "");
     }
 
-    private void showParsePreview(Scene parsed, int scannedPages) {
-        String scanned = scannedPages == 0 ? ""
-            : getResources().getQuantityString(R.plurals.scanned_pages_notice, scannedPages, scannedPages) + "\n\n";
+    private void showParsePreview(Scene parsed, String notice) {
+        String scanned = notice.isEmpty() ? "" : notice + "\n\n";
         if (!category.hasRoles()) {
             new AlertDialog.Builder(this).setTitle(R.string.solo_preview_title)
                 .setMessage(scanned + getString(R.string.solo_preview_count, parsed.lines.size()))

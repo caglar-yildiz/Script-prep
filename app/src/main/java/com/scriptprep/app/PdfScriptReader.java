@@ -11,6 +11,7 @@ import com.tom_roush.pdfbox.pdmodel.font.PDFontDescriptor;
 import com.tom_roush.pdfbox.text.PDFTextStripper;
 import com.tom_roush.pdfbox.text.TextPosition;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,8 +27,11 @@ import java.util.Map;
 import java.util.Set;
 
 final class PdfScriptReader extends PDFTextStripper {
-    private static final long MAX_BYTES = 25L * 1024 * 1024;
-    private static final int MAX_PAGES = 200;
+    private static final long MAX_BYTES = 100L * 1024 * 1024;
+    private static final int MAX_PAGES = 1000;
+    /** Most pages read in one import; a longer play is added in parts. */
+    static final int MAX_RANGE = 200;
+    private static final String TEMP_PREFIX = "script-import-";
     private static final int MARGIN_ROWS = 2;
     private static final int BOLD = 1;
     private static final int ITALIC = 2;
@@ -42,26 +46,56 @@ final class PdfScriptReader extends PDFTextStripper {
     private List<Row> page;
     private int characters;
     private int scannedPages;
+    private int includedPages;
 
     private PdfScriptReader(int characterLimit) throws IOException {
         this.characterLimit = characterLimit;
         setSortByPosition(true);
     }
 
-    /** The script text of a PDF and how many of its pages were read from the scanned image. */
-    static final class Result {
-        final String text;
-        final int scannedPages;
+    /** A PDF copied to the cache, so its pages can be counted before choosing which to read. */
+    static final class Source implements Closeable {
+        final File file;
+        final int pageCount;
 
-        Result(String text, int scannedPages) {
-            this.text = text;
-            this.scannedPages = scannedPages;
+        Source(File file, int pageCount) {
+            this.file = file;
+            this.pageCount = pageCount;
+        }
+
+        @Override
+        public void close() {
+            file.delete();
         }
     }
 
-    static Result read(Context context, InputStream stream, int characterLimit,
-        PdfOcr.Progress progress) throws IOException {
-        File file = File.createTempFile("script-import-", ".pdf", context.getCacheDir());
+    /** The script text of the pages read and how many of them were read from the scanned image. */
+    static final class Result {
+        final String text;
+        final int scannedPages;
+        final int firstPage;
+        final int lastPage;
+        /** The last page asked for; later than {@link #lastPage} when the text limit was reached. */
+        final int requestedLastPage;
+
+        Result(String text, int scannedPages, int firstPage, int lastPage, int requestedLastPage) {
+            this.text = text;
+            this.scannedPages = scannedPages;
+            this.firstPage = firstPage;
+            this.lastPage = lastPage;
+            this.requestedLastPage = requestedLastPage;
+        }
+    }
+
+    static Source open(Context context, InputStream stream) throws IOException {
+        // An import left by a closed app or a cancelled page choice is no longer needed.
+        File[] leftovers = context.getCacheDir().listFiles((dir, name) -> name.startsWith(TEMP_PREFIX));
+        if (leftovers != null) {
+            for (File leftover : leftovers) {
+                leftover.delete();
+            }
+        }
+        File file = File.createTempFile(TEMP_PREFIX, ".pdf", context.getCacheDir());
         try {
             try (FileOutputStream output = new FileOutputStream(file)) {
                 byte[] buffer = new byte[16384];
@@ -75,29 +109,62 @@ final class PdfScriptReader extends PDFTextStripper {
                     output.write(buffer, 0, count);
                 }
             }
-
-            MemoryUsageSetting memory = MemoryUsageSetting.setupMixed(8L * 1024 * 1024)
-                .setTempDir(context.getCacheDir());
-            PdfScriptReader reader = new PdfScriptReader(characterLimit);
-            try (PDDocument document = PDDocument.load(file, memory)) {
-                if (document.getNumberOfPages() > MAX_PAGES) {
-                    throw new ScriptImport.LengthLimitException();
-                }
-                reader.writeText(document, new StringWriter());
+            int pageCount;
+            try (PDDocument document = load(context, file)) {
+                pageCount = document.getNumberOfPages();
             }
-            List<Integer> scanned = reader.pagesWithoutText();
-            if (!scanned.isEmpty()) {
-                try {
-                    reader.useRecognized(PdfOcr.read(file, scanned, progress));
-                } catch (IOException | RuntimeException | LinkageError error) {
-                    // Keep whatever the text layer had; with nothing at all this ends in NoTextException.
-                    Log.w("ScriptPrep", "Could not read scanned pages", error);
-                }
+            if (pageCount > MAX_PAGES) {
+                throw new ScriptImport.LengthLimitException();
             }
-            return new Result(reader.scriptText(), reader.scannedPages);
-        } finally {
+            return new Source(file, pageCount);
+        } catch (IOException | RuntimeException error) {
             file.delete();
+            throw error;
         }
+    }
+
+    private static PDDocument load(Context context, File file) throws IOException {
+        MemoryUsageSetting memory = MemoryUsageSetting.setupMixed(8L * 1024 * 1024)
+            .setTempDir(context.getCacheDir());
+        return PDDocument.load(file, memory);
+    }
+
+    /**
+     * Reads pages {@code firstPage} to {@code lastPage} (counted from 1). When the text grows past
+     * the limit, reading stops at the end of the last whole page that fits.
+     */
+    static Result read(Context context, Source source, int firstPage, int lastPage,
+        int characterLimit, PdfOcr.Progress progress) throws IOException {
+        PdfScriptReader reader = new PdfScriptReader(characterLimit);
+        reader.setStartPage(firstPage);
+        reader.setEndPage(lastPage);
+        try (PDDocument document = load(context, source.file)) {
+            try {
+                reader.writeText(document, new StringWriter());
+            } catch (Full full) {
+                // The page that was being read is incomplete; the next import starts with it.
+                if (reader.pages.size() > 1) {
+                    reader.pages.remove(reader.pages.size() - 1);
+                }
+            }
+        }
+        List<Integer> scanned = reader.pagesWithoutText();
+        if (!scanned.isEmpty()) {
+            List<Integer> pageNumbers = new ArrayList<>();
+            for (int index : scanned) {
+                pageNumbers.add(firstPage - 1 + index);
+            }
+            try {
+                PdfOcr.read(source.file, pageNumbers, progress,
+                    (pageIndex, rows) -> reader.useRecognized(pageIndex - firstPage + 1, rows));
+            } catch (IOException | RuntimeException | LinkageError | OutOfMemoryError error) {
+                // Keep whatever the text layer had; with nothing at all this ends in NoTextException.
+                Log.w("ScriptPrep", "Could not read scanned pages", error);
+            }
+        }
+        String text = reader.scriptText();
+        return new Result(text, reader.scannedPages, firstPage,
+            firstPage + Math.max(1, reader.includedPages) - 1, lastPage);
     }
 
     /** Pages whose text layer is missing or nearly empty, so their text is only in the image. */
@@ -115,20 +182,36 @@ final class PdfScriptReader extends PDFTextStripper {
         return scanned;
     }
 
-    private void useRecognized(Map<Integer, List<String>> recognized) {
-        for (Map.Entry<Integer, List<String>> entry : recognized.entrySet()) {
-            List<Row> rows = new ArrayList<>();
-            int letters = 0;
-            for (String text : entry.getValue()) {
-                boolean note = text.length() > 2 && text.startsWith("*") && text.endsWith("*");
-                rows.add(new Row(note ? text.substring(1, text.length() - 1) : text, text));
-                letters += text.codePoints().filter(Character::isLetter).count();
-            }
-            if (letters > 0) {
-                pages.set(entry.getKey(), rows);
-                scannedPages++;
+    /**
+     * Puts recognised rows in place of the page at {@code index}. Returns false, and drops the
+     * pages after it, once the text so far reaches the limit, so no more pages are recognised.
+     */
+    private boolean useRecognized(int index, List<String> recognized) {
+        if (index < 0 || index >= pages.size()) {
+            return true;
+        }
+        List<Row> rows = new ArrayList<>();
+        int letters = 0;
+        for (String text : recognized) {
+            boolean note = text.length() > 2 && text.startsWith("*") && text.endsWith("*");
+            rows.add(new Row(note ? text.substring(1, text.length() - 1) : text, text));
+            letters += text.codePoints().filter(Character::isLetter).count();
+        }
+        if (letters > 0) {
+            pages.set(index, rows);
+            scannedPages++;
+        }
+        long length = 0;
+        for (int i = 0; i <= index; i++) {
+            for (Row row : pages.get(i)) {
+                length += row.formatted.length() + 1;
             }
         }
+        if (length > characterLimit && index > 0) {
+            pages.subList(index + 1, pages.size()).clear();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -141,7 +224,7 @@ final class PdfScriptReader extends PDFTextStripper {
     protected void writeString(String text, List<TextPosition> positions) throws IOException {
         characters += text.length();
         if (characters > characterLimit * 2) {
-            throw new ScriptImport.LengthLimitException();
+            throw new Full();
         }
         current.append(text);
         int style = 0;
@@ -256,7 +339,10 @@ final class PdfScriptReader extends PDFTextStripper {
 
         StringBuilder output = new StringBuilder();
         boolean foundText = false;
-        for (List<Row> rows : pages) {
+        for (int p = 0; p < pages.size(); p++) {
+            List<Row> rows = pages.get(p);
+            int pageStart = output.length();
+            boolean pageText = false;
             for (int i = 0; i < rows.size(); i++) {
                 Row row = rows.get(i);
                 Integer count = repeated.get(row.text);
@@ -265,13 +351,20 @@ final class PdfScriptReader extends PDFTextStripper {
                         && !looksLikeRole(row.text)))) {
                     continue;
                 }
-                foundText |= !row.text.isEmpty();
+                pageText |= !row.text.isEmpty();
                 output.append(row.formatted).append('\n');
-                if (output.length() > characterLimit) {
-                    throw new ScriptImport.LengthLimitException();
-                }
             }
             output.append('\n');
+            if (output.length() > characterLimit) {
+                if (p == 0) {
+                    throw new ScriptImport.LengthLimitException();
+                }
+                // Stop after the last whole page that fits; the rest is imported separately.
+                output.setLength(pageStart);
+                break;
+            }
+            foundText |= pageText;
+            includedPages = p + 1;
         }
         if (!foundText) {
             throw new NoTextException();
@@ -309,4 +402,7 @@ final class PdfScriptReader extends PDFTextStripper {
     }
 
     static final class NoTextException extends IOException {}
+
+    /** Stops reading the text layer once far more text than fits has been read. */
+    private static final class Full extends IOException {}
 }

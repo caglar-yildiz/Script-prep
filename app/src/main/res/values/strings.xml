@@ -35,7 +35,7 @@
     <string name="sample_title">Sample scene</string>
     <string name="imported_title">Imported text</string>
     <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT file.</string>
-    <string name="import_too_long">This file exceeds the import limit. The PDF limits are 25 MB, 200 pages and 150,000 text characters.</string>
+    <string name="import_too_long">This file is too large. PDFs can be up to 100 MB and 1,000 pages; text files up to 150,000 characters.</string>
     <string name="premium_description">Natural character voices, hands-free cues, detailed results and video practice.</string>
     <string name="premium_voices">Natural character voices</string>
     <string name="premium_voices_description">Choose a distinct, natural-sounding voice for each character.</string>
@@ -125,6 +125,14 @@
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
     <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="pdf_pages_title">Which pages?</string>
+    <string name="pdf_pages_message">This PDF has %1$d pages. Enter the PDF pages where your play starts and ends, up to %2$d at a time. The PDF page number can differ from the number printed in the book.</string>
+    <string name="pdf_pages_first">First page</string>
+    <string name="pdf_pages_last">Last page</string>
+    <string name="pdf_pages_import">Import</string>
+    <string name="pdf_pages_invalid">Enter a page from 1 to %1$d.</string>
+    <string name="pdf_pages_too_many">Choose at most %1$d pages at a time.</string>
+    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Import pages %3$d–%4$d again as a separate text.</string>
     <string name="source_pdf_details">Text PDF or scanned pages</string>
     <string name="source_txt_details">Plain UTF-8 text file</string>
     <string name="source_paste_details">Use the text you copied</string>
