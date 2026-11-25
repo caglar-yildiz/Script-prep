@@ -42,7 +42,7 @@ final class PdfOcr {
 
     /** Reads the given pages (zero-based) in order and hands each page's script rows to {@code sink}. */
     static void read(File pdf, List<Integer> pages, Progress progress, BooleanSupplier cancelled,
-        PageSink sink) throws IOException {
+        OcrReview review, PageSink sink) throws IOException {
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         try (ParcelFileDescriptor descriptor =
                  ParcelFileDescriptor.open(pdf, ParcelFileDescriptor.MODE_READ_ONLY);
@@ -54,7 +54,7 @@ final class PdfOcr {
                     progress.page(done, pages.size());
                 }
                 if (index < renderer.getPageCount()
-                    && !sink.page(index, readPage(renderer, index, recognizer))) {
+                    && !sink.page(index, readPage(renderer, index, recognizer, review))) {
                     break;
                 }
                 done++;
@@ -67,8 +67,8 @@ final class PdfOcr {
         }
     }
 
-    private static List<String> readPage(PdfRenderer renderer, int index, TextRecognizer recognizer)
-        throws IOException {
+    private static List<String> readPage(PdfRenderer renderer, int index, TextRecognizer recognizer,
+        OcrReview review) throws IOException {
         Bitmap bitmap;
         try {
             bitmap = render(renderer, index, MAX_SIDE);
@@ -88,6 +88,9 @@ final class PdfOcr {
                     Rect box = line.getBoundingBox();
                     if (box != null) {
                         lines.add(new OcrText.Line(line.getText(), box.left, box.top, box.right, box.bottom));
+                        if (review != null) {
+                            review.add(bitmap, box, line.getText(), line.getConfidence(), index + 1);
+                        }
                     }
                 }
             }

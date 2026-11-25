@@ -123,6 +123,15 @@
     <string name="step_counter">Adım %1$d / %2$d</string>
     <string name="importing">Metnin içe aktarılıyor…</string>
     <string name="importing_scanned">Taranmış sayfa okunuyor: %1$d / %2$d…</string>
+    <string name="ocr_review_start">İncele</string>
+    <string name="ocr_review_done">İnceleme bitti.</string>
+    <string name="ocr_review_page">Sayfa %1$d</string>
+    <string name="ocr_review_picture">Satırın sayfadaki görüntüsü</string>
+    <string name="ocr_review_missing">Bu satır artık metinde yok; belki daha önce düzeltildi.</string>
+    <string name="ocr_review_title">Belirsiz satır %1$d / %2$d</string>
+    <string name="ocr_review_next">Sonraki</string>
+    <string name="ocr_review_save">Kaydet ve sonraki</string>
+    <string name="ocr_review_skip">Atla</string>
     <string name="create_import_photo">Fotoğraftan</string>
     <string name="source_photo_details">Sayfaların fotoğrafını çek ya da galeriden seç</string>
     <string name="photo_take">Fotoğraf çek</string>
@@ -377,6 +386,10 @@
     <plurals name="photo_pages_notice">
         <item quantity="one">%d fotoğraf metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
         <item quantity="other">%d fotoğraf metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d satır zor okundu. Sayfayla karşılaştırıp düzelt.</item>
+        <item quantity="other">%d satır zor okundu. Sayfayla karşılaştırıp düzelt.</item>
     </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>

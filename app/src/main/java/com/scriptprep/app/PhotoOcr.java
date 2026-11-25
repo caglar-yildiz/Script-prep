@@ -48,7 +48,7 @@ final class PhotoOcr {
      * whole photo that fits.
      */
     static Result read(Context context, List<Uri> photos, int characterLimit, PdfOcr.Progress progress,
-        BooleanSupplier cancelled) throws IOException {
+        BooleanSupplier cancelled, OcrReview review) throws IOException {
         StringBuilder text = new StringBuilder();
         int pages = 0;
         boolean letters = false;
@@ -59,7 +59,8 @@ final class PhotoOcr {
                 if (progress != null) {
                     progress.page(i, photos.size());
                 }
-                List<String> rows = readPhoto(context.getContentResolver(), photos.get(i), recognizer);
+                List<String> rows = readPhoto(context.getContentResolver(), photos.get(i), recognizer,
+                    review, i + 1);
                 int before = text.length();
                 for (String row : rows) {
                     text.append(row).append('\n');
@@ -84,8 +85,8 @@ final class PhotoOcr {
         return new Result(OcrText.unifyRoles(text.toString().trim()), pages);
     }
 
-    private static List<String> readPhoto(ContentResolver resolver, Uri photo, TextRecognizer recognizer)
-        throws IOException {
+    private static List<String> readPhoto(ContentResolver resolver, Uri photo, TextRecognizer recognizer,
+        OcrReview review, int number) throws IOException {
         Bitmap bitmap = decodeUpright(resolver, photo);
         try {
             Text result = Tasks.await(recognizer.process(InputImage.fromBitmap(bitmap, 0)));
@@ -95,6 +96,9 @@ final class PhotoOcr {
                     Rect box = line.getBoundingBox();
                     if (box != null) {
                         lines.add(new OcrText.Line(line.getText(), box.left, box.top, box.right, box.bottom));
+                        if (review != null) {
+                            review.add(bitmap, box, line.getText(), line.getConfidence(), number);
+                        }
                     }
                 }
             }

@@ -123,6 +123,15 @@
     <string name="step_counter">Paso %1$d de %2$d</string>
     <string name="importing">Importando tu texto…</string>
     <string name="importing_scanned">Leyendo la página escaneada %1$d de %2$d…</string>
+    <string name="ocr_review_start">Revisar</string>
+    <string name="ocr_review_done">Revisión terminada.</string>
+    <string name="ocr_review_page">Página %1$d</string>
+    <string name="ocr_review_picture">La línea tal como aparece en la página</string>
+    <string name="ocr_review_missing">Esta línea ya no está en el texto; quizá ya se corrigió.</string>
+    <string name="ocr_review_title">Línea dudosa %1$d de %2$d</string>
+    <string name="ocr_review_next">Siguiente</string>
+    <string name="ocr_review_save">Guardar y seguir</string>
+    <string name="ocr_review_skip">Omitir</string>
     <string name="create_import_photo">Desde fotos</string>
     <string name="source_photo_details">Fotografía las páginas o elígelas de tu galería</string>
     <string name="photo_take">Tomar fotos</string>
@@ -387,6 +396,10 @@
     <plurals name="photo_pages_notice">
         <item quantity="one">Se leyó %d foto con reconocimiento de texto. Revisa los nombres de los personajes y las réplicas antes de ensayar.</item>
         <item quantity="other">Se leyeron %d fotos con reconocimiento de texto. Revisa los nombres de los personajes y las réplicas antes de ensayar.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d línea fue difícil de leer. Compárala con la página y corrígela.</item>
+        <item quantity="other">%d líneas fueron difíciles de leer. Compáralas con la página y corrígelas.</item>
     </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">Se leyó %d página escaneada con reconocimiento de texto. Revisa los nombres de los personajes y las réplicas antes de ensayar.</item>

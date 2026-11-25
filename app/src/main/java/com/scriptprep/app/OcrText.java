@@ -379,6 +379,43 @@ final class OcrText {
         return output.toString();
     }
 
+    /**
+     * Where a recognised line ended up in the script text: the start and end of the match at or
+     * after {@code from} (or else anywhere), or null when it cannot be found. The line is cleaned
+     * the same way the import cleaned it; a word split at the line end and the role cue are left
+     * out of the search when the whole line is not found.
+     */
+    static int[] locate(String text, String recognised, int from) {
+        String key = cleanRow(recognised);
+        List<String> keys = new ArrayList<>();
+        if (key.matches(".*\\p{L}[-‐‑¬]$")) {
+            int space = key.lastIndexOf(' ');
+            key = space > 0 ? key.substring(0, space) : key.substring(0, key.length() - 1);
+        }
+        keys.add(key);
+        Matcher cue = COLON_CUE.matcher(key);
+        if (cue.find() && key.length() > cue.end()) {
+            keys.add(key.substring(cue.end()));
+        }
+        String[] words = key.split(" ");
+        if (words.length >= 6) {
+            keys.add(String.join(" ", java.util.Arrays.copyOfRange(words, 0, words.length / 2)));
+        }
+        for (String candidate : keys) {
+            if (candidate.trim().length() < 3) {
+                continue;
+            }
+            int start = text.indexOf(candidate, Math.max(0, Math.min(from, text.length())));
+            if (start < 0) {
+                start = text.indexOf(candidate);
+            }
+            if (start >= 0) {
+                return new int[] {start, start + candidate.length()};
+            }
+        }
+        return null;
+    }
+
     private static String fold(String value) {
         return Normalizer.normalize(value.toUpperCase(Locale.ROOT), Normalizer.Form.NFD)
             .replaceAll("\\p{M}+", "");

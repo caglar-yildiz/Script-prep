@@ -109,4 +109,31 @@ public class OcrTextTest {
 
         assertEquals(text, OcrText.unifyRoles(text));
     }
+
+    @Test
+    public void findsARecognisedLineInTheCleanedText() {
+        String text = "AYŞE: Bu iş zorbalıkla yürümez.\nMEHMET: Neden?\nAYŞE: Bilmem.";
+
+        assertEquals(0, OcrText.locate(text, "AYŞE. — Bu iş zor-", 0)[0]);
+        int[] found = OcrText.locate(text, "© MEHMET. — Neden?", 0);
+        assertEquals("MEHMET: Neden?", text.substring(found[0], found[1]));
+        assertEquals(null, OcrText.locate(text, "Hiç olmayan bir satır", 0));
+    }
+
+    @Test
+    public void findsALineWhoseCueWasRenamed() {
+        String text = "CLÉANTE: Sakın boş bulunayım demeyin.";
+
+        int[] found = OcrText.locate(text, "CLBANTE. — Sakın boş bulunayım demeyin.", 0);
+
+        assertEquals("Sakın boş bulunayım demeyin.", text.substring(found[0], found[1]));
+    }
+
+    @Test
+    public void prefersTheMatchAfterThePreviousOne() {
+        String text = "ALİ: Evet.\nVELİ: Evet.";
+
+        assertEquals(text.lastIndexOf("Evet."), OcrText.locate(text, "Evet.", 6)[0]);
+        assertEquals(text.indexOf("Evet."), OcrText.locate(text, "Evet.", 0)[0]);
+    }
 }

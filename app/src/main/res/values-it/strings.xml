@@ -123,6 +123,15 @@
     <string name="step_counter">Passaggio %1$d di %2$d</string>
     <string name="importing">Importazione del testo…</string>
     <string name="importing_scanned">Lettura della pagina scansionata %1$d di %2$d…</string>
+    <string name="ocr_review_start">Controlla</string>
+    <string name="ocr_review_done">Controllo completato.</string>
+    <string name="ocr_review_page">Pagina %1$d</string>
+    <string name="ocr_review_picture">La riga come appare sulla pagina</string>
+    <string name="ocr_review_missing">Questa riga non è più nel testo; forse è già stata corretta.</string>
+    <string name="ocr_review_title">Riga incerta %1$d di %2$d</string>
+    <string name="ocr_review_next">Avanti</string>
+    <string name="ocr_review_save">Salva e avanti</string>
+    <string name="ocr_review_skip">Salta</string>
     <string name="create_import_photo">Da foto</string>
     <string name="source_photo_details">Fotografa le pagine o sceglile dalla galleria</string>
     <string name="photo_take">Scatta foto</string>
@@ -387,6 +396,10 @@
     <plurals name="photo_pages_notice">
         <item quantity="one">%d foto è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
         <item quantity="other">%d foto sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d riga era difficile da leggere. Confrontala con la pagina e correggila.</item>
+        <item quantity="other">%d righe erano difficili da leggere. Confrontale con la pagina e correggile.</item>
     </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d pagina scansionata è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>

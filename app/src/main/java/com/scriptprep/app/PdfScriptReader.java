@@ -137,7 +137,8 @@ final class PdfScriptReader extends PDFTextStripper {
      * the limit, reading stops at the end of the last whole page that fits.
      */
     static Result read(Context context, Source source, int firstPage, int lastPage,
-        int characterLimit, PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
+        int characterLimit, PdfOcr.Progress progress, BooleanSupplier cancelled, OcrReview review)
+        throws IOException {
         PdfScriptReader reader = new PdfScriptReader(characterLimit);
         reader.cancelled = cancelled;
         reader.setStartPage(firstPage);
@@ -159,7 +160,7 @@ final class PdfScriptReader extends PDFTextStripper {
                 pageNumbers.add(firstPage - 1 + index);
             }
             try {
-                PdfOcr.read(source.file, pageNumbers, progress, cancelled,
+                PdfOcr.read(source.file, pageNumbers, progress, cancelled, review,
                     (pageIndex, rows) -> reader.useRecognized(pageIndex - firstPage + 1, rows));
             } catch (ScriptImport.CancelledException stopped) {
                 throw stopped;

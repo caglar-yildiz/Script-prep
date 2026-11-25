@@ -168,6 +168,11 @@ public final class MainActivity extends Activity {
     private final ArrayList<Uri> takenPhotos = new ArrayList<>();
     /** Where the camera app is writing the next page photo. */
     private Uri pendingPhoto;
+    /** Collects unsure lines of the import in progress. */
+    private OcrReview importReview;
+    /** Unsure lines of the text open in the editor, and how many of them were already checked. */
+    private List<OcrReview.Item> reviewItems = Collections.emptyList();
+    private int reviewIndex;
     /** Pages left after an import that reached the text limit; offered in the editor. */
     private RemainingPages remainingPages;
     /** Set from the import screen's cancel button; the import thread checks it between steps. */
@@ -489,6 +494,7 @@ public final class MainActivity extends Activity {
      * pages; 0 reads a short PDF whole and asks which pages of a long one to read.
      */
     private void startImport(Uri uri, boolean pdf, int firstPage, int lastPage) {
+        importReview = pdf ? new OcrReview(getApplicationContext()) : null;
         TextCategory selectedCategory = category;
         String narrator = getString(R.string.solo_role);
         importing = true;
@@ -559,7 +565,7 @@ public final class MainActivity extends Activity {
         TextCategory selectedCategory, String narrator) throws IOException {
         ScriptImport.Result result = ScriptImport.readPdf(getApplicationContext(), file, first, last,
             MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
-                getString(R.string.importing_scanned, done + 1, total))), () -> importCancelled);
+                getString(R.string.importing_scanned, done + 1, total))), () -> importCancelled, importReview);
         deliverImport(result, uri, selectedCategory, narrator);
     }
 
@@ -654,10 +660,21 @@ public final class MainActivity extends Activity {
         boolean isPdf = pdf != null || result.photos;
         ScriptLibrary.Script imported = result.script;
         Scene preview = isPdf ? selectedCategory.parse(imported.text, narrator) : null;
+        // Only unsure lines that made it into the text are worth checking.
+        List<OcrReview.Item> unsure = new ArrayList<>();
+        if (importReview != null) {
+            for (OcrReview.Item item : importReview.items()) {
+                if (OcrText.locate(imported.text, item.text, 0) != null) {
+                    unsure.add(item);
+                }
+            }
+        }
         main.post(() -> {
             boolean wanted = !importCancelled;
             finishImport();
             if (wanted && !isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
+                reviewItems = unsure;
+                reviewIndex = 0;
                 remainingPages = pdf != null && result.cutShort()
                     ? new RemainingPages(pdf, result.lastPage + 1, result.requestedLastPage) : null;
                 String title = imported.title.trim();
@@ -1858,6 +1875,7 @@ public final class MainActivity extends Activity {
     }
 
     private void startPhotoImport(List<Uri> photos, boolean taken) {
+        importReview = new OcrReview(getApplicationContext());
         TextCategory selectedCategory = category;
         String narrator = getString(R.string.solo_role);
         String title = getString(R.string.photo_title);
@@ -1874,7 +1892,8 @@ public final class MainActivity extends Activity {
             try {
                 ScriptImport.Result result = ScriptImport.readPhotos(getApplicationContext(), photos, title,
                     MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
-                        getString(R.string.importing_photo, done + 1, total))), () -> importCancelled);
+                        getString(R.string.importing_photo, done + 1, total))), () -> importCancelled,
+                    importReview);
                 deliverImport(result, null, selectedCategory, narrator);
             } finally {
                 if (taken) {
@@ -2035,6 +2054,16 @@ public final class MainActivity extends Activity {
         chips.addView(languageChip, languageParams);
         content.addView(chips, ui.wrapSpaced(8));
 
+        int unsureLeft = reviewItems.size() - reviewIndex;
+        if (unsureLeft > 0) {
+            LinearLayout unsure = ui.card(SURFACE, null);
+            unsure.addView(ui.text(getResources().getQuantityString(R.plurals.ocr_review_message, unsureLeft,
+                unsureLeft), Type.BODY, TEXT), Ui.matchWidth());
+            unsure.addView(ui.button(getString(R.string.ocr_review_start), R.drawable.ic_eye, Kind.TEXT,
+                view -> reviewLine(reviewIndex)), ui.wrapSpaced(4));
+            content.addView(unsure, ui.spaced(14));
+        }
+
         if (remainingPages != null) {
             LinearLayout rest = ui.card(ACCENT_CONTAINER, null);
             rest.addView(ui.text(getString(R.string.pdf_rest_message, remainingPages.firstPage,
@@ -2171,6 +2200,7 @@ public final class MainActivity extends Activity {
 
     private void exitEditor() {
         remainingPages = null;
+        reviewItems = Collections.emptyList();
         hideKeyboard();
         if (editorReturn != Screen.HOME && fullScene != null) {
             show(editorReturn);
@@ -2184,6 +2214,73 @@ public final class MainActivity extends Activity {
         if (keyboard != null && editor != null) {
             keyboard.hideSoftInputFromWindow(editor.getWindowToken(), 0);
         }
+    }
+
+    /** Shows an unsure line next to its picture from the page, to correct it in the text. */
+    private void reviewLine(int index) {
+        if (editor == null || screen != Screen.EDITOR) {
+            return;
+        }
+        if (index >= reviewItems.size()) {
+            reviewIndex = reviewItems.size();
+            notifyUser(R.string.ocr_review_done);
+            script = editor.getText().toString();
+            render();
+            return;
+        }
+        reviewIndex = index;
+        OcrReview.Item item = reviewItems.get(index);
+        String text = editor.getText().toString();
+        int cursor = Math.max(0, editor.getSelectionEnd());
+        int[] found = OcrText.locate(text, item.text, cursor);
+
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        form.addView(ui.text(getString(R.string.ocr_review_page, item.page), Type.LABEL, TEXT_SECONDARY));
+        android.widget.ImageView picture = new android.widget.ImageView(this);
+        picture.setAdjustViewBounds(true);
+        picture.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+        picture.setBackgroundColor(0xFFFFFFFF);
+        picture.setImageBitmap(android.graphics.BitmapFactory.decodeFile(item.image.getPath()));
+        picture.setContentDescription(getString(R.string.ocr_review_picture));
+        form.addView(picture, ui.spaced(8));
+        EditText lineField = field(R.string.line_text, found == null ? item.text : text.substring(found[0], found[1]),
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES,
+            4000);
+        lineField.setTypeface(Typeface.SERIF);
+        lineField.setEnabled(found != null);
+        form.addView(lineField, ui.spaced(12));
+        if (found == null) {
+            form.addView(ui.text(getString(R.string.ocr_review_missing), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        }
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(form);
+        new AlertDialog.Builder(this)
+            .setTitle(getString(R.string.ocr_review_title, index + 1, reviewItems.size()))
+            .setView(scroll)
+            .setPositiveButton(found == null ? R.string.ocr_review_next : R.string.ocr_review_save, (dialog, which) -> {
+                if (found != null) {
+                    String fixed = lineField.getText().toString().trim().replaceAll("[ \\t]+", " ");
+                    if (!fixed.isEmpty() && editor.getText().toString().equals(text)) {
+                        editor.getText().replace(found[0], found[1], fixed);
+                        editor.setSelection(Math.min(editor.length(), found[0] + fixed.length()));
+                    }
+                }
+                reviewLine(index + 1);
+            })
+            .setNeutralButton(R.string.ocr_review_skip, (dialog, which) -> {
+                if (found != null) {
+                    editor.setSelection(Math.min(editor.length(), found[1]));
+                }
+                reviewLine(index + 1);
+            })
+            .setNegativeButton(R.string.action_close, (dialog, which) -> {
+                script = editor.getText().toString();
+                render();
+            })
+            .show();
     }
 
     /** Saves this part of a long PDF and imports the pages that did not fit as the next text. */
@@ -2205,6 +2302,7 @@ public final class MainActivity extends Activity {
         notifyUser(R.string.saved);
         hideKeyboard();
         remainingPages = null;
+        reviewItems = Collections.emptyList();
         scriptId = null;
         show(Screen.SOURCE);
         startImport(rest.uri, true, rest.firstPage, rest.lastPage);
@@ -2212,6 +2310,7 @@ public final class MainActivity extends Activity {
 
     private void saveEditor(boolean rehearse) {
         remainingPages = null;
+        reviewItems = Collections.emptyList();
         String title = titleField.getText().toString().trim();
         if (title.isEmpty()) {
             titleField.requestFocus();

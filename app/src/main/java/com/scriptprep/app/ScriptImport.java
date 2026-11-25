@@ -52,8 +52,8 @@ final class ScriptImport {
 
     /** Reads script pages from photos; {@code title} names the text. */
     static Result readPhotos(Context context, List<Uri> photos, String title, int lengthLimit,
-        PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
-        PhotoOcr.Result read = PhotoOcr.read(context, photos, lengthLimit, progress, cancelled);
+        PdfOcr.Progress progress, BooleanSupplier cancelled, OcrReview review) throws IOException {
+        PhotoOcr.Result read = PhotoOcr.read(context, photos, lengthLimit, progress, cancelled, review);
         return new Result(new ScriptLibrary.Script(null, title, read.text), read.pages, 0, 0, 0, true);
     }
 
@@ -93,10 +93,10 @@ final class ScriptImport {
 
     /** Reads pages {@code firstPage} to {@code lastPage} of the PDF and removes its copy. */
     static Result readPdf(Context context, PdfFile pdf, int firstPage, int lastPage, int lengthLimit,
-        PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
+        PdfOcr.Progress progress, BooleanSupplier cancelled, OcrReview review) throws IOException {
         try {
             PdfScriptReader.Result text = PdfScriptReader.read(context, pdf.source, firstPage, lastPage,
-                lengthLimit, progress, cancelled);
+                lengthLimit, progress, cancelled, review);
             String title = pdf.title;
             if (firstPage > 1 || lastPage < pdf.source.pageCount) {
                 title = (title.isEmpty() ? "" : title + " ") + "(" + text.firstPage + "–" + text.lastPage + ")";

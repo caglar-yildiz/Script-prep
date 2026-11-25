@@ -124,6 +124,15 @@
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
     <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="ocr_review_start">Review</string>
+    <string name="ocr_review_done">Review finished.</string>
+    <string name="ocr_review_page">Page %1$d</string>
+    <string name="ocr_review_picture">The line as it appears on the page</string>
+    <string name="ocr_review_missing">This line is no longer in the text, perhaps because it was already corrected.</string>
+    <string name="ocr_review_title">Unsure line %1$d of %2$d</string>
+    <string name="ocr_review_next">Next</string>
+    <string name="ocr_review_save">Save and next</string>
+    <string name="ocr_review_skip">Skip</string>
     <string name="create_import_photo">From photos</string>
     <string name="source_photo_details">Take photos of the pages or pick them from your gallery</string>
     <string name="photo_take">Take photos</string>
@@ -383,6 +392,10 @@
     <plurals name="photo_pages_notice">
         <item quantity="one">%d photo was read with text recognition. Check the character names and lines before you rehearse.</item>
         <item quantity="other">%d photos were read with text recognition. Check the character names and lines before you rehearse.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d line was hard to read. Compare it with the page and fix it.</item>
+        <item quantity="other">%d lines were hard to read. Compare them with the page and fix them.</item>
     </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d scanned page was read with text recognition. Check the character names and lines before you rehearse.</item>

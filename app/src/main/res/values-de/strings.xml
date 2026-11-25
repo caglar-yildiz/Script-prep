@@ -123,6 +123,15 @@
     <string name="step_counter">Schritt %1$d von %2$d</string>
     <string name="importing">Dein Text wird importiert…</string>
     <string name="importing_scanned">Gescannte Seite %1$d von %2$d wird gelesen…</string>
+    <string name="ocr_review_start">Prüfen</string>
+    <string name="ocr_review_done">Prüfung abgeschlossen.</string>
+    <string name="ocr_review_page">Seite %1$d</string>
+    <string name="ocr_review_picture">Die Zeile, wie sie auf der Seite steht</string>
+    <string name="ocr_review_missing">Diese Zeile steht nicht mehr im Text, vielleicht wurde sie schon korrigiert.</string>
+    <string name="ocr_review_title">Unsichere Zeile %1$d von %2$d</string>
+    <string name="ocr_review_next">Weiter</string>
+    <string name="ocr_review_save">Speichern und weiter</string>
+    <string name="ocr_review_skip">Überspringen</string>
     <string name="create_import_photo">Aus Fotos</string>
     <string name="source_photo_details">Fotografiere die Seiten oder wähle sie aus deiner Galerie</string>
     <string name="photo_take">Fotos aufnehmen</string>
@@ -377,6 +386,10 @@
     <plurals name="photo_pages_notice">
         <item quantity="one">%d Foto wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
         <item quantity="other">%d Fotos wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d Zeile war schwer zu lesen. Vergleiche sie mit der Seite und korrigiere sie.</item>
+        <item quantity="other">%d Zeilen waren schwer zu lesen. Vergleiche sie mit der Seite und korrigiere sie.</item>
     </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d gescannte Seite wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
