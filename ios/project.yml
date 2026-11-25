@@ -31,10 +31,14 @@ targets:
     platform: iOS
     sources:
       - path: MemoEverything
-      # The Firebase project for ensemble rehearsal (see ios/README.md); optional.
-      - path: GoogleService-Info.plist
-        optional: true
-        buildPhase: resources
+    postBuildScripts:
+      # The Firebase project for ensemble rehearsal (see ios/README.md) is optional: copied when present.
+      - name: Copy the Firebase project file
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ -f "$SRCROOT/GoogleService-Info.plist" ]; then
+            cp "$SRCROOT/GoogleService-Info.plist" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/"
+          fi
     dependencies:
       - package: MemoCore
       - package: SherpaOnnx
