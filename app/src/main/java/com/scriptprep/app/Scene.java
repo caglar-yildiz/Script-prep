@@ -42,6 +42,18 @@ final class Scene {
     );
     private static final Pattern EXERCISE = Pattern.compile("^ETKINLIK\\s+\\d+\\b");
     private static final Pattern LINK = Pattern.compile("https?://", Pattern.CASE_INSENSITIVE);
+    /** A dash at the start of a row, before a role name: "- AHMET: Text", "— AHMET — Text". */
+    private static final Pattern LEADING_DASH = Pattern.compile("^[-‒–—−]\\s*(?=\\p{L}|\\*\\*)");
+    /**
+     * Labels that come before a colon in front matter and directions ("Yer: Bir köy kahvesi"),
+     * folded to capitals without accents. Such a row is kept as a direction, not a role.
+     */
+    private static final Set<String> LABELS = new java.util.HashSet<>(java.util.Arrays.asList(
+        "NOT", "NOTLAR", "DIKKAT", "UYARI", "ORNEK", "KAYNAK", "YAZAN", "YAZAR", "CEVIREN", "CEVIRI",
+        "KISILER", "OYUN KISILERI", "OYUNUN KISILERI", "DEKOR", "ZAMAN", "YER", "MEKAN", "KONU", "SURE",
+        "NOTE", "NOTES", "AUTHOR", "TRANSLATOR", "TRANSLATION", "CHARACTERS", "CAST", "SETTING", "TIME",
+        "PLACE", "SOURCE", "NOTA", "NOTAS", "PERSONAJES", "LUGAR", "TIEMPO", "ANMERKUNG", "PERSONEN", "ORT",
+        "ZEIT", "PERSONNAGES", "LIEU", "TEMPS", "PERSONAGENS", "TEMPO", "PERSONAGGI", "LUOGO"));
     private static final Pattern PAGE = Pattern.compile("^(?:(?:SAYFA|PAGE|PAGINA|SEITE)\\s+)?\\d{1,4}(?:\\s*/\\s*\\d{1,4}|\\.)?$");
 
     /** Joins an act and a scene heading in a section title, as in "I. PERDE · 2. Sahne". */
@@ -116,20 +128,39 @@ final class Scene {
     static Scene parse(String source) {
         String[] rows = source.replace('\u00a0', ' ').split("\\r\\n|[\\r\\n]");
         Map<String, Integer> standaloneCounts = new LinkedHashMap<>();
-        boolean hasExplicitCues = false;
+        // How often each name is written as a cue; a name in a weak cue counts once it repeats.
+        Map<String, Integer> cueCounts = new LinkedHashMap<>();
+        List<Cue> found = new ArrayList<>();
         for (String raw : rows) {
             String row = raw.trim();
             if (heading(row) == null && !isNote(row) && !isPageNumber(row) && !isNonScript(row)) {
-                if (explicitCue(row) != null) {
-                    hasExplicitCues = true;
-                } else {
-                    Cue cue = standaloneCue(row);
-                    if (cue != null) {
-                        String key = roleKey(cue.name);
-                        Integer count = standaloneCounts.get(key);
-                        standaloneCounts.put(key, count == null ? 1 : count + 1);
+                Cue cue = cueOf(row);
+                if (cue != null && !cue.label) {
+                    cueCounts.merge(roleKey(cue.name), 1, Integer::sum);
+                    found.add(cue);
+                } else if (cue == null) {
+                    Cue alone = standaloneCue(withoutLeadingDash(row));
+                    if (alone != null) {
+                        standaloneCounts.merge(roleKey(alone.name), 1, Integer::sum);
                     }
                 }
+            }
+        }
+        boolean hasExplicitCues = false;
+        // A weak style used by two or more characters who speak more than once is how this text
+        // writes cues, so a character in that style who speaks only once counts too.
+        Map<Integer, Set<String>> repeatingByStyle = new LinkedHashMap<>();
+        for (Cue cue : found) {
+            boolean repeats = cueCounts.get(roleKey(cue.name)) > 1;
+            hasExplicitCues |= !cue.weak || repeats;
+            if (cue.weak && repeats) {
+                repeatingByStyle.computeIfAbsent(cue.style, style -> new LinkedHashSet<>()).add(roleKey(cue.name));
+            }
+        }
+        Set<Integer> trustedStyles = new LinkedHashSet<>();
+        for (Map.Entry<Integer, Set<String>> style : repeatingByStyle.entrySet()) {
+            if (style.getValue().size() > 1) {
+                trustedStyles.add(style.getKey());
             }
         }
 
@@ -145,9 +176,14 @@ final class Scene {
                 continue;
             }
             if (parser.continuesNote()) {
-                parser.addText(row);
-                previousBlank = false;
-                continue;
+                Cue strong = cueOf(row);
+                if (heading(row) == null && (strong == null || strong.weak || strong.label)) {
+                    parser.addText(row);
+                    previousBlank = false;
+                    continue;
+                }
+                // A bracket left open by a typo or a lost line ends before a heading or a clear cue.
+                parser.closeNote();
             }
 
             String heading = heading(row);
@@ -156,9 +192,18 @@ final class Scene {
             } else if (isNote(row)) {
                 parser.addText(row);
             } else {
-                Cue cue = explicitCue(row);
+                Cue cue = cueOf(row);
+                if (cue != null && cue.label) {
+                    parser.addText("(" + balanced(row) + ")");
+                    previousBlank = false;
+                    continue;
+                }
+                if (cue != null && cue.weak && cueCounts.get(roleKey(cue.name)) < 2
+                    && !parser.hasRole(cue.name) && !trustedStyles.contains(cue.style)) {
+                    cue = null;
+                }
                 if (cue == null) {
-                    Cue candidate = standaloneCue(row);
+                    Cue candidate = standaloneCue(withoutLeadingDash(row));
                     if (candidate != null && !parser.awaitingDialogue() && nextIsDialogue(rows, i)
                         && (!hasExplicitCues || previousBlank
                             || standaloneCounts.get(roleKey(candidate.name)) > 1
@@ -256,28 +301,69 @@ final class Scene {
                 remaining = note.group(2) + " " + remaining;
             }
             if (isRoleName(name)) {
-                return new Cue(name, remaining.replaceFirst("^[:‒–—−-]\\s*", ""));
+                return new Cue(name, remaining.replaceFirst("^[:‒–—−-]\\s*", ""), Cue.STRONG,
+                    LABELS.contains(fold(name)));
             }
         }
 
         Matcher separated = CUE.matcher(row);
         if (separated.matches()) {
             String name = separated.group(1).trim();
+            String separator = row.substring(separated.end(separated.group(2) == null ? 1 : 2),
+                separated.start(3)).trim();
+            boolean colon = separator.startsWith(":");
+            int colonAt = row.indexOf(':', separated.end(1));
+            if (colon && colonAt > 0 && colonAt + 1 < row.length()
+                && Character.isDigit(row.charAt(colonAt - 1)) && Character.isDigit(row.charAt(colonAt + 1))) {
+                // "Saat 12:30'da gel." is a clock time, not a name and a line.
+                return null;
+            }
+            int style = Cue.STRONG;
             // Printed plays often end the name with a period before the dash: "ORGON. — Text".
-            if (!isRoleName(name) && name.endsWith(".") && separated.group(2) == null
-                && !row.substring(separated.end(1)).trim().startsWith(":")) {
+            if (!isRoleName(name) && name.endsWith(".") && separated.group(2) == null && !colon) {
                 String bare = name.substring(0, name.length() - 1).trim();
-                if (isRoleName(bare) && bare.equals(bare.toUpperCase(TURKISH))
-                    && !bare.equals(bare.toLowerCase(TURKISH))) {
+                if (isRoleName(bare) && !bare.equals(bare.toLowerCase(TURKISH))) {
+                    style = isCapitals(bare) ? Cue.STRONG : Cue.PERIOD_DASH;
                     name = bare;
                 }
             }
             if (isRoleName(name)) {
+                // A dash after an ordinary word is as likely a sentence as a cue: "Evet - dedi Ali".
+                if (style == Cue.STRONG && !colon && !isCapitals(name)) {
+                    style = Cue.DASH;
+                }
                 String aside = separated.group(2);
-                return new Cue(name, (aside == null ? "" : aside + " ") + separated.group(3));
+                return new Cue(name, (aside == null ? "" : aside + " ") + separated.group(3), style,
+                    colon && LABELS.contains(fold(name)));
             }
         }
         return null;
+    }
+
+    /**
+     * The cue a row starts with, if any. A dash before the name ("- AHMET: Text") is allowed;
+     * the cue is then weak unless the name is in capitals.
+     */
+    private static Cue cueOf(String row) {
+        Cue cue = explicitCue(row);
+        String bare = withoutLeadingDash(row);
+        if (cue != null || bare.equals(row)) {
+            return cue;
+        }
+        cue = explicitCue(bare);
+        if (cue == null) {
+            return null;
+        }
+        return new Cue(cue.name, cue.text, cue.weak || !isCapitals(cue.name) ? Cue.LEADING_DASH : Cue.STRONG,
+            cue.label);
+    }
+
+    private static String withoutLeadingDash(String row) {
+        return LEADING_DASH.matcher(row).replaceFirst("");
+    }
+
+    private static boolean isCapitals(String name) {
+        return name.equals(name.toUpperCase(TURKISH)) && !name.equals(name.toLowerCase(TURKISH));
     }
 
     private static Cue standaloneCue(String row) {
@@ -301,18 +387,39 @@ final class Scene {
             if (next.isEmpty() || isPageNumber(next) || isNote(next) || isNonScript(next)) {
                 continue;
             }
-            return !isHeading(next) && explicitCue(next) == null && standaloneCue(next) == null;
+            return !isHeading(next) && cueOf(next) == null && standaloneCue(withoutLeadingDash(next)) == null;
         }
         return false;
     }
 
     private static final class Cue {
+        static final int STRONG = 0;
+        /** "Ali - Text": an ordinary word before a dash. */
+        static final int DASH = 1;
+        /** "Orgon. — Text" with the name not in capitals. */
+        static final int PERIOD_DASH = 2;
+        /** "– Ahmet: Text": a dash before a name not in capitals. */
+        static final int LEADING_DASH = 3;
+
         final String name;
         final String text;
+        /** How the cue is written; any style but {@link #STRONG} could be an ordinary sentence. */
+        final int style;
+        /** Taken as a cue only when the name repeats or its style is how the text writes cues. */
+        final boolean weak;
+        /** "Yer:", "Not:": a label kept as a direction. */
+        final boolean label;
 
         Cue(String name, String text) {
+            this(name, text, STRONG, false);
+        }
+
+        Cue(String name, String text, int style, boolean label) {
             this.name = name;
             this.text = text;
+            this.style = style;
+            this.weak = style != STRONG;
+            this.label = label;
         }
     }
 
@@ -331,6 +438,20 @@ final class Scene {
 
         boolean continuesNote() {
             return noteDelimiters.length() > 0;
+        }
+
+        /** Closes brackets left open, keeping what was in them as a note. */
+        void closeNote() {
+            for (int i = noteDelimiters.length() - 1; i >= 0; i--) {
+                note.append(noteDelimiters.charAt(i));
+            }
+            noteDelimiters.setLength(0);
+            String closed = note.toString().replaceAll("\\s+([)\\]])", "$1").trim();
+            note.setLength(0);
+            if (!closed.isEmpty()) {
+                notes.add(closed);
+            }
+            appendSpace(dialogue);
         }
 
         boolean awaitingDialogue() {
