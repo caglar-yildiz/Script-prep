@@ -123,6 +123,7 @@
     <string name="step_counter">Étape %1$d sur %2$d</string>
     <string name="importing">Importation de ton texte…</string>
     <string name="importing_scanned">Lecture de la page numérisée %1$d sur %2$d…</string>
+    <string name="import_cancelling">Arrêt en cours…</string>
     <string name="pdf_pages_title">Quelles pages ?</string>
     <string name="pdf_pages_message">Ce PDF compte %1$d pages. Saisis les pages du PDF où ta pièce commence et se termine, %2$d au maximum à la fois. Le numéro de page du PDF peut différer de celui imprimé dans le livre.</string>
     <string name="pdf_pages_first">Première page</string>

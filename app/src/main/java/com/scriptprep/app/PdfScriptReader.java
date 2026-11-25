@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 final class PdfScriptReader extends PDFTextStripper {
     private static final long MAX_BYTES = 100L * 1024 * 1024;
@@ -47,6 +48,7 @@ final class PdfScriptReader extends PDFTextStripper {
     private int characters;
     private int scannedPages;
     private int includedPages;
+    private BooleanSupplier cancelled;
 
     private PdfScriptReader(int characterLimit) throws IOException {
         this.characterLimit = characterLimit;
@@ -87,7 +89,7 @@ final class PdfScriptReader extends PDFTextStripper {
         }
     }
 
-    static Source open(Context context, InputStream stream) throws IOException {
+    static Source open(Context context, InputStream stream, BooleanSupplier cancelled) throws IOException {
         // An import left by a closed app or a cancelled page choice is no longer needed.
         File[] leftovers = context.getCacheDir().listFiles((dir, name) -> name.startsWith(TEMP_PREFIX));
         if (leftovers != null) {
@@ -102,6 +104,7 @@ final class PdfScriptReader extends PDFTextStripper {
                 long size = 0;
                 int count;
                 while ((count = stream.read(buffer)) != -1) {
+                    ScriptImport.check(cancelled);
                     size += count;
                     if (size > MAX_BYTES) {
                         throw new ScriptImport.LengthLimitException();
@@ -134,8 +137,9 @@ final class PdfScriptReader extends PDFTextStripper {
      * the limit, reading stops at the end of the last whole page that fits.
      */
     static Result read(Context context, Source source, int firstPage, int lastPage,
-        int characterLimit, PdfOcr.Progress progress) throws IOException {
+        int characterLimit, PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
         PdfScriptReader reader = new PdfScriptReader(characterLimit);
+        reader.cancelled = cancelled;
         reader.setStartPage(firstPage);
         reader.setEndPage(lastPage);
         try (PDDocument document = load(context, source.file)) {
@@ -155,8 +159,10 @@ final class PdfScriptReader extends PDFTextStripper {
                 pageNumbers.add(firstPage - 1 + index);
             }
             try {
-                PdfOcr.read(source.file, pageNumbers, progress,
+                PdfOcr.read(source.file, pageNumbers, progress, cancelled,
                     (pageIndex, rows) -> reader.useRecognized(pageIndex - firstPage + 1, rows));
+            } catch (ScriptImport.CancelledException stopped) {
+                throw stopped;
             } catch (IOException | RuntimeException | LinkageError | OutOfMemoryError error) {
                 // Keep whatever the text layer had; with nothing at all this ends in NoTextException.
                 Log.w("ScriptPrep", "Could not read scanned pages", error);
@@ -215,7 +221,8 @@ final class PdfScriptReader extends PDFTextStripper {
     }
 
     @Override
-    protected void startPage(PDPage source) {
+    protected void startPage(PDPage source) throws IOException {
+        ScriptImport.check(cancelled);
         page = new ArrayList<>();
         pages.add(page);
     }

@@ -123,6 +123,7 @@
     <string name="step_counter">Paso %1$d de %2$d</string>
     <string name="importing">Importando tu texto…</string>
     <string name="importing_scanned">Leyendo la página escaneada %1$d de %2$d…</string>
+    <string name="import_cancelling">Deteniendo…</string>
     <string name="pdf_pages_title">¿Qué páginas?</string>
     <string name="pdf_pages_message">Este PDF tiene %1$d páginas. Escribe las páginas del PDF donde empieza y termina tu obra, hasta %2$d cada vez. El número de página del PDF puede no coincidir con el impreso en el libro.</string>
     <string name="pdf_pages_first">Primera página</string>

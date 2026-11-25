@@ -123,6 +123,7 @@
     <string name="step_counter">Etapa %1$d de %2$d</string>
     <string name="importing">Importando seu texto…</string>
     <string name="importing_scanned">Lendo a página digitalizada %1$d de %2$d…</string>
+    <string name="import_cancelling">Parando…</string>
     <string name="pdf_pages_title">Quais páginas?</string>
     <string name="pdf_pages_message">Este PDF tem %1$d páginas. Digite as páginas do PDF onde a sua peça começa e termina, até %2$d por vez. O número da página no PDF pode ser diferente do impresso no livro.</string>
     <string name="pdf_pages_first">Primeira página</string>

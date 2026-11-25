@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BooleanSupplier;
 
 final class ScriptImport {
     private ScriptImport() {}
@@ -62,7 +63,7 @@ final class ScriptImport {
         }
     }
 
-    static PdfFile openPdf(Context context, Uri uri) throws IOException {
+    static PdfFile openPdf(Context context, Uri uri, BooleanSupplier cancelled) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         // The text strip reader initializes PDFBox font resources in its superclass.
         PDFBoxResourceLoader.init(context);
@@ -70,16 +71,16 @@ final class ScriptImport {
             if (stream == null) {
                 throw new IOException("Missing stream");
             }
-            return new PdfFile(PdfScriptReader.open(context, stream), readTitle(resolver, uri));
+            return new PdfFile(PdfScriptReader.open(context, stream, cancelled), readTitle(resolver, uri));
         }
     }
 
     /** Reads pages {@code firstPage} to {@code lastPage} of the PDF and removes its copy. */
     static Result readPdf(Context context, PdfFile pdf, int firstPage, int lastPage, int lengthLimit,
-        PdfOcr.Progress progress) throws IOException {
+        PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
         try {
             PdfScriptReader.Result text = PdfScriptReader.read(context, pdf.source, firstPage, lastPage,
-                lengthLimit, progress);
+                lengthLimit, progress, cancelled);
             String title = pdf.title;
             if (firstPage > 1 || lastPage < pdf.source.pageCount) {
                 title = (title.isEmpty() ? "" : title + " ") + "(" + text.firstPage + "–" + text.lastPage + ")";
@@ -127,4 +128,14 @@ final class ScriptImport {
     }
 
     static final class LengthLimitException extends IOException {}
+
+    /** The user stopped the import. */
+    static final class CancelledException extends IOException {}
+
+    /** Throws {@link CancelledException} once the user has stopped the import. */
+    static void check(BooleanSupplier cancelled) throws CancelledException {
+        if (cancelled != null && cancelled.getAsBoolean()) {
+            throw new CancelledException();
+        }
+    }
 }

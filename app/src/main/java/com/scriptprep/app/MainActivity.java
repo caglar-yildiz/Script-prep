@@ -160,6 +160,8 @@ public final class MainActivity extends Activity {
     /** Progress shown while scanned PDF pages are read; null while the file itself is read. */
     private String importStatus;
     private TextView importLabel;
+    /** Set from the import screen's cancel button; the import thread checks it between steps. */
+    private volatile boolean importCancelled;
     private String activePreview;
 
     private Screen screen = Screen.HOME;
@@ -436,6 +438,7 @@ public final class MainActivity extends Activity {
         String narrator = getString(R.string.solo_role);
         importing = true;
         importStatus = null;
+        importCancelled = false;
         render();
         runImport(pdf, () -> {
             if (!pdf) {
@@ -443,7 +446,7 @@ public final class MainActivity extends Activity {
                     false, selectedCategory, narrator);
                 return;
             }
-            ScriptImport.PdfFile file = ScriptImport.openPdf(getApplicationContext(), uri);
+            ScriptImport.PdfFile file = ScriptImport.openPdf(getApplicationContext(), uri, () -> importCancelled);
             int pages = file.source.pageCount;
             if (pages > PAGE_CHOICE_FROM) {
                 main.post(() -> choosePages(file, selectedCategory, narrator));
@@ -462,6 +465,8 @@ public final class MainActivity extends Activity {
         imports.execute(() -> {
             try {
                 step.run();
+            } catch (ScriptImport.CancelledException error) {
+                main.post(this::finishImport);
             } catch (ScriptImport.LengthLimitException error) {
                 main.post(() -> failImport(R.string.import_too_long));
             } catch (PdfScriptReader.NoTextException error) {
@@ -478,13 +483,13 @@ public final class MainActivity extends Activity {
         TextCategory selectedCategory, String narrator) throws IOException {
         ScriptImport.Result result = ScriptImport.readPdf(getApplicationContext(), file, first, last,
             MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
-                getString(R.string.importing_scanned, done + 1, total))));
+                getString(R.string.importing_scanned, done + 1, total))), () -> importCancelled);
         deliverImport(result, true, selectedCategory, narrator);
     }
 
     /** A long PDF often holds more than the play, or the play starts late: ask which pages to read. */
     private void choosePages(ScriptImport.PdfFile file, TextCategory selectedCategory, String narrator) {
-        if (isDestroyed() || screen != Screen.SOURCE || category != selectedCategory) {
+        if (importCancelled || isDestroyed() || screen != Screen.SOURCE || category != selectedCategory) {
             file.source.close();
             finishImport();
             return;
@@ -573,8 +578,9 @@ public final class MainActivity extends Activity {
         ScriptLibrary.Script imported = result.script;
         Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
         main.post(() -> {
+            boolean wanted = !importCancelled;
             finishImport();
-            if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
+            if (wanted && !isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
                 String title = imported.title.trim();
                 openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
                     : title, imported.text);
@@ -604,7 +610,16 @@ public final class MainActivity extends Activity {
         return notice.toString();
     }
 
+    private void cancelImport() {
+        importCancelled = true;
+        importStatus = getString(R.string.import_cancelling);
+        render();
+    }
+
     private void showImportStatus(String status) {
+        if (importCancelled) {
+            return;
+        }
         importStatus = status;
         if (importing && importLabel != null) {
             importLabel.setText(status);
@@ -1655,6 +1670,11 @@ public final class MainActivity extends Activity {
             label.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
             loading.addView(label, weighted(16, ui));
             content.addView(loading, ui.spaced(24));
+            if (!importCancelled) {
+                LinearLayout cancel = ui.button(getString(android.R.string.cancel), R.drawable.ic_close,
+                    Kind.TEXT, view -> cancelImport());
+                content.addView(cancel, ui.wrapSpaced(8));
+            }
             return;
         }
 

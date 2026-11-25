@@ -123,6 +123,7 @@
     <string name="step_counter">Adım %1$d / %2$d</string>
     <string name="importing">Metnin içe aktarılıyor…</string>
     <string name="importing_scanned">Taranmış sayfa okunuyor: %1$d / %2$d…</string>
+    <string name="import_cancelling">Durduruluyor…</string>
     <string name="pdf_pages_title">Hangi sayfalar?</string>
     <string name="pdf_pages_message">Bu PDF’de %1$d sayfa var. Oyununun başladığı ve bittiği PDF sayfalarını yaz; bir seferde en fazla %2$d sayfa. PDF sayfa numarası kitapta yazan numaradan farklı olabilir.</string>
     <string name="pdf_pages_first">İlk sayfa</string>

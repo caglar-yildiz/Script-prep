@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -40,14 +41,15 @@ final class PdfOcr {
     private PdfOcr() {}
 
     /** Reads the given pages (zero-based) in order and hands each page's script rows to {@code sink}. */
-    static void read(File pdf, List<Integer> pages, Progress progress, PageSink sink)
-        throws IOException {
+    static void read(File pdf, List<Integer> pages, Progress progress, BooleanSupplier cancelled,
+        PageSink sink) throws IOException {
         TextRecognizer recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
         try (ParcelFileDescriptor descriptor =
                  ParcelFileDescriptor.open(pdf, ParcelFileDescriptor.MODE_READ_ONLY);
              PdfRenderer renderer = new PdfRenderer(descriptor)) {
             int done = 0;
             for (int index : pages) {
+                ScriptImport.check(cancelled);
                 if (progress != null) {
                     progress.page(done, pages.size());
                 }

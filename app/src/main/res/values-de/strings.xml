@@ -123,6 +123,7 @@
     <string name="step_counter">Schritt %1$d von %2$d</string>
     <string name="importing">Dein Text wird importiert…</string>
     <string name="importing_scanned">Gescannte Seite %1$d von %2$d wird gelesen…</string>
+    <string name="import_cancelling">Wird abgebrochen…</string>
     <string name="pdf_pages_title">Welche Seiten?</string>
     <string name="pdf_pages_message">Dieses PDF hat %1$d Seiten. Gib die PDF-Seiten ein, auf denen dein Stück beginnt und endet, höchstens %2$d auf einmal. Die PDF-Seitenzahl kann von der im Buch gedruckten abweichen.</string>
     <string name="pdf_pages_first">Erste Seite</string>
