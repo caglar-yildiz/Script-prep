@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Memo Everything – ekip provası videosu</title>
+<style>
+  /* App palette (Ui.java) */
+  :root {
+    --bg: #111015; --surface: #1B1A21; --surface-high: #25232D; --surface-highest: #312E3A;
+    --outline: #3A3645; --text: #F5F2F8; --text2: #B4ADBF; --text3: #827B8D;
+    --accent: #F4A98A; --on-accent: #2B1610; --accent-c: #3B2924; --on-accent-c: #FFD8C9;
+    --violet: #C9B6F2; --violet-c: #2C2640; --teal: #8FD3C1; --teal-c: #1C312D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+  body { font-family: "Inter", "DejaVu Sans", sans-serif; color: var(--text); position: relative; }
+  .layer { position: absolute; inset: 0; }
+  .glow { position: absolute; width: 1400px; height: 1400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(244,169,138,0.22), rgba(244,169,138,0) 62%); }
+  .glow.v { background: radial-gradient(circle, rgba(201,182,242,0.18), rgba(201,182,242,0) 62%); }
+
+  /* Hook */
+  #hook { display: flex; flex-direction: column; justify-content: center; padding: 0 110px; }
+  #hook .big { font-size: 104px; font-weight: 800; line-height: 1.08; letter-spacing: -2px; }
+  #hook .big span { display: inline-block; }
+  #hook .answer { margin-top: 70px; font-size: 62px; font-weight: 600; color: var(--accent); line-height: 1.2; }
+
+  /* Captions */
+  .caption { position: absolute; left: 90px; right: 90px; top: 120px; }
+  .caption h2 { font-size: 76px; font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; }
+  .caption p { margin-top: 24px; font-size: 38px; color: var(--text2); line-height: 1.3; }
+
+  /* Phone */
+  #phone { position: absolute; left: 160px; top: 470px; width: 760px; height: 1390px;
+    border-radius: 86px; background: #000; padding: 22px; box-shadow: 0 40px 120px rgba(0,0,0,0.6),
+    0 0 0 3px #2a2731; }
+  #screen { position: relative; width: 100%; height: 100%; border-radius: 66px; overflow: hidden;
+    background: var(--bg); }
+  .notch { position: absolute; top: 22px; left: 50%; width: 30px; height: 30px; margin-left: -15px;
+    border-radius: 50%; background: #000; z-index: 5; }
+  .page { position: absolute; inset: 0; padding: 110px 44px 40px; }
+  .bar { display: flex; align-items: center; gap: 18px; font-size: 30px; color: var(--text2); margin-bottom: 30px; }
+  .bar .icon { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-high); }
+  .title { font-size: 46px; font-weight: 700; margin-bottom: 10px; }
+  .sub { font-size: 28px; color: var(--text2); margin-bottom: 34px; }
+  .card { background: var(--surface); border: 2px solid #292631; border-radius: 34px; padding: 30px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .tile { min-height: 250px; position: relative; overflow: hidden; }
+  .tile .ic { width: 76px; height: 76px; border-radius: 24px; background: var(--accent-c);
+    display: flex; align-items: center; justify-content: center; }
+  .tile .ic svg { width: 40px; height: 40px; fill: var(--accent); }
+  .tile h4 { font-size: 31px; font-weight: 700; margin-top: 26px; }
+  .tile p { font-size: 23px; color: var(--text2); margin-top: 8px; line-height: 1.3; }
+  .ripple { position: absolute; border-radius: 50%; background: rgba(244,169,138,0.35); }
+  .chip { display: inline-flex; align-items: center; height: 58px; padding: 0 26px; border-radius: 999px;
+    background: var(--surface-highest); font-size: 27px; font-weight: 600; margin: 0 10px 12px 0; }
+  .chip.on { background: var(--accent); color: var(--on-accent); }
+  .loading { display: flex; align-items: center; gap: 28px; padding: 40px 34px; }
+  .spinner { width: 58px; height: 58px; border-radius: 50%; border: 7px solid rgba(244,169,138,0.25);
+    border-top-color: var(--accent); }
+  .loading span { font-size: 29px; font-weight: 600; white-space: nowrap; }
+  .dialog { position: absolute; left: 30px; right: 30px; top: 250px; background: var(--surface-high);
+    border-radius: 40px; padding: 44px 40px; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .dialog h3 { font-size: 38px; font-weight: 700; margin-bottom: 26px; }
+  .dialog .count { font-size: 32px; color: var(--text2); margin-bottom: 26px; }
+  .dialog .label { font-size: 26px; color: var(--text3); margin: 10px 0 16px; text-transform: uppercase; letter-spacing: 2px; }
+  .dialog .section { font-size: 29px; color: var(--text); padding: 14px 0; border-top: 2px solid var(--outline); }
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+  .role-chip { background: var(--violet-c); color: var(--violet); }
+
+  /* Rehearsal */
+  .progress { height: 10px; border-radius: 5px; background: var(--surface-highest); margin-bottom: 40px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
+  .line { margin-bottom: 26px; }
+  .who { font-size: 26px; font-weight: 700; letter-spacing: 2px; margin-bottom: 14px; }
+  .said { font-family: "DejaVu Serif", Georgia, serif; font-size: 40px; line-height: 1.38; }
+  .said .w { color: var(--text3); }
+  .said .w.lit { color: var(--text); }
+  .mine { background: var(--accent-c); border-color: #4a332c; }
+  .mine .who { color: var(--accent); }
+  .mine .said { color: var(--on-accent-c); }
+  .waves { display: flex; gap: 8px; align-items: center; height: 60px; margin-top: 18px; }
+  .waves b { display: block; width: 10px; border-radius: 5px; background: var(--violet); }
+  .mic { display: flex; align-items: center; gap: 22px; margin-top: 26px; font-size: 28px; color: var(--accent); font-weight: 600; }
+  .mic .dot { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); position: relative; }
+  .mic .ring { position: absolute; inset: 0; border-radius: 50%; border: 5px solid var(--accent); }
+  .button { position: absolute; left: 44px; right: 44px; bottom: 60px; height: 112px; border-radius: 56px;
+    background: var(--accent); color: var(--on-accent); font-size: 34px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .hiddenline { font-size: 32px; color: var(--on-accent-c); opacity: 0.75; font-style: italic; }
+
+  /* End card */
+  #end { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end .mark { width: 300px; height: 300px; border-radius: 80px; background: #241D2B;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 30px 90px rgba(0,0,0,0.5); }
+  #end .mark svg { width: 300px; height: 300px; }
+  #end h1 { font-size: 100px; font-weight: 800; letter-spacing: -2px; margin-top: 70px; }
+  #end .tag { font-size: 52px; color: var(--accent); font-weight: 600; margin-top: 22px; }
+  #end .facts { margin-top: 70px; display: flex; flex-direction: column; gap: 22px; font-size: 36px; color: var(--text2); }
+  #end .store { margin-top: 90px; height: 120px; padding: 0 60px; border-radius: 60px; background: var(--text);
+    color: var(--bg); font-size: 40px; font-weight: 700; display: flex; align-items: center; }
+
+  /* Ensemble */
+  .code { font-family: "Inter", sans-serif; font-size: 76px; font-weight: 800; letter-spacing: 14px;
+    color: var(--accent); margin: 18px 0 10px; }
+  .btnrow { display: flex; gap: 16px; margin-top: 22px; }
+  .btn { height: 84px; padding: 0 34px; border-radius: 42px; display: flex; align-items: center;
+    font-size: 28px; font-weight: 700; }
+  .btn.primary { background: var(--accent); color: var(--on-accent); }
+  .btn.ghost { background: var(--surface-highest); color: var(--text); }
+  .bubble { position: absolute; left: 60px; right: 60px; bottom: 70px; background: #DCF8C6; color: #111;
+    border-radius: 34px 34px 8px 34px; padding: 30px 34px; font-size: 30px; line-height: 1.35;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4); }
+  .bubble small { display: block; margin-top: 10px; font-size: 22px; color: #667; text-align: right; }
+  .role { display: flex; align-items: center; gap: 24px; padding: 26px 0; border-top: 2px solid var(--outline); }
+  .role:first-of-type { border-top: 0; }
+  .avatar { width: 76px; height: 76px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 32px; font-weight: 800; flex: none; }
+  .role .name { font-size: 32px; font-weight: 700; }
+  .role .who2 { font-size: 26px; color: var(--text2); margin-top: 6px; }
+  .role .open { color: var(--text3); font-style: italic; }
+  .recbtn { width: 150px; height: 150px; border-radius: 50%; background: #FF8F86; margin: 30px auto 0;
+    display: flex; align-items: center; justify-content: center; position: relative; }
+  .recbtn i { width: 54px; height: 54px; border-radius: 12px; background: #3a1210; display: block; }
+  .recbtn .ring { position: absolute; inset: 0; border-radius: 50%; border: 6px solid #FF8F86; }
+  .recstate { text-align: center; font-size: 30px; font-weight: 700; margin-top: 22px; }
+  .timer { text-align: center; font-size: 26px; color: var(--text2); margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .check { display: inline-block; width: 40px; height: 40px; border-radius: 50%; background: var(--teal);
+    color: #0d2420; font-size: 28px; line-height: 40px; text-align: center; margin-right: 12px; font-weight: 800; }
+  .playing { display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: 25px; color: var(--teal); }
+  .small-avatar { width: 52px; height: 52px; border-radius: 50%; font-size: 24px; font-weight: 800;
+    display: flex; align-items: center; justify-content: center; }
+  .hint { font-size: 25px; color: var(--text3); line-height: 1.4; margin-top: 10px; }
+  .waves.teal b { background: var(--teal); }
+  .waves.rec b { background: #FF8F86; }
+</style>
+</head>
+<body>
+<div class="glow" id="glow1"></div>
+<div class="glow v" id="glow2"></div>
+
+<div class="layer" id="hook">
+  <div class="big" id="hookWords"></div>
+  <div class="answer" id="hookAnswer" data-t="answer"></div>
+</div>
+
+<div class="caption" id="cap1"><h2 data-t="cap1"></h2><p data-t="cap1s"></p></div>
+<div class="caption" id="cap2"><h2 data-t="cap2"></h2><p data-t="cap2s"></p></div>
+<div class="caption" id="cap3"><h2 data-t="cap3"></h2><p data-t="cap3s"></p></div>
+<div class="caption" id="cap4"><h2 data-t="cap4"></h2><p data-t="cap4s"></p></div>
+
+<div id="phone">
+  <div id="screen">
+    <div class="notch"></div>
+
+    <!-- 1. Share and invite -->
+    <div class="page" id="pInvite">
+      <div class="bar"><div class="icon"></div><span data-t="ensemble"></span></div>
+      <div class="title" data-t="play"></div>
+      <div class="sub" data-t="playSub"></div>
+      <div class="card">
+        <div class="label" style="font-size: 26px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase" data-t="inviteCode"></div>
+        <div class="code">K7QP4Z</div>
+        <div class="hint" data-t="inviteDetail"></div>
+        <div class="btnrow">
+          <div class="btn primary" id="sendBtn" data-t="sendCode"></div>
+          <div class="btn ghost" data-t="copy"></div>
+        </div>
+      </div>
+      <div class="bubble" id="bubble"><span data-t="message"></span><small>21:04 ✓✓</small></div>
+    </div>
+
+    <!-- 2. Roles -->
+    <div class="page" id="pRoles">
+      <div class="bar"><div class="icon"></div><span data-t="ensemble"></span></div>
+      <div class="title" data-t="play"></div>
+      <div class="sub" data-t="rolesTitle"></div>
+      <div class="card" id="roleList"></div>
+      <div class="btnrow"><div class="btn primary" data-t="rehearse"></div><div class="btn ghost" data-t="recordTitle"></div></div>
+    </div>
+
+    <!-- 3. Record my lines -->
+    <div class="page" id="pRecord">
+      <div class="bar"><div class="icon"></div><span data-t="recordTitle"></span></div>
+      <div class="sub" id="recProgress" style="margin-bottom: 26px"></div>
+      <div class="progress"><i id="recBar"></i></div>
+      <div class="card line">
+        <div class="who" style="color: var(--violet)" data-t="cue"></div>
+        <div class="said" style="color: var(--text2); font-size: 34px" data-t="cueLine"></div>
+      </div>
+      <div class="card line mine">
+        <div class="who" data-t="yourLine"></div>
+        <div class="said" data-t="mineLine"></div>
+      </div>
+      <div class="recbtn" id="recBtn"><div class="ring" id="recRing"></div><i id="recIcon"></i><b id="recCheck" style="font-size: 76px; color: var(--teal)">✓</b></div>
+      <div class="recstate" id="recState"></div>
+      <div class="waves rec" id="recWaves" style="justify-content: center"></div>
+    </div>
+
+    <!-- 4. Rehearsal with cast recordings -->
+    <div class="page" id="pRehearse">
+      <div class="bar"><div class="icon"></div><span data-t="scene"></span></div>
+      <div class="progress"><i id="prog"></i></div>
+      <div class="card line" id="castLine">
+        <div class="who" style="color: var(--violet)" data-t="partnerRole"></div>
+        <div class="said" id="castText"></div>
+        <div class="playing"><div class="small-avatar" style="background: var(--violet-c); color: var(--violet)" data-t="partnerInitial"></div><span data-t="playing"></span></div>
+        <div class="waves teal" id="castWaves"></div>
+      </div>
+      <div class="card line mine" id="myTurn">
+        <div class="who" data-t="yourTurn"></div>
+        <div class="said" id="myText"></div>
+      </div>
+      <div class="hint" data-t="recordingsHint"></div>
+    </div>
+  </div>
+</div>
+
+<div class="layer" id="end">
+  <div class="mark"><svg viewBox="0 0 108 108"><path fill="#F3BDA4" d="M28,49 C27,43 31,36 38,32 C42,30 46,29 48,31 C50,33 49,35 46,36 C42,38 40,41 40,45 C45,44 50,47 54,51 C54,43 59,35 67,31 C71,29 75,29 76,32 C78,34 76,36 73,37 C69,39 67,42 66,45 C75,44 83,53 83,63 L83,74 C83,77 81,79 78,79 L73,79 C70,79 68,77 68,74 L68,65 C68,62 66,60 64,60 C61,60 59,62 59,65 L59,74 C59,77 57,79 54,79 L51,79 C48,79 46,77 46,74 L46,65 C46,62 44,60 42,60 C39,60 37,62 37,65 L37,74 C37,77 35,79 32,79 L28,79 C25,79 23,77 23,74 L23,62 C23,56 25,52 28,49 Z"/></svg></div>
+  <h1>Memo Everything</h1>
+  <div class="tag" data-t="tag"></div>
+  <div class="facts" id="facts"><div data-t="fact1"></div><div data-t="fact2"></div></div>
+  <div class="store" id="store" data-t="store"></div>
+</div>
+
+<script>
+  const DURATION = 30;
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const ease = t => 1 - Math.pow(1 - clamp(t), 3);
+  const ramp = (t, start, d) => ease((t - start) / d);
+  const span = (t, a, b, d = 0.35) => Math.min(ramp(t, a, d), 1 - ramp(t, b - d, d));
+  const $ = id => document.getElementById(id);
+  const show = (el, o, dy = 0, scale = 1) => {
+    el.style.opacity = o;
+    el.style.transform = `translateY(${dy}px) scale(${scale})`;
+    el.style.visibility = o <= 0.001 ? 'hidden' : 'visible';
+  };
+
+  // Phone texts follow the app's strings (ensemble_*, record_*); people and lines are made up.
+  const TEXTS = {
+    tr: {
+      hook: 'Ekip her akşam bir araya gelemiyor mu?', answer: 'Memo Everything ile ayrı yerlerde, birlikte prova edin.',
+      cap1: 'Oyununu ekibinle paylaş', cap1s: 'Davet koduyla herkes gruba katılır.',
+      cap2: 'Herkes kendi rolünü seçer', cap2s: 'Kimin hangi rolü aldığını herkes görür.',
+      cap3: 'Repliklerini bir kez kaydet', cap3s: 'Ekibin provasında senin sesinle çalar.',
+      cap4: 'Ekip arkadaşlarının kendi sesiyle prova et', cap4s: 'Kaydı olmayan replikleri cihaz sesi okur.',
+      ensemble: 'Ekip provası', play: 'Kuşlar', playSub: 'Grup sahibi · 3 rol',
+      inviteCode: 'Davet kodu', inviteDetail: 'Bu kodu ekibine gönder. Kodu bilen herkes gruba katılabilir.',
+      sendCode: 'Kodu gönder', copy: 'Kopyala',
+      message: 'Memo Everything’de “Kuşlar” grubuna K7QP4Z koduyla katıl',
+      rolesTitle: 'Roller', open: 'Boş', you: n => `${n} (sen)`, rehearse: 'Prova et', recordTitle: 'Repliklerimi kaydet',
+      cast: [['AYŞE', 'Elif', 'E', 0], ['MEHMET', 'Can', 'C', 10.0], ['DOKTOR', 'Deniz', 'D', 11.2]],
+      progress: (n, total) => `${total} replikten ${n} tanesi kaydedildi`,
+      cue: 'İPUCU · MEHMET', cueLine: 'Sabah oldu mu? Kuşlar çoktan ötmeye başladı.',
+      yourLine: 'SEN · AYŞE · 4/12', mineLine: 'Pencereyi aç, bir de sen dinle.',
+      recording: 'Kaydediliyor…', saved: 'Kaydedildi', record: 'Kaydet',
+      scene: 'I. PERDE · 1. Sahne', partnerRole: 'MEHMET', partnerInitial: 'C',
+      partnerLine: 'Sabah oldu mu? Kuşlar çoktan ötmeye başladı.', playing: 'Ekip arkadaşının kaydı çalıyor…',
+      yourTurn: 'SIRA SENDE · AYŞE', myLine: 'P· a·, b· d· s· d·.',
+      recordingsHint: 'Kaydedilen replikler herkesin provasında oyuncunun kendi sesiyle çalar; kalanları cihaz sesi okur.',
+      tag: 'Ayrı yerlerde, birlikte prova.', fact1: 'Davet koduyla katıl · Rolünü seç',
+      fact2: 'Repliklerini kaydet · Ekibinin sesiyle çalış', store: 'Android için'
+    },
+    en: {
+      hook: 'Can’t get the whole cast together?', answer: 'With Memo Everything, rehearse together, even apart.',
+      cap1: 'Share your play with your cast', cap1s: 'One invite code and everyone’s in.',
+      cap2: 'Everyone picks their role', cap2s: 'See who is playing whom.',
+      cap3: 'Record your lines once', cap3s: 'They play in everyone’s rehearsal, in your voice.',
+      cap4: 'Rehearse with your castmates’ own voices', cap4s: 'Lines nobody recorded are read by the device voice.',
+      ensemble: 'Ensemble rehearsal', play: 'Birds', playSub: 'Owner · 3 roles',
+      inviteCode: 'Invite code', inviteDetail: 'Send this code to your cast. Anyone with it can join the group.',
+      sendCode: 'Send code', copy: 'Copy',
+      message: 'Join “Birds” in Memo Everything with the code K7QP4Z',
+      rolesTitle: 'Roles', open: 'Not taken', you: n => `${n} (you)`, rehearse: 'Rehearse', recordTitle: 'Record my lines',
+      cast: [['ANNA', 'Emma', 'E', 0], ['MARK', 'Leo', 'L', 10.0], ['DOCTOR', 'Sam', 'S', 11.2]],
+      progress: (n, total) => `${n} of ${total} lines recorded`,
+      cue: 'CUE · MARK', cueLine: 'Is it morning yet? The birds have started singing.',
+      yourLine: 'YOU · ANNA · 4/12', mineLine: 'Open the window and listen with me.',
+      recording: 'Recording…', saved: 'Recorded', record: 'Record',
+      scene: 'ACT I · Scene 1', partnerRole: 'MARK', partnerInitial: 'L',
+      partnerLine: 'Is it morning yet? The birds have started singing.', playing: 'Playing the cast member’s recording…',
+      yourTurn: 'YOUR TURN · ANNA', myLine: 'O· t· w· a· l· w· m·.',
+      recordingsHint: 'Recorded lines play in everyone’s rehearsal in the actor’s own voice; the rest are read by the device voice.',
+      tag: 'Rehearse together, even apart.', fact1: 'Join with a code · Pick your role',
+      fact2: 'Record your lines · Rehearse with your cast’s voices', store: 'For Android'
+    }
+  };
+  const LANG = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'tr';
+  const T = TEXTS[LANG];
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T[el.dataset.t]; });
+
+  $('hookWords').innerHTML = T.hook.split(' ').map(w => `<span>${w}</span>`).join(' ');
+  const colors = [['var(--accent-c)', 'var(--accent)'], ['var(--violet-c)', 'var(--violet)'], ['var(--teal-c)', 'var(--teal)']];
+  $('roleList').innerHTML = T.cast.map(([role], i) => `
+    <div class="role"><div class="avatar" id="av${i}"></div>
+      <div><div class="name">${role}</div><div class="who2" id="who${i}"></div></div></div>`).join('');
+  const castWords = T.partnerLine.split(' ');
+  $('castText').innerHTML = castWords.map(w => `<span class="w">${w}</span>`).join(' ');
+  $('castWaves').innerHTML = Array.from({length: 24}, () => '<b></b>').join('');
+  $('recWaves').innerHTML = Array.from({length: 20}, () => '<b></b>').join('');
+  $('myText').textContent = T.myLine;
+
+  function waves(el, t, on, seed) {
+    [...el.children].forEach((b, i) => {
+      b.style.height = (on ? 12 + Math.abs(Math.sin(t * 9 + i * 0.7 + seed) * Math.cos(t * 5.3 + i * 1.3)) * 44 : 8) + 'px';
+    });
+  }
+
+  function render(t) {
+    $('glow1').style.left = (-500 + Math.sin(t * 0.35) * 120) + 'px';
+    $('glow1').style.top = (-400 + Math.cos(t * 0.3) * 120) + 'px';
+    $('glow2').style.left = (300 + Math.cos(t * 0.28) * 140) + 'px';
+    $('glow2').style.top = (1000 + Math.sin(t * 0.33) * 140) + 'px';
+
+    // Hook (0 – 3.4)
+    show($('hook'), t < 0.4 ? 1 : span(t, 0, 3.4, 0.4));
+    [...$('hookWords').children].forEach((w, i) => {
+      const o = ramp(t, 0.15 + i * 0.2, 0.4);
+      show(w, o, (1 - o) * 40);
+    });
+    const answer = ramp(t, 1.7, 0.5);
+    show($('hookAnswer'), answer, (1 - answer) * 30);
+
+    const phoneIn = ramp(t, 3.1, 0.7);
+    const phoneOut = ramp(t, 25.6, 0.6);
+    show($('phone'), Math.min(phoneIn, 1 - phoneOut), (1 - phoneIn) * 500 + phoneOut * 120);
+    const caps = [['cap1', 3.3, 8.8], ['cap2', 8.8, 13.2], ['cap3', 13.2, 19.4], ['cap4', 19.4, 25.8]];
+    for (const [id, a, b] of caps) {
+      show($(id), span(t, a, b, 0.4), (1 - ramp(t, a, 0.4)) * 30);
+    }
+
+    // 1. Invite (3.2 – 8.8)
+    show($('pInvite'), 1 - ramp(t, 8.6, 0.3));
+    $('sendBtn').style.transform = `scale(${t > 5.2 && t < 5.5 ? 0.94 : 1})`;
+    const bubble = ramp(t, 5.7, 0.45);
+    show($('bubble'), bubble, (1 - bubble) * 80);
+
+    // 2. Roles (8.6 – 13.2): castmates take their roles one by one.
+    show($('pRoles'), span(t, 8.6, 13.3, 0.3));
+    T.cast.forEach(([role, person, initial, at], i) => {
+      const taken = i === 0 || t >= at;
+      const av = $('av' + i);
+      av.textContent = taken ? initial : '';
+      av.style.background = taken ? colors[i][0] : 'var(--surface-highest)';
+      av.style.color = colors[i][1];
+      const pop = i === 0 ? 1 : ramp(t, at, 0.35);
+      av.style.transform = `scale(${taken ? 0.7 + pop * 0.3 : 1})`;
+      const who = $('who' + i);
+      who.textContent = taken ? (i === 0 ? T.you(person) : person) : T.open;
+      who.className = 'who2' + (taken ? '' : ' open');
+    });
+
+    // 3. Record (13.1 – 19.5)
+    show($('pRecord'), span(t, 13.1, 19.6, 0.3));
+    const recording = t >= 14.2 && t < 17.2;
+    const saved = t >= 17.2;
+    $('recProgress').textContent = T.progress(saved ? 4 : 3, 12);
+    $('recBar').style.width = ((saved ? 4 : 3) / 12 * 100) + '%';
+    $('recIcon').style.borderRadius = recording ? '12px' : '50%';
+    $('recIcon').style.width = $('recIcon').style.height = recording ? '54px' : '62px';
+    $('recIcon').style.display = saved ? 'none' : 'block';
+    $('recCheck').style.display = saved ? 'block' : 'none';
+    const pulse = (t * 1.2) % 1;
+    $('recRing').style.transform = `scale(${recording ? 1 + pulse * 0.5 : 1})`;
+    $('recRing').style.opacity = recording ? 1 - pulse : 0;
+    const secs = Math.floor(clamp(t - 14.2, 0, 3));
+    $('recState').innerHTML = saved ? `<span class="check">✓</span>${T.saved}`
+      : recording ? `${T.recording} 0:0${secs}` : T.record;
+    $('recBtn').style.background = saved ? 'var(--teal-c)' : '#FF8F86';
+    show($('recBtn'), 1);
+    waves($('recWaves'), t, recording, 1);
+    show($('recWaves'), recording ? 1 : 0);
+
+    // 4. Rehearse with recordings (19.4 – 25.8)
+    show($('pRehearse'), ramp(t, 19.4, 0.3));
+    $('prog').style.width = (20 + ramp(t, 19.5, 6) * 25) + '%';
+    const spoken = (t - 20.0) / 2.8 * castWords.length;
+    [...$('castText').children].forEach((w, i) => w.classList.toggle('lit', i < spoken));
+    waves($('castWaves'), t, t > 19.9 && t < 22.9, 0);
+    const mine = ramp(t, 23.0, 0.4);
+    show($('myTurn'), 0.35 + mine * 0.65);
+
+    // End card (26 – 30)
+    const end = ramp(t, 26.1, 0.6);
+    show($('end'), end, (1 - end) * 40);
+    const facts = ramp(t, 26.9, 0.5);
+    show($('facts'), facts, (1 - facts) * 20);
+    const store = ramp(t, 27.5, 0.5);
+    show($('store'), store, 0, 0.9 + store * 0.1);
+  }
+  window.render = render;
+  window.DURATION = DURATION;
+  render(0);
+</script>
+</body>
+</html>
