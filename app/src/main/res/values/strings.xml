@@ -132,7 +132,9 @@
     <string name="pdf_pages_import">Import</string>
     <string name="pdf_pages_invalid">Enter a page from 1 to %1$d.</string>
     <string name="pdf_pages_too_many">Choose at most %1$d pages at a time.</string>
-    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Import pages %3$d–%4$d again as a separate text.</string>
+    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Use the button above the text to import pages %3$d–%4$d next.</string>
+    <string name="pdf_rest_message">Pages %1$d–%2$d of this PDF did not fit in this text.</string>
+    <string name="pdf_rest_import">Save and import the next pages</string>
     <string name="source_pdf_details">Text PDF or scanned pages</string>
     <string name="source_txt_details">Plain UTF-8 text file</string>
     <string name="source_paste_details">Use the text you copied</string>

@@ -131,7 +131,9 @@
     <string name="pdf_pages_import">İçe aktar</string>
     <string name="pdf_pages_invalid">1 ile %1$d arasında bir sayfa yaz.</string>
     <string name="pdf_pages_too_many">Bir seferde en fazla %1$d sayfa seçebilirsin.</string>
-    <string name="pdf_pages_cut_short">%1$d–%2$d. sayfalar aktarıldı; metin sınırına burada ulaşıldı. %3$d–%4$d. sayfaları yeniden, ayrı bir metin olarak aktar.</string>
+    <string name="pdf_pages_cut_short">%1$d–%2$d. sayfalar aktarıldı; metin sınırına burada ulaşıldı. %3$d–%4$d. sayfaları metnin üstündeki düğmeyle sonraki metin olarak aktarabilirsin.</string>
+    <string name="pdf_rest_message">Bu PDF’in %1$d–%2$d. sayfaları bu metne sığmadı.</string>
+    <string name="pdf_rest_import">Kaydet ve sonraki sayfaları aktar</string>
     <string name="source_pdf_details">Metin içeren ya da taranmış PDF</string>
     <string name="source_txt_details">UTF-8 düz metin dosyası</string>
     <string name="source_paste_details">Kopyaladığın metni kullan</string>

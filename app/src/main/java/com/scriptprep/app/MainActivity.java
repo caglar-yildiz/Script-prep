@@ -160,6 +160,8 @@ public final class MainActivity extends Activity {
     /** Progress shown while scanned PDF pages are read; null while the file itself is read. */
     private String importStatus;
     private TextView importLabel;
+    /** Pages left after an import that reached the text limit; offered in the editor. */
+    private RemainingPages remainingPages;
     /** Set from the import screen's cancel button; the import thread checks it between steps. */
     private volatile boolean importCancelled;
     private String activePreview;
@@ -433,7 +435,14 @@ public final class MainActivity extends Activity {
         if (uri == null) {
             return;
         }
-        boolean pdf = requestCode == IMPORT_PDF;
+        startImport(uri, requestCode == IMPORT_PDF, 0, 0);
+    }
+
+    /**
+     * Reads a picked file. For a PDF, {@code firstPage} and {@code lastPage} (from 1) choose the
+     * pages; 0 reads a short PDF whole and asks which pages of a long one to read.
+     */
+    private void startImport(Uri uri, boolean pdf, int firstPage, int lastPage) {
         TextCategory selectedCategory = category;
         String narrator = getString(R.string.solo_role);
         importing = true;
@@ -443,17 +452,33 @@ public final class MainActivity extends Activity {
         runImport(pdf, () -> {
             if (!pdf) {
                 deliverImport(ScriptImport.readText(getApplicationContext(), uri, MAX_SCRIPT_LENGTH),
-                    false, selectedCategory, narrator);
+                    null, selectedCategory, narrator);
                 return;
             }
             ScriptImport.PdfFile file = ScriptImport.openPdf(getApplicationContext(), uri, () -> importCancelled);
             int pages = file.source.pageCount;
-            if (pages > PAGE_CHOICE_FROM) {
-                main.post(() -> choosePages(file, selectedCategory, narrator));
+            if (firstPage > 0) {
+                readPdfPages(uri, file, Math.min(firstPage, pages), Math.min(lastPage, pages),
+                    selectedCategory, narrator);
+            } else if (pages > PAGE_CHOICE_FROM) {
+                main.post(() -> choosePages(uri, file, selectedCategory, narrator));
             } else {
-                readPdfPages(file, 1, pages, selectedCategory, narrator);
+                readPdfPages(uri, file, 1, pages, selectedCategory, narrator);
             }
         });
+    }
+
+    /** The pages of an imported PDF that did not fit, to import next as a separate text. */
+    private static final class RemainingPages {
+        final Uri uri;
+        final int firstPage;
+        final int lastPage;
+
+        RemainingPages(Uri uri, int firstPage, int lastPage) {
+            this.uri = uri;
+            this.firstPage = firstPage;
+            this.lastPage = lastPage;
+        }
     }
 
     /** Work that runs off the main thread while the import spinner shows. */
@@ -479,16 +504,16 @@ public final class MainActivity extends Activity {
     }
 
     /** Runs on the import thread. */
-    private void readPdfPages(ScriptImport.PdfFile file, int first, int last,
+    private void readPdfPages(Uri uri, ScriptImport.PdfFile file, int first, int last,
         TextCategory selectedCategory, String narrator) throws IOException {
         ScriptImport.Result result = ScriptImport.readPdf(getApplicationContext(), file, first, last,
             MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
                 getString(R.string.importing_scanned, done + 1, total))), () -> importCancelled);
-        deliverImport(result, true, selectedCategory, narrator);
+        deliverImport(result, uri, selectedCategory, narrator);
     }
 
     /** A long PDF often holds more than the play, or the play starts late: ask which pages to read. */
-    private void choosePages(ScriptImport.PdfFile file, TextCategory selectedCategory, String narrator) {
+    private void choosePages(Uri uri, ScriptImport.PdfFile file, TextCategory selectedCategory, String narrator) {
         if (importCancelled || isDestroyed() || screen != Screen.SOURCE || category != selectedCategory) {
             file.source.close();
             finishImport();
@@ -552,7 +577,7 @@ public final class MainActivity extends Activity {
             }
             dialog.dismiss();
             hideKeyboard();
-            runImport(true, () -> readPdfPages(file, first, last, selectedCategory, narrator));
+            runImport(true, () -> readPdfPages(uri, file, first, last, selectedCategory, narrator));
         }));
         dialog.show();
     }
@@ -572,15 +597,18 @@ public final class MainActivity extends Activity {
         }
     }
 
-    /** Runs on the import thread: parses the result and opens it in the editor. */
-    private void deliverImport(ScriptImport.Result result, boolean pdf, TextCategory selectedCategory,
+    /** Runs on the import thread: parses the result and opens it in the editor. {@code pdf} is null for text. */
+    private void deliverImport(ScriptImport.Result result, Uri pdf, TextCategory selectedCategory,
         String narrator) {
+        boolean isPdf = pdf != null;
         ScriptLibrary.Script imported = result.script;
-        Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
+        Scene preview = isPdf ? selectedCategory.parse(imported.text, narrator) : null;
         main.post(() -> {
             boolean wanted = !importCancelled;
             finishImport();
             if (wanted && !isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
+                remainingPages = result.cutShort()
+                    ? new RemainingPages(pdf, result.lastPage + 1, result.requestedLastPage) : null;
                 String title = imported.title.trim();
                 openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
                     : title, imported.text);
@@ -1836,6 +1864,15 @@ public final class MainActivity extends Activity {
         chips.addView(languageChip, languageParams);
         content.addView(chips, ui.wrapSpaced(8));
 
+        if (remainingPages != null) {
+            LinearLayout rest = ui.card(ACCENT_CONTAINER, null);
+            rest.addView(ui.text(getString(R.string.pdf_rest_message, remainingPages.firstPage,
+                remainingPages.lastPage), Type.BODY, ON_ACCENT_CONTAINER), Ui.matchWidth());
+            rest.addView(ui.button(getString(R.string.pdf_rest_import), R.drawable.ic_pdf, Kind.TEXT,
+                view -> saveAndImportRest()), ui.wrapSpaced(4));
+            content.addView(rest, ui.spaced(14));
+        }
+
         content.addView(fieldLabel(R.string.script_title_label, null), ui.spaced(20));
         titleField = field(R.string.script_title_hint, scriptTitle,
             InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, MAX_TITLE_LENGTH);
@@ -1962,6 +1999,7 @@ public final class MainActivity extends Activity {
     }
 
     private void exitEditor() {
+        remainingPages = null;
         hideKeyboard();
         if (editorReturn != Screen.HOME && fullScene != null) {
             show(editorReturn);
@@ -1977,7 +2015,32 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /** Saves this part of a long PDF and imports the pages that did not fit as the next text. */
+    private void saveAndImportRest() {
+        RemainingPages rest = remainingPages;
+        String title = titleField.getText().toString().trim();
+        String candidate = editor.getText().toString().trim();
+        if (rest == null || title.isEmpty() || candidate.isEmpty()) {
+            saveEditor(false);
+            return;
+        }
+        if (scriptId == null && !languagePicked) {
+            ScriptLanguage detected = LanguageGuess.guess(candidate);
+            if (detected != null) {
+                language = detected;
+            }
+        }
+        library.save(scriptId, title, candidate, category, language);
+        notifyUser(R.string.saved);
+        hideKeyboard();
+        remainingPages = null;
+        scriptId = null;
+        show(Screen.SOURCE);
+        startImport(rest.uri, true, rest.firstPage, rest.lastPage);
+    }
+
     private void saveEditor(boolean rehearse) {
+        remainingPages = null;
         String title = titleField.getText().toString().trim();
         if (title.isEmpty()) {
             titleField.requestFocus();

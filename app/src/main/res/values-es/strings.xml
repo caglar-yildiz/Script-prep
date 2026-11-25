@@ -131,7 +131,9 @@
     <string name="pdf_pages_import">Importar</string>
     <string name="pdf_pages_invalid">Escribe una página entre 1 y %1$d.</string>
     <string name="pdf_pages_too_many">Elige como máximo %1$d páginas cada vez.</string>
-    <string name="pdf_pages_cut_short">Se importaron las páginas %1$d–%2$d; ahí se alcanzó el límite de texto. Importa las páginas %3$d–%4$d de nuevo como un texto aparte.</string>
+    <string name="pdf_pages_cut_short">Se importaron las páginas %1$d–%2$d; ahí se alcanzó el límite de texto. Con el botón sobre el texto puedes importar las páginas %3$d–%4$d como el siguiente texto.</string>
+    <string name="pdf_rest_message">Las páginas %1$d–%2$d de este PDF no cupieron en este texto.</string>
+    <string name="pdf_rest_import">Guardar e importar las páginas siguientes</string>
     <string name="source_pdf_details">PDF con texto o páginas escaneadas</string>
     <string name="source_txt_details">Archivo de texto UTF-8</string>
     <string name="source_paste_details">Usa el texto que copiaste</string>

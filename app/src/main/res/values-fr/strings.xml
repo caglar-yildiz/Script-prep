@@ -131,7 +131,9 @@
     <string name="pdf_pages_import">Importer</string>
     <string name="pdf_pages_invalid">Saisis une page entre 1 et %1$d.</string>
     <string name="pdf_pages_too_many">Choisis au maximum %1$d pages à la fois.</string>
-    <string name="pdf_pages_cut_short">Les pages %1$d–%2$d ont été importées ; la limite de texte a été atteinte à cet endroit. Importe à nouveau les pages %3$d–%4$d comme un texte séparé.</string>
+    <string name="pdf_pages_cut_short">Les pages %1$d–%2$d ont été importées ; la limite de texte a été atteinte à cet endroit. Le bouton au-dessus du texte importe les pages %3$d–%4$d comme texte suivant.</string>
+    <string name="pdf_rest_message">Les pages %1$d–%2$d de ce PDF n’ont pas tenu dans ce texte.</string>
+    <string name="pdf_rest_import">Enregistrer et importer les pages suivantes</string>
     <string name="source_pdf_details">PDF texte ou pages numérisées</string>
     <string name="source_txt_details">Fichier texte UTF-8</string>
     <string name="source_paste_details">Utilise le texte copié</string>
