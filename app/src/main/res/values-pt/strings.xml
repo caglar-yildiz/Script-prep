@@ -388,6 +388,9 @@
     <string name="line_role_invalid">Use um nome com letras, de até 40 caracteres.</string>
     <string name="line_text_required">Escreva a fala.</string>
     <string name="line_add">Adicionar fala</string>
+    <string name="roles_edit">Editar personagens</string>
+    <string name="role_rename_hint">Corrija o nome. Digite ou escolha o nome de outro personagem para juntar as falas a esse personagem.</string>
+    <string name="role_merge_into">Juntar com</string>
     <string name="edit_as_text">Editar como texto</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Ir para a sua fala · daqui a %d fala</item>

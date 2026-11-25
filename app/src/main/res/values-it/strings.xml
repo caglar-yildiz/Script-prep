@@ -388,6 +388,9 @@
     <string name="line_role_invalid">Usa un nome di lettere, al massimo 40 caratteri.</string>
     <string name="line_text_required">Scrivi la battuta.</string>
     <string name="line_add">Aggiungi battuta</string>
+    <string name="roles_edit">Modifica personaggi</string>
+    <string name="role_rename_hint">Correggi il nome. Scrivi o scegli il nome di un altro personaggio per unire le sue battute a quel personaggio.</string>
+    <string name="role_merge_into">Unisci a</string>
     <string name="edit_as_text">Modifica come testo</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Vai alla tua battuta · fra %d battuta</item>

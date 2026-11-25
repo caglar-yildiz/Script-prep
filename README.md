@@ -49,6 +49,7 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 
 - Provada sıra oyuncuya uzaksa **Repliğine geç** düğmesi, oyuncunun sıradaki repliğinden 3 replik öncesine atlar; böylece ipucu replikleri duyulur. Üst çubuktaki liste simgesi **Sahne akışı**nı açar: bütün replikler kaydırılabilir listede, oyuncunun replikleri vurgulu; dokunulan replikten prova devam eder.
 - Rol metinleri **Replikleri düzenle** ekranında replik replik düzenlenir: karakter, metin ve repliğin ardından gelen notlar değiştirilebilir; ⋮ menüsüyle araya replik veya not eklenir, replik silinir (geri alınabilir). Düzenlenen replikler `Scene.toText` ile metne geri yazılır ve aynı satırlar olarak yeniden okunur. Düz metin düzenleyicisi üst çubuktan açılmaya devam eder.
+- **Karakterleri düzenle** (replik düzenleme ekranındaki kişiler simgesi ya da içe aktarma sonrası önizlemedeki düğme) karakterleri replik sayılarıyla listeler. Bir karaktere dokunup adını düzeltirsin; başka bir karakterin adını yazar ya da seçersen replikleri o karakterle birleşir (taramada farklı okunan `CLBANTE`, `GCLEBANTE` → `CLÉANTE` gibi). Değişiklik geri alınabilir; yeniden adlandırılan karakterin sesi korunur.
 
 ### Yedekleme
 

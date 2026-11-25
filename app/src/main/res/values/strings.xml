@@ -382,6 +382,10 @@
     <string name="line_role_invalid">Use a name of letters, up to 40 characters.</string>
     <string name="line_text_required">Write the line.</string>
     <string name="line_add">Add line</string>
+    <string name="roles_edit">Edit characters</string>
+    <string name="role_rename_hint">Fix the name. Type or pick another character’s name to merge their lines into that character.</string>
+    <string name="role_merge_into">Merge into</string>
+    <string name="role_renamed" translatable="false">%1$s → %2$s</string>
     <string name="edit_as_text">Edit as plain text</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Skip to your line · %d line away</item>

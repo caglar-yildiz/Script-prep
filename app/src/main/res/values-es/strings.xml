@@ -388,6 +388,9 @@
     <string name="line_role_invalid">Usa un nombre de letras, de hasta 40 caracteres.</string>
     <string name="line_text_required">Escribe la réplica.</string>
     <string name="line_add">Añadir réplica</string>
+    <string name="roles_edit">Editar personajes</string>
+    <string name="role_rename_hint">Corrige el nombre. Escribe o elige el nombre de otro personaje para unir sus réplicas con ese personaje.</string>
+    <string name="role_merge_into">Unir con</string>
     <string name="edit_as_text">Editar como texto</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Ir a tu réplica · a %d réplica</item>

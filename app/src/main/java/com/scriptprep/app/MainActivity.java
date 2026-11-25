@@ -1671,8 +1671,12 @@ public final class MainActivity extends Activity {
                 summary.append("\n").append(section.title);
             }
         }
-        new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
-            .setMessage(summary).setPositiveButton(android.R.string.ok, null).show();
+        AlertDialog.Builder preview = new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
+            .setMessage(summary).setPositiveButton(android.R.string.ok, null);
+        if (screen == Screen.EDITOR && editor != null && !parsed.roles.isEmpty()) {
+            preview.setNeutralButton(R.string.roles_edit, (dialog, which) -> editEditorRoles());
+        }
+        preview.show();
     }
 
     // ---------------------------------------------------------------- Backup file
@@ -2171,6 +2175,7 @@ public final class MainActivity extends Activity {
 
     private void renderLines() {
         LinearLayout bar = topBar(R.drawable.ic_back, getString(R.string.lines_title), () -> show(linesReturn));
+        barAction(bar, R.drawable.ic_people, R.string.roles_edit, view -> editSavedRoles());
         barAction(bar, R.drawable.ic_texts, R.string.edit_as_text, view -> editCurrent());
         content.addView(ui.text(getString(R.string.lines_hint), Type.BODY, TEXT_SECONDARY), ui.spaced(4));
 
@@ -2325,6 +2330,155 @@ public final class MainActivity extends Activity {
             }
             if (saveLines(lines)) {
                 dialog.dismiss();
+            }
+        }));
+        dialog.show();
+    }
+
+    // ---------------------------------------------------------------- Characters
+
+    /** Applies renamed lines and returns the text as parsed again, or null when it was not saved. */
+    private interface RoleEdit {
+        Scene apply(List<Scene.Line> lines, String from, String to);
+    }
+
+    /** Renames or merges characters in the text open in the editor, before it is saved. */
+    private void editEditorRoles() {
+        showRoles(parseScript(editor.getText().toString()), (lines, from, to) -> {
+            String before = editor.getText().toString();
+            String text = Scene.toText(lines);
+            if (text.length() > MAX_SCRIPT_LENGTH) {
+                notifyUser(R.string.import_too_long);
+                return null;
+            }
+            EditText field = editor;
+            field.setText(text);
+            script = text;
+            showSnackbar(getString(R.string.role_renamed, from, to), getString(R.string.undo), () -> {
+                field.setText(before);
+                script = before;
+            });
+            return parseScript(text);
+        });
+    }
+
+    /** Renames or merges characters in the saved text; the voice of a renamed character stays. */
+    private void editSavedRoles() {
+        showRoles(fullScene, (lines, from, to) -> {
+            String before = script;
+            String previousRole = role;
+            boolean merged = fullScene.roles.contains(to);
+            VoiceCast.Part voice = currentCast().get(from);
+            if (from.equals(role)) {
+                role = to;
+            }
+            if (!saveLines(lines)) {
+                role = previousRole;
+                return null;
+            }
+            if (!merged && voice != null) {
+                Map<String, VoiceCast.Part> cast = currentCast();
+                cast.put(to, voice);
+                VoiceCast.save(preferences, castKey(), cast);
+            }
+            showSnackbar(getString(R.string.role_renamed, from, to), getString(R.string.undo), () -> {
+                role = previousRole;
+                saveText(before);
+            });
+            return fullScene;
+        });
+    }
+
+    /** Lists the characters with their line counts; tapping one renames it or merges it into another. */
+    private void showRoles(Scene parsed, RoleEdit edit) {
+        if (parsed == null || parsed.roles.isEmpty()) {
+            notifyUser(R.string.invalid_scene);
+            return;
+        }
+        Map<String, Integer> counts = new java.util.HashMap<>();
+        for (Scene.Line line : parsed.lines) {
+            counts.merge(line.role, 1, Integer::sum);
+        }
+        String[] items = new String[parsed.roles.size()];
+        for (int i = 0; i < items.length; i++) {
+            String name = parsed.roles.get(i);
+            int count = counts.getOrDefault(name, 0);
+            items[i] = name + " · " + getResources().getQuantityString(R.plurals.line_count, count, count);
+        }
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.roles_edit)
+            .setItems(items, (dialog, which) -> renameRole(parsed, parsed.roles.get(which), edit))
+            .setNegativeButton(R.string.action_close, null)
+            .show();
+    }
+
+    private void renameRole(Scene parsed, String from, RoleEdit edit) {
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        form.addView(ui.text(getString(R.string.role_rename_hint), Type.BODY, TEXT_SECONDARY));
+        EditText nameField = field(R.string.line_role, from,
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS, 40);
+        nameField.setSingleLine(true);
+        nameField.setSelection(nameField.length());
+        form.addView(nameField, ui.spaced(12));
+
+        List<String> others = new ArrayList<>(parsed.roles);
+        others.remove(from);
+        if (!others.isEmpty()) {
+            form.addView(ui.text(getString(R.string.role_merge_into), Type.LABEL, TEXT_SECONDARY), ui.spaced(16));
+            android.widget.HorizontalScrollView scroll = new android.widget.HorizontalScrollView(this);
+            scroll.setHorizontalScrollBarEnabled(false);
+            LinearLayout chips = horizontal();
+            for (String name : others) {
+                TextView option = ui.chip(name, TEXT, SURFACE_HIGHEST);
+                option.setBackground(ui.ripple(ui.shape(SURFACE_HIGHEST, 999), 0x22FFFFFF));
+                option.setOnClickListener(view -> {
+                    nameField.setText(name);
+                    nameField.setSelection(name.length());
+                });
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, -2);
+                params.rightMargin = ui.dp(6);
+                chips.addView(option, params);
+            }
+            scroll.addView(chips);
+            form.addView(scroll, ui.spaced(8));
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(from)
+            .setView(form)
+            .setPositiveButton(R.string.script_save, null)
+            .setNegativeButton(android.R.string.cancel, (shown, which) -> showRoles(parsed, edit))
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            String typed = nameField.getText().toString().trim().replaceAll("\\s+", " ");
+            if (!Scene.isRoleName(typed)) {
+                nameField.setError(getString(R.string.line_role_invalid));
+                nameField.requestFocus();
+                return;
+            }
+            // Typing another character's name in any case merges into that character's spelling.
+            String to = typed;
+            for (String name : others) {
+                if (name.toLowerCase(language.locale).equals(typed.toLowerCase(language.locale))) {
+                    to = name;
+                }
+            }
+            dialog.dismiss();
+            hideKeyboard();
+            if (to.equals(from)) {
+                showRoles(parsed, edit);
+                return;
+            }
+            List<Scene.Line> lines = new ArrayList<>();
+            for (Scene.Line line : parsed.lines) {
+                lines.add(line.role.equals(from)
+                    ? Scene.Line.of(to, line.text, line.section, line.notes) : line);
+            }
+            Scene updated = edit.apply(lines, from, to);
+            if (updated != null && updated.roles.size() > 1) {
+                showRoles(updated, edit);
             }
         }));
         dialog.show();

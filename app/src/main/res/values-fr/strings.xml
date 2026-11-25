@@ -388,6 +388,9 @@
     <string name="line_role_invalid">Utilise un nom en lettres, 40 caractères maximum.</string>
     <string name="line_text_required">Écris la réplique.</string>
     <string name="line_add">Ajouter une réplique</string>
+    <string name="roles_edit">Modifier les personnages</string>
+    <string name="role_rename_hint">Corrige le nom. Saisis ou choisis le nom d’un autre personnage pour fusionner ses répliques avec ce personnage.</string>
+    <string name="role_merge_into">Fusionner avec</string>
     <string name="edit_as_text">Modifier en texte brut</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Aller à ta réplique · dans %d réplique</item>

@@ -376,6 +376,9 @@
     <string name="line_role_invalid">Harflerden oluşan, en fazla 40 karakterlik bir ad yaz.</string>
     <string name="line_text_required">Repliği yaz.</string>
     <string name="line_add">Replik ekle</string>
+    <string name="roles_edit">Karakterleri düzenle</string>
+    <string name="role_rename_hint">Adı düzelt. Başka bir karakterin adını yazar ya da aşağıdan seçersen replikleri o karakterle birleşir.</string>
+    <string name="role_merge_into">Şununla birleştir</string>
     <string name="edit_as_text">Düz metin olarak düzenle</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Repliğine geç · %d replik sonra</item>

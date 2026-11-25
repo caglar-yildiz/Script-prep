@@ -376,6 +376,9 @@
     <string name="line_role_invalid">Verwende einen Namen aus Buchstaben, höchstens 40 Zeichen.</string>
     <string name="line_text_required">Schreibe die Replik.</string>
     <string name="line_add">Replik hinzufügen</string>
+    <string name="roles_edit">Rollen bearbeiten</string>
+    <string name="role_rename_hint">Korrigiere den Namen. Gib den Namen einer anderen Rolle ein oder wähle ihn aus, um die Repliken mit dieser Rolle zusammenzuführen.</string>
+    <string name="role_merge_into">Zusammenführen mit</string>
     <string name="edit_as_text">Als Text bearbeiten</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Zu deiner Replik · noch %d Replik</item>
