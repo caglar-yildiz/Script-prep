@@ -8,6 +8,7 @@ import android.provider.OpenableColumns;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -28,15 +29,23 @@ final class ScriptImport {
         final int requestedLastPage;
         /** Read from photos rather than a file; {@link #scannedPages} counts the photos. */
         final boolean photos;
+        /** Converted from Word, Fountain or Final Draft, so worth a look at the detected roles. */
+        final boolean converted;
 
         Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
             int requestedLastPage) {
-            this(script, scannedPages, firstPage, lastPage, requestedLastPage, false);
+            this(script, scannedPages, firstPage, lastPage, requestedLastPage, false, false);
         }
 
         Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
             int requestedLastPage, boolean photos) {
+            this(script, scannedPages, firstPage, lastPage, requestedLastPage, photos, false);
+        }
+
+        Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
+            int requestedLastPage, boolean photos, boolean converted) {
             this.photos = photos;
+            this.converted = converted;
             this.script = script;
             this.scannedPages = scannedPages;
             this.firstPage = firstPage;
@@ -68,15 +77,53 @@ final class ScriptImport {
         }
     }
 
+    /** Reads a TXT, Word (DOCX), Fountain or Final Draft (FDX) file. */
     static Result readText(Context context, Uri uri, int lengthLimit) throws IOException {
         ContentResolver resolver = context.getContentResolver();
-        try (InputStream stream = resolver.openInputStream(uri)) {
-            if (stream == null) {
+        String name = displayName(resolver, uri);
+        ScriptFormats.Kind kind = ScriptFormats.kindOf(name);
+        String text;
+        try (InputStream opened = resolver.openInputStream(uri)) {
+            if (opened == null) {
                 throw new IOException("Missing stream");
             }
-            String text = readText(stream, lengthLimit);
-            return new Result(new ScriptLibrary.Script(null, readTitle(resolver, uri), text), 0, 0, 0, 0);
+            BufferedInputStream stream = new BufferedInputStream(opened);
+            if (kind == ScriptFormats.Kind.TEXT) {
+                kind = sniff(stream);
+            }
+            text = switch (kind) {
+                case DOCX -> ScriptFormats.docx(stream);
+                case FDX -> ScriptFormats.fdx(stream);
+                case FOUNTAIN -> ScriptFormats.fountain(readText(stream, lengthLimit * 2));
+                case TEXT -> readText(stream, lengthLimit);
+            };
         }
+        if (text.length() > lengthLimit) {
+            throw new LengthLimitException();
+        }
+        if (kind != ScriptFormats.Kind.TEXT && text.trim().isEmpty()) {
+            throw new IOException("No script text");
+        }
+        String title = name.replaceFirst("(?i)\\.(?:txt|text|docx|fountain|spmd|fdx)$", "");
+        return new Result(new ScriptLibrary.Script(null, title, text), 0, 0, 0, 0, false,
+            kind != ScriptFormats.Kind.TEXT);
+    }
+
+    /** Word and Final Draft files picked without a telling name are known by how they start. */
+    private static ScriptFormats.Kind sniff(BufferedInputStream stream) throws IOException {
+        byte[] head = new byte[512];
+        stream.mark(head.length);
+        int count = 0;
+        int read;
+        while (count < head.length && (read = stream.read(head, count, head.length - count)) > 0) {
+            count += read;
+        }
+        stream.reset();
+        if (count >= 4 && head[0] == 'P' && head[1] == 'K' && head[2] == 3 && head[3] == 4) {
+            return ScriptFormats.Kind.DOCX;
+        }
+        String start = new String(head, 0, count, StandardCharsets.UTF_8);
+        return start.contains("<FinalDraft") ? ScriptFormats.Kind.FDX : ScriptFormats.Kind.TEXT;
     }
 
     static PdfFile openPdf(Context context, Uri uri, BooleanSupplier cancelled) throws IOException {
@@ -129,12 +176,16 @@ final class ScriptImport {
     }
 
     private static String readTitle(ContentResolver resolver, Uri uri) {
+        return displayName(resolver, uri).replaceFirst("(?i)\\.(?:txt|pdf)$", "");
+    }
+
+    private static String displayName(ContentResolver resolver, Uri uri) {
         try (Cursor cursor = resolver.query(uri, new String[] {OpenableColumns.DISPLAY_NAME},
             null, null, null)) {
             if (cursor != null && cursor.moveToFirst() && cursor.getColumnCount() > 0) {
                 String name = cursor.getString(0);
                 if (name != null) {
-                    return name.replaceFirst("(?i)\\.(?:txt|pdf)$", "");
+                    return name;
                 }
             }
         } catch (RuntimeException ignored) {

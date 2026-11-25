@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Kaydet ve rol seç</string>
     <string name="sample_title">Örnek sahne</string>
     <string name="imported_title">İçe aktarılan metin</string>
-    <string name="import_failed">Dosya okunamadı. UTF-8 biçiminde bir TXT dosyası seç.</string>
+    <string name="import_failed">Dosya okunamadı. UTF-8 TXT, Word (DOCX), Fountain ya da Final Draft (FDX) dosyası seç.</string>
     <string name="import_too_long">Dosya çok büyük. PDF en fazla 100 MB ve 1.000 sayfa, metin dosyası en fazla 150.000 karakter olabilir.</string>
     <string name="premium_description">Doğal karakter sesleri, sesle ilerleme, ayrıntılı sonuçlar ve videolu prova.</string>
     <string name="premium_voices">Doğal karakter sesleri</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Metnini satır satır ezberle.</string>
     <string name="choose_text_source">Metnini ekle</string>
     <string name="create_import_pdf">PDF içe aktar</string>
-    <string name="create_import_txt">TXT içe aktar</string>
+    <string name="create_import_txt">Dosya içe aktar</string>
     <string name="create_paste">Metin yapıştır</string>
     <string name="create_write">Kendin yaz</string>
     <string name="empty_clipboard">Yapıştırılacak metin yok.</string>
@@ -158,7 +158,7 @@
     <string name="pdf_rest_message">Bu PDF’in %1$d–%2$d. sayfaları bu metne sığmadı.</string>
     <string name="pdf_rest_import">Kaydet ve sonraki sayfaları aktar</string>
     <string name="source_pdf_details">Metin içeren ya da taranmış PDF</string>
-    <string name="source_txt_details">UTF-8 düz metin dosyası</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain ya da Final Draft (FDX)</string>
     <string name="source_paste_details">Kopyaladığın metni kullan</string>
     <string name="source_write_details">Boş bir sayfayla başla</string>
     <string name="editor_new_title">Yeni metin</string>

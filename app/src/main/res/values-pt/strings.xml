@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Salvar e escolher papel</string>
     <string name="sample_title">Cena de exemplo</string>
     <string name="imported_title">Texto importado</string>
-    <string name="import_failed">Não foi possível ler o arquivo. Escolha um arquivo TXT em UTF-8.</string>
+    <string name="import_failed">Não foi possível ler o arquivo. Escolha um arquivo TXT em UTF-8, Word (DOCX), Fountain ou Final Draft (FDX).</string>
     <string name="import_too_long">O arquivo é grande demais. PDFs podem ter até 100 MB e 1.000 páginas; arquivos de texto, até 150.000 caracteres.</string>
     <string name="premium_description">Vozes naturais para os personagens, avanço por voz, resultados detalhados e ensaio em vídeo.</string>
     <string name="premium_voices">Vozes naturais para personagens</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Aprenda seu texto verso por verso.</string>
     <string name="choose_text_source">Adicione seu texto</string>
     <string name="create_import_pdf">Importar PDF</string>
-    <string name="create_import_txt">Importar TXT</string>
+    <string name="create_import_txt">Importar arquivo</string>
     <string name="create_paste">Colar texto</string>
     <string name="create_write">Escrever você mesmo</string>
     <string name="empty_clipboard">Não há texto para colar.</string>
@@ -158,7 +158,7 @@
     <string name="pdf_rest_message">As páginas %1$d–%2$d deste PDF não couberam neste texto.</string>
     <string name="pdf_rest_import">Salvar e importar as próximas páginas</string>
     <string name="source_pdf_details">PDF com texto ou páginas digitalizadas</string>
-    <string name="source_txt_details">Arquivo de texto UTF-8</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain ou Final Draft (FDX)</string>
     <string name="source_paste_details">Use o texto que você copiou</string>
     <string name="source_write_details">Comece com uma página em branco</string>
     <string name="editor_new_title">Novo texto</string>

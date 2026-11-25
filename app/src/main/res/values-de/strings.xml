@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Speichern und Rolle wählen</string>
     <string name="sample_title">Beispielszene</string>
     <string name="imported_title">Importierter Text</string>
-    <string name="import_failed">Die Datei konnte nicht gelesen werden. Wähle eine UTF-8-TXT-Datei.</string>
+    <string name="import_failed">Die Datei konnte nicht gelesen werden. Wähle eine UTF-8-TXT-, Word- (DOCX), Fountain- oder Final-Draft-Datei (FDX).</string>
     <string name="import_too_long">Die Datei ist zu groß. PDFs dürfen bis zu 100 MB und 1.000 Seiten haben, Textdateien bis zu 150.000 Zeichen.</string>
     <string name="premium_description">Natürliche Figurenstimmen, Weiter per Stimme, detaillierte Ergebnisse und Videoproben.</string>
     <string name="premium_voices">Natürliche Figurenstimmen</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Lerne deinen Text Zeile für Zeile.</string>
     <string name="choose_text_source">Text hinzufügen</string>
     <string name="create_import_pdf">PDF importieren</string>
-    <string name="create_import_txt">TXT importieren</string>
+    <string name="create_import_txt">Datei importieren</string>
     <string name="create_paste">Text einfügen</string>
     <string name="create_write">Selbst schreiben</string>
     <string name="empty_clipboard">Kein Text zum Einfügen.</string>
@@ -158,7 +158,7 @@
     <string name="pdf_rest_message">Die Seiten %1$d–%2$d dieses PDFs passten nicht mehr in diesen Text.</string>
     <string name="pdf_rest_import">Speichern und nächste Seiten importieren</string>
     <string name="source_pdf_details">Text-PDF oder gescannte Seiten</string>
-    <string name="source_txt_details">UTF-8-Textdatei</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain oder Final Draft (FDX)</string>
     <string name="source_paste_details">Kopierten Text verwenden</string>
     <string name="source_write_details">Mit einer leeren Seite beginnen</string>
     <string name="editor_new_title">Neuer Text</string>

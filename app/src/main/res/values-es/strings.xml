@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Guardar y elegir papel</string>
     <string name="sample_title">Escena de ejemplo</string>
     <string name="imported_title">Texto importado</string>
-    <string name="import_failed">No se pudo leer el archivo. Elige un archivo TXT en UTF-8.</string>
+    <string name="import_failed">No se pudo leer el archivo. Elige un archivo TXT en UTF-8, Word (DOCX), Fountain o Final Draft (FDX).</string>
     <string name="import_too_long">El archivo es demasiado grande. Los PDF pueden tener hasta 100 MB y 1000 páginas; los archivos de texto, hasta 150.000 caracteres.</string>
     <string name="premium_description">Voces naturales para los personajes, avance por voz, resultados detallados y ensayo en vídeo.</string>
     <string name="premium_voices">Voces naturales para personajes</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Aprende tu texto verso a verso.</string>
     <string name="choose_text_source">Añade tu texto</string>
     <string name="create_import_pdf">Importar PDF</string>
-    <string name="create_import_txt">Importar TXT</string>
+    <string name="create_import_txt">Importar archivo</string>
     <string name="create_paste">Pegar texto</string>
     <string name="create_write">Escribirlo tú</string>
     <string name="empty_clipboard">No hay texto para pegar.</string>
@@ -158,7 +158,7 @@
     <string name="pdf_rest_message">Las páginas %1$d–%2$d de este PDF no cupieron en este texto.</string>
     <string name="pdf_rest_import">Guardar e importar las páginas siguientes</string>
     <string name="source_pdf_details">PDF con texto o páginas escaneadas</string>
-    <string name="source_txt_details">Archivo de texto UTF-8</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain o Final Draft (FDX)</string>
     <string name="source_paste_details">Usa el texto que copiaste</string>
     <string name="source_write_details">Empieza con una página en blanco</string>
     <string name="editor_new_title">Nuevo texto</string>

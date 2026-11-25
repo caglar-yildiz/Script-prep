@@ -34,7 +34,7 @@
     <string name="script_save_and_rehearse">Save and choose a role</string>
     <string name="sample_title">Sample scene</string>
     <string name="imported_title">Imported text</string>
-    <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT file.</string>
+    <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT, Word (DOCX), Fountain or Final Draft (FDX) file.</string>
     <string name="import_too_long">This file is too large. PDFs can be up to 100 MB and 1,000 pages; text files up to 150,000 characters.</string>
     <string name="premium_description">Natural character voices, hands-free cues, detailed results and video practice.</string>
     <string name="premium_voices">Natural character voices</string>
@@ -90,7 +90,7 @@
     <string name="category_poem_details">Learn your text line by line.</string>
     <string name="choose_text_source">Add your text</string>
     <string name="create_import_pdf">Import PDF</string>
-    <string name="create_import_txt">Import TXT</string>
+    <string name="create_import_txt">Import a file</string>
     <string name="create_paste">Paste text</string>
     <string name="create_write">Write your own</string>
     <string name="empty_clipboard">No text to paste.</string>
@@ -159,7 +159,7 @@
     <string name="pdf_rest_message">Pages %1$d–%2$d of this PDF did not fit in this text.</string>
     <string name="pdf_rest_import">Save and import the next pages</string>
     <string name="source_pdf_details">Text PDF or scanned pages</string>
-    <string name="source_txt_details">Plain UTF-8 text file</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain or Final Draft (FDX)</string>
     <string name="source_paste_details">Use the text you copied</string>
     <string name="source_write_details">Start from a blank page</string>
     <string name="editor_new_title">New text</string>

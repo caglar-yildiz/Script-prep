@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Salva e scegli il ruolo</string>
     <string name="sample_title">Scena di esempio</string>
     <string name="imported_title">Testo importato</string>
-    <string name="import_failed">Impossibile leggere il file. Scegli un file TXT in UTF-8.</string>
+    <string name="import_failed">Impossibile leggere il file. Scegli un file TXT in UTF-8, Word (DOCX), Fountain o Final Draft (FDX).</string>
     <string name="import_too_long">Il file è troppo grande. I PDF possono avere fino a 100 MB e 1.000 pagine; i file di testo fino a 150.000 caratteri.</string>
     <string name="premium_description">Voci naturali per i personaggi, avanzamento a voce, risultati dettagliati e prove video.</string>
     <string name="premium_voices">Voci naturali per i personaggi</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Impara il testo verso per verso.</string>
     <string name="choose_text_source">Aggiungi il tuo testo</string>
     <string name="create_import_pdf">Importa PDF</string>
-    <string name="create_import_txt">Importa TXT</string>
+    <string name="create_import_txt">Importa file</string>
     <string name="create_paste">Incolla testo</string>
     <string name="create_write">Scrivilo tu</string>
     <string name="empty_clipboard">Nessun testo da incollare.</string>
@@ -158,7 +158,7 @@
     <string name="pdf_rest_message">Le pagine %1$d–%2$d di questo PDF non sono entrate in questo testo.</string>
     <string name="pdf_rest_import">Salva e importa le pagine successive</string>
     <string name="source_pdf_details">PDF di testo o pagine scansionate</string>
-    <string name="source_txt_details">File di testo UTF-8</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain o Final Draft (FDX)</string>
     <string name="source_paste_details">Usa il testo che hai copiato</string>
     <string name="source_write_details">Inizia da una pagina bianca</string>
     <string name="editor_new_title">Nuovo testo</string>

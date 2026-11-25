@@ -657,7 +657,7 @@ public final class MainActivity extends Activity {
     /** Runs on the import thread: parses the result and opens it in the editor. {@code pdf} is null for text. */
     private void deliverImport(ScriptImport.Result result, Uri pdf, TextCategory selectedCategory,
         String narrator) {
-        boolean isPdf = pdf != null || result.photos;
+        boolean isPdf = pdf != null || result.photos || result.converted;
         ScriptLibrary.Script imported = result.script;
         Scene preview = isPdf ? selectedCategory.parse(imported.text, narrator) : null;
         // Only unsure lines that made it into the text are worth checking.
@@ -1975,8 +1975,14 @@ public final class MainActivity extends Activity {
     private void openImportPicker(boolean pdf) {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType(pdf ? "application/pdf" : "text/plain")
+            .setType(pdf ? "application/pdf" : "*/*")
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (!pdf) {
+            // Fountain and Final Draft files often have no specific type, so any file is offered.
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[] {"text/plain",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/xml", "text/xml", "application/octet-stream", "text/*"});
+        }
         try {
             startActivityForResult(intent, pdf ? IMPORT_PDF : IMPORT_TEXT);
         } catch (ActivityNotFoundException error) {
