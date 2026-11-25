@@ -7,28 +7,28 @@ Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için 
 İlk hedef, Android telefonda örnek bir sahneyi açıp rol seçmek, diğer karakterleri Türkçe cihaz sesiyle dinlemek ve kendi repliğinden sonra düğmeyle devam etmek. Bu akış çalışınca PDF aktarımını aynı metin modeline bağla.
 
 - [ ] **Rakipleri aynı metinlerle dene.** Çok karakterli bir sahne, çok sahneli uzun oyun ve taranmış bir metin seç. İki uygulamada ilk provaya kadar geçen süreyi, yanlış role atanan replikleri, elle düzeltme süresini ve prova sırasındaki hatalı ilerlemeyi kaydet. Kamuya açık test dosyalarında özgün veya paylaşım izni olan metinler kullan.
-- [ ] **Oyun kütüphanesi ve metin modeli.** Oyun, perde/sahne, karakter, replik ve sahne yönergesini cihazda sakla. Uygulama kapanıp açıldığında metin, rol seçimi ve son prova konumu geri gelsin. Hazır bir örnek sahneyle ilk prova dosyasız açılabilsin.
-- [ ] **Metin ve metin katmanlı PDF aktarımı.** Yapıştırılan metni, TXT ve PDF dosyasını destekle. `KARAKTER: replik` ve ayrı satırdaki rol adı biçimlerini, çok satırlı replikleri, Türkçe karakterleri ve parantez içi yönergeleri dene. Taramayı algılayınca metin yapıştırma seçeneğini göster. Önizlemede yanlış rolü, sahne ayrımını ve replik sınırını düzeltmek mümkün olsun.
-- [ ] **Rol seçimi ve çalışan prova döngüsü.** Sahne/seçili aralığı başlat. Dinle modunda tüm rolleri oku. Prova modunda diğer rolleri cihazın Türkçe sesiyle oku ve oyuncunun sırasında bekle. İleri, geri, tekrarla, duraklat ve ipucu kontrolleri olsun. Türkçe çevrimdışı sesi kurulu cihazda uçak modunda prova tamamlanabilsin. Ses yoksa görsel prova kullanılabilsin.
-- [ ] **Ezber görünümü.** Oyuncu sahne içinde tam replik, ilk kelimeler, ilk harfler ve gizli replik arasında geçebilsin. Takıldığı anda o repliği açıp önceki partner repliğinden tekrar başlayabilsin.
+- [x] **Oyun kütüphanesi ve metin modeli.** Oyun, perde/sahne, karakter, replik ve sahne yönergesini cihazda sakla. Uygulama kapanıp açıldığında metin, rol seçimi ve son prova konumu geri gelsin. Hazır bir örnek sahneyle ilk prova dosyasız açılabilsin.
+- [x] **Metin ve metin katmanlı PDF aktarımı.** Yapıştırılan metni, TXT ve PDF dosyasını destekle. `KARAKTER: replik` ve ayrı satırdaki rol adı biçimlerini, çok satırlı replikleri, Türkçe karakterleri ve parantez içi yönergeleri dene. Taramayı algılayınca metin yapıştırma seçeneğini göster. Önizlemede yanlış rolü, sahne ayrımını ve replik sınırını düzeltmek mümkün olsun.
+- [x] **Rol seçimi ve çalışan prova döngüsü.** Sahne/seçili aralığı başlat. Dinle modunda tüm rolleri oku. Prova modunda diğer rolleri cihazın Türkçe sesiyle oku ve oyuncunun sırasında bekle. İleri, geri, tekrarla, duraklat ve ipucu kontrolleri olsun. Türkçe çevrimdışı sesi kurulu cihazda uçak modunda prova tamamlanabilsin. Ses yoksa görsel prova kullanılabilsin.
+- [x] **Ezber görünümü.** Oyuncu sahne içinde tam replik, ilk kelimeler, ilk harfler ve gizli replik arasında geçebilsin. Takıldığı anda o repliği açıp önceki partner repliğinden tekrar başlayabilsin.
 - [ ] **Tiyatro ekibiyle beta.** Önerilen çıkış koşulu 5 oyuncudan en az 4’ünün yönlendirme almadan örnek veya kendi sahnesiyle tam bir prova bitirmesi. İlk provaya kadar geçen süreyi, düzeltme ihtiyacını ve yarıda bırakılan adımı gözlemle.
 
 ## Sonradan yapılacaklar
 
 ### Prova özellikleri
 
-- [ ] **Türkçe sesle otomatik ilerleme.** Sesli okuma bitince mikrofonu aç. Anlamlı duraklama veya kısa sessizlikte sırayı erkenden geçirme. İzin reddi ve tanıma sorunlarında düğmeyle ilerlemeyi koru. Doğal duraklama, fısıltı ve arka plan gürültüsü içeren 50 denemede erken geçişi, kaçırılan geçişi ve gecikmeyi ayrı ölç. İlk hedef en fazla 2 erken geçiş.
+- [x] **Türkçe sesle otomatik ilerleme.** Sesli okuma bitince mikrofonu aç. Anlamlı duraklama veya kısa sessizlikte sırayı erkenden geçirme. İzin reddi ve tanıma sorunlarında düğmeyle ilerlemeyi koru. Doğal duraklama, fısıltı ve arka plan gürültüsü içeren 50 denemede erken geçişi, kaçırılan geçişi ve gecikmeyi ayrı ölç. İlk hedef en fazla 2 erken geçiş.
 - [ ] **Script Rehearser tarzı prova seçenekleri.** Ayarlanabilir süreyle otomatik ilerleme, süre sonunda doğru repliği sesli tekrar, karaktere ayrı ses ve tek repliğe kaydedilmiş ses atama.
-- [ ] **Daha fazla kaynak biçimi.** Önce taranmış PDF ve fotoğraf için Türkçe OCR, sonra DOCX, Fountain ve FDX. Düşük güvenli satırları önizlemede işaretle. Kullanıcı kaynak sayfaya bakıp aynı ekranda düzeltebilsin.
-- [ ] **Prova sonucu.** İpucuyla açılan, yeniden denenen ve tanınan replikleri oturum sonunda göster. Konuşma metniyle karşılaştırmanın belirsiz kaldığı satırları belirt.
+- [x] **Daha fazla kaynak biçimi.** Önce taranmış PDF ve fotoğraf için Türkçe OCR, sonra DOCX, Fountain ve FDX. Düşük güvenli satırları önizlemede işaretle. Kullanıcı kaynak sayfaya bakıp aynı ekranda düzeltebilsin. _Yapıldı: taranmış PDF ve fotoğraf için cihazda OCR, DOCX, Fountain, FDX ve sayfa görüntüsüyle belirsiz satır incelemesi._
+- [x] **Prova sonucu.** İpucuyla açılan, yeniden denenen ve tanınan replikleri oturum sonunda göster. Konuşma metniyle karşılaştırmanın belirsiz kaldığı satırları belirt.
 - [ ] **Self-tape ve dışa aktarma.** Önde/arkada kamera, sahneye göre ilerleyen teleprompter, partner sesini kapatma, çekim öncesi ses kontrolü ve son replikten sonra kayıt payı. Videoyu yerelde tut ve kullanıcı paylaşınca dışa aktar. Prova dosyasını ses kayıtlarıyla yedekle ve geri yükle.
 - [ ] **Doğal karakter sesleri ve ticari model.** Türkçe sesleri oyuncularla dinleme testinde değerlendir. Sahne başına üretim maliyetini ve önbellek etkisini ölç. Temel cihaz sesiyle prova ücretsiz devam ederken doğal ses paketi modelini değerlendir.
 
 ### Uzun oyunlar ve ekip provası
 
-- [ ] **Tam oyun hazırlığını hızlandır.** Uzun Türkçe oyunlarda perde/sahne başlıklarını, lakapları, birden fazla rolü ve sahne yönergelerini tanı. Aynı karakterin farklı adlarını tek işlemle birleştir. Aynı test metinlerinde rakiplerle kıyaslandığında medyan elle düzeltme süresini en az %30 düşürmeyi hedefle.
-- [ ] **Takıldığım yerleri çalış.** İpucu istenen veya yeniden denenen replikleri çağrı repliğiyle birlikte kısa bir prova kuyruğuna al. Oyuncu bütün sahneyi başa sarmadan bu kesitleri tekrar edebilsin.
-- [ ] **Tiyatro ekibiyle ortak çalışma.** Sahne ve rol bazında erişim, metin sürümleri, yönetmen notları ve replik değişikliklerini gösterme. Yeni sürüm geldiğinde oyuncunun kişisel notları ve prova konumu korunabilsin. İhtiyacı doğrulamak için önce tek bir ekipte pilot yap.
+- [ ] **Tam oyun hazırlığını hızlandır.** Uzun Türkçe oyunlarda perde/sahne başlıklarını, lakapları, birden fazla rolü ve sahne yönergelerini tanı. Aynı karakterin farklı adlarını tek işlemle birleştir. _(Birleştirme yapıldı: **Karakterleri düzenle**.)_ Aynı test metinlerinde rakiplerle kıyaslandığında medyan elle düzeltme süresini en az %30 düşürmeyi hedefle.
+- [x] **Takıldığım yerleri çalış.** İpucu istenen veya yeniden denenen replikleri çağrı repliğiyle birlikte kısa bir prova kuyruğuna al. Oyuncu bütün sahneyi başa sarmadan bu kesitleri tekrar edebilsin.
+- [ ] **Tiyatro ekibiyle ortak çalışma.** _(Başladı: ekip provası ile metin paylaşma, rol alma ve kendi repliklerini kaydetme.)_ Sahne ve rol bazında erişim, metin sürümleri, yönetmen notları ve replik değişikliklerini gösterme. Yeni sürüm geldiğinde oyuncunun kişisel notları ve prova konumu korunabilsin. İhtiyacı doğrulamak için önce tek bir ekipte pilot yap.
 - [ ] **iOS kapsamını beta sonrası belirle.** Android betasında hangi özelliklerin düzenli kullanıldığını ve iOS talebini ölç. Ortak dosya biçimi ve prova kuralları üzerinden port kapsamını çıkar.
 
 Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https://github.com/caglar-yildiz/Script-prep/issues/1) üzerinden yapılır.
@@ -38,12 +38,12 @@ Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https:/
 Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 36 ve Build Tools 36.0.0 gerekir.
 
 ```sh
-./gradlew :app:assembleDebug :app:lintDebug
+./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 ```
 
 İlk derlemede sherpa-onnx AAR dosyası (~50 MB) GitHub sürümünden `app/libs/` klasörüne indirilir ve SHA-256 ile doğrulanır; bu klasör depoya eklenmez.
 
-İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. PDF (metin katmanlı ya da taranmış) veya UTF-8 TXT dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. İlk metin kaydedildikten sonra yeni metinler ana ekrandaki **Yeni metin** düğmesiyle eklenir; Ayarlar sağ üstteki dişli simgesinden açılır. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
+İlk açılışta **İlk metnini oluştur** düğmesine dokun ve bir kategori seç. PDF (metin katmanlı ya da taranmış), sayfa fotoğrafları (kamera ya da galeri), UTF-8 TXT, Word (DOCX), Fountain veya Final Draft (FDX) dosyası içe aktarabilir, metni yapıştırabilir ya da kendin yazabilirsin. Uzun bir aktarma **İptal** ile durdurulabilir. İlk metin kaydedildikten sonra yeni metinler ana ekrandaki **Yeni metin** düğmesiyle eklenir; Ayarlar sağ üstteki dişli simgesinden açılır. Bir metni silmek için kartındaki **⋮** menüsünden (veya karta uzun basarak) **Sil**'i seç; düzenleme ve prova ekranlarındaki çöp kutusu simgesi de aynı işi yapar. Silme işlemi birkaç saniye boyunca **Geri al** ile geri alınabilir. PDF aktarımında algılanan sahneleri ve karakterleri gözden geçirip metni düzenleyebilirsin. Sahne veya tüm metin üzerinden prova yapabilirsin. Türkçe ses yoksa karşı replik ekranda kalır ve **Devam et** düğmesiyle prova sürdürülebilir.
 
 ### Prova ve düzenleme
 
@@ -81,9 +81,19 @@ Uygulama kimliği `com.memoeverything.app`. Premium, Google Play Billing ile ayl
 
 - `Jack: Replik`, `JACK:` ve bir sonraki satırda replik.
 - `JACK - Replik`, `JACK – Replik`, `JACK — Replik` ve tek başına büyük harfli karakter adı. PDF’de kalın karakter adları da biçim ipucu olarak kullanılır.
-- `I. PERDE`, `1. Sahne`, `MUHÂVERE` veya `EXT. BAHÇE - GECE` gibi bölüm başlıkları.
-- Parantez, köşeli parantez veya yalnızca italik satırla verilen yönergeler provada ayrıca gösterilir.
+- Satır başında tireyle: `- AHMET: Replik`, `— AYŞE — Replik`, `– Ahmet: Replik`. Konuşanı yazmayan roman tarzı `— Gel buraya.` önceki konuşanın repliğine eklenir.
+- `ORGON. — Replik` (adın ardından nokta ve tire).
+- Cümle de olabilecek "zayıf" biçimler (büyük harf olmayan ad + tire, satır başı tire + büyük harf olmayan ad, `Orgon. —`) yalnızca o ad metinde birden fazla kez rol olarak geçiyorsa ya da metin rollerini bu biçimde yazıyorsa (birden çok kez konuşan en az iki karakter) rol sayılır. Böylece `Evet - dedi Ali` rol olmaz.
+- `Saat 12:30'da` gibi saatler rol sayılmaz. `Yer:`, `Zaman:`, `Not:`, `Kişiler:` gibi etiketler (7 dilde) yönerge olur.
+- `I. PERDE`, `1. Sahne`, `MUHÂVERE` veya `EXT. BAHÇE - GECE` gibi bölüm başlıkları. Senaryo başlığı (`İÇ`, `DIŞ`, `INT`, `EXT`) büyük harfle ya da anahtar kelimeden sonra noktayla yazılmalıdır, böylece `İç çeker.` başlık sayılmaz. Tek kelimelik bitiş işaretleri (`SON`, `FIN`) yalnızca büyük harfle sahneyi kapatır; `Perde sonu` her yazımda geçerlidir.
+- Parantez, köşeli parantez veya yalnızca italik satırla verilen yönergeler provada ayrıca gösterilir. Kapanmayan bir parantez bir sonraki başlıkta ya da kesin rol satırında kendiliğinden kapanır.
+- Metin katmanlı PDF'te iki sayfa yan yana basılmışsa (ortada en az sayfa genişliğinin %2'si kadar yazısız bir oluk ve iki yanda satırların en az dörtte biri varsa) önce sol, sonra sağ sütun okunur (`TextColumns`).
 - PDF sınırı 100 MB ve 1.000 sayfa. 30 sayfadan uzun PDF'lerde hangi sayfaların aktarılacağı sorulur (bir seferde en fazla 200 sayfa); böylece oyunun başladığı sayfa seçilir, önsöz ve notlar dışarıda kalır. Metin sınırı (150.000 karakter) aşılırsa aktarma son tam sayfada durur, önizleme kalan sayfaları ayrı metin olarak aktarmayı söyler ve başlığa sayfa aralığı eklenir (`Tartuffe (50–112)`).
 - Taranmış PDF sayfaları (metin katmanı olmayan ya da 20 harften az metin içeren sayfalar) cihazda ML Kit metin tanımayla okunur (`PdfOcr`); sayfa görüntüsü telefondan çıkmaz. `OcrText` tanınan satırları sıraya koyar: iki kitap sayfasının yan yana tarandığı görüntüleri sütunlara ayırır, `84 TARTUFFE` gibi sayfa başlıklarını ve numaralarını atar, satır sonunda bölünen kelimeleri birleştirir, satır başındaki leke işaretlerini temizler, `ORGON. —` ve `MADAM PERNELLE, —` biçimlerini `ORGON:` yapar, sahne başındaki büyük harfli kişi listesini not olarak alır, `SAHNE Il` gibi okunuşları `SAHNE II` yapar ve tek harfi farklı okunan karakter adlarını en sık okunan yazımda birleştirir. Önizleme kaç sayfanın taranarak okunduğunu söyler; karakter adlarını kontrol etmek gerekir.
+- Metin tanımanın emin olamadığı satırlar (`OcrReview`, güven < 0,7) sayfadan kırpılıp önbellekte tutulur. Düzenleyicideki **İncele** kartı her satırın görüntüsünü metindeki karşılığının yanında gösterir; satır yerinde düzeltilir, atlanır ya da inceleme kapatılır. Kırpıntılar bir sonraki aktarmada silinir.
+- Metin sınırına ulaşan bir PDF aktarmasından sonra düzenleyicideki **Kaydet ve sonraki sayfaları aktar** düğmesi bu parçayı kaydedip kalan sayfaları aynı dosyadan sonraki metin olarak aktarır.
+- **Fotoğraftan** kaynağı sayfaları kamera uygulamasıyla art arda çeker ya da galeriden en fazla 60 fotoğraf seçer (`PhotoOcr`). Fotoğraflar küçültülür, EXIF yönüne göre döndürülür, cihazda okunur ve taranmış PDF ile aynı temizlikten geçer; aktarma için çekilenler okunduktan sonra silinir.
+- `ScriptFormats` Word (DOCX) paragraflarında baştaki kalın adı rol, italik paragrafı yönerge sayar; Fountain'da karakter satırlarını rol, aksiyon ve parantezleri yönerge yapar, başlık sayfasını, notları ve geçişleri atar; Final Draft (FDX) paragraf türlerini rol, replik ve yönergeye çevirir. Uzantısı olmayan dosyalar ilk baytlarından tanınır.
+- Ayrıştırıcı, tarama temizliği ve dosya dönüştürücüleri `app/src/test` altındaki JUnit testleriyle her CI derlemesinde denenir; testlerde yayımlanmış oyun metni değil, uydurma replikler kullanılır.
 
 Biçim örnekleri [MEB Karagöz ünitesi](https://ogmmateryal.eba.gov.tr/panel/upload/etkilesimli/kitap/turkdiliveedebiyati/10/unite6/files/basic-html/page9.html), [TDK konuşma çizgisi](https://yazim.tdk.gov.tr/content/09-noktalama-isaretleri.html), [Dramatists Guild](https://www.dramatistsguild.com/sites/default/files/2020-01/General-SFI-Formatting-Guidelines-Complete.pdf) ve [Fountain](https://fountain.io/syntax/) belgeleriyle karşılaştırıldı.

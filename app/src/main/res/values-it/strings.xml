@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Salva e scegli il ruolo</string>
     <string name="sample_title">Scena di esempio</string>
     <string name="imported_title">Testo importato</string>
-    <string name="import_failed">Impossibile leggere il file. Scegli un file TXT in UTF-8.</string>
+    <string name="import_failed">Impossibile leggere il file. Scegli un file TXT in UTF-8, Word (DOCX), Fountain o Final Draft (FDX).</string>
     <string name="import_too_long">Il file è troppo grande. I PDF possono avere fino a 100 MB e 1.000 pagine; i file di testo fino a 150.000 caratteri.</string>
     <string name="premium_description">Voci naturali per i personaggi, avanzamento a voce, risultati dettagliati e prove video.</string>
     <string name="premium_voices">Voci naturali per i personaggi</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Impara il testo verso per verso.</string>
     <string name="choose_text_source">Aggiungi il tuo testo</string>
     <string name="create_import_pdf">Importa PDF</string>
-    <string name="create_import_txt">Importa TXT</string>
+    <string name="create_import_txt">Importa file</string>
     <string name="create_paste">Incolla testo</string>
     <string name="create_write">Scrivilo tu</string>
     <string name="empty_clipboard">Nessun testo da incollare.</string>
@@ -123,6 +123,30 @@
     <string name="step_counter">Passaggio %1$d di %2$d</string>
     <string name="importing">Importazione del testo…</string>
     <string name="importing_scanned">Lettura della pagina scansionata %1$d di %2$d…</string>
+    <string name="ocr_review_start">Controlla</string>
+    <string name="ocr_review_done">Controllo completato.</string>
+    <string name="ocr_review_page">Pagina %1$d</string>
+    <string name="ocr_review_picture">La riga come appare sulla pagina</string>
+    <string name="ocr_review_missing">Questa riga non è più nel testo; forse è già stata corretta.</string>
+    <string name="ocr_review_title">Riga incerta %1$d di %2$d</string>
+    <string name="ocr_review_next">Avanti</string>
+    <string name="ocr_review_save">Salva e avanti</string>
+    <string name="ocr_review_skip">Salta</string>
+    <string name="create_import_photo">Da foto</string>
+    <string name="source_photo_details">Fotografa le pagine o sceglile dalla galleria</string>
+    <string name="photo_take">Scatta foto</string>
+    <string name="photo_pick">Scegli dalla galleria</string>
+    <string name="photo_more_message">Fotografa la pagina successiva o leggi il testo dalle foto scattate finora.</string>
+    <string name="photo_read">Leggi il testo</string>
+    <string name="photo_more">Pagina successiva</string>
+    <string name="photo_title">Testo da foto</string>
+    <string name="importing_photo">Lettura della foto %1$d di %2$d…</string>
+    <string name="photo_no_text">Nessun testo trovato in queste foto. Scattale con buona luce, dall’alto e con tutta la pagina visibile.</string>
+    <string name="photo_import_failed">Impossibile leggere le foto.</string>
+    <string name="photo_camera_missing">Nessuna app fotocamera trovata.</string>
+    <string name="photo_camera_permission">Consenti la fotocamera per fotografare le pagine.</string>
+    <string name="photo_too_many">Vengono lette solo le prime %1$d foto.</string>
+    <string name="import_cancelling">Interruzione…</string>
     <string name="pdf_pages_title">Quali pagine?</string>
     <string name="pdf_pages_message">Questo PDF ha %1$d pagine. Scrivi le pagine del PDF in cui il tuo copione inizia e finisce, al massimo %2$d alla volta. Il numero di pagina del PDF può essere diverso da quello stampato nel libro.</string>
     <string name="pdf_pages_first">Prima pagina</string>
@@ -130,9 +154,11 @@
     <string name="pdf_pages_import">Importa</string>
     <string name="pdf_pages_invalid">Scrivi una pagina da 1 a %1$d.</string>
     <string name="pdf_pages_too_many">Scegli al massimo %1$d pagine alla volta.</string>
-    <string name="pdf_pages_cut_short">Sono state importate le pagine %1$d–%2$d; lì è stato raggiunto il limite di testo. Importa di nuovo le pagine %3$d–%4$d come testo separato.</string>
+    <string name="pdf_pages_cut_short">Sono state importate le pagine %1$d–%2$d; lì è stato raggiunto il limite di testo. Con il pulsante sopra il testo importi le pagine %3$d–%4$d come testo successivo.</string>
+    <string name="pdf_rest_message">Le pagine %1$d–%2$d di questo PDF non sono entrate in questo testo.</string>
+    <string name="pdf_rest_import">Salva e importa le pagine successive</string>
     <string name="source_pdf_details">PDF di testo o pagine scansionate</string>
-    <string name="source_txt_details">File di testo UTF-8</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain o Final Draft (FDX)</string>
     <string name="source_paste_details">Usa il testo che hai copiato</string>
     <string name="source_write_details">Inizia da una pagina bianca</string>
     <string name="editor_new_title">Nuovo testo</string>
@@ -363,6 +389,18 @@
     <string name="backup_import_detail">Aggiunge i testi di un backup; non viene eliminato nulla</string>
     <string name="backup_write_failed">Impossibile salvare il backup.</string>
     <string name="backup_read_failed">Impossibile leggere questo backup.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d pagina fotografata</item>
+        <item quantity="other">%d pagine fotografate</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d foto è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
+        <item quantity="other">%d foto sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d riga era difficile da leggere. Confrontala con la pagina e correggila.</item>
+        <item quantity="other">%d righe erano difficili da leggere. Confrontale con la pagina e correggile.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d pagina scansionata è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
         <item quantity="other">%d pagine scansionate sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>

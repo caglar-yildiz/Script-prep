@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Memo Everything – tanıtım videosu</title>
+<style>
+  /* App palette (Ui.java) */
+  :root {
+    --bg: #111015; --surface: #1B1A21; --surface-high: #25232D; --surface-highest: #312E3A;
+    --outline: #3A3645; --text: #F5F2F8; --text2: #B4ADBF; --text3: #827B8D;
+    --accent: #F4A98A; --on-accent: #2B1610; --accent-c: #3B2924; --on-accent-c: #FFD8C9;
+    --violet: #C9B6F2; --violet-c: #2C2640; --teal: #8FD3C1; --teal-c: #1C312D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+  body { font-family: "Inter", "DejaVu Sans", sans-serif; color: var(--text); position: relative; }
+  .layer { position: absolute; inset: 0; }
+  .glow { position: absolute; width: 1400px; height: 1400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(244,169,138,0.22), rgba(244,169,138,0) 62%); }
+  .glow.v { background: radial-gradient(circle, rgba(201,182,242,0.18), rgba(201,182,242,0) 62%); }
+
+  /* Hook */
+  #hook { display: flex; flex-direction: column; justify-content: center; padding: 0 110px; }
+  #hook .big { font-size: 104px; font-weight: 800; line-height: 1.08; letter-spacing: -2px; }
+  #hook .big span { display: inline-block; }
+  #hook .answer { margin-top: 70px; font-size: 62px; font-weight: 600; color: var(--accent); line-height: 1.2; }
+
+  /* Captions */
+  .caption { position: absolute; left: 90px; right: 90px; top: 120px; }
+  .caption h2 { font-size: 76px; font-weight: 800; line-height: 1.08; letter-spacing: -1.5px; }
+  .caption p { margin-top: 24px; font-size: 38px; color: var(--text2); line-height: 1.3; }
+
+  /* Phone */
+  #phone { position: absolute; left: 160px; top: 470px; width: 760px; height: 1390px;
+    border-radius: 86px; background: #000; padding: 22px; box-shadow: 0 40px 120px rgba(0,0,0,0.6),
+    0 0 0 3px #2a2731; }
+  #screen { position: relative; width: 100%; height: 100%; border-radius: 66px; overflow: hidden;
+    background: var(--bg); }
+  .notch { position: absolute; top: 22px; left: 50%; width: 30px; height: 30px; margin-left: -15px;
+    border-radius: 50%; background: #000; z-index: 5; }
+  .page { position: absolute; inset: 0; padding: 110px 44px 40px; }
+  .bar { display: flex; align-items: center; gap: 18px; font-size: 30px; color: var(--text2); margin-bottom: 30px; }
+  .bar .icon { width: 44px; height: 44px; border-radius: 50%; background: var(--surface-high); }
+  .title { font-size: 46px; font-weight: 700; margin-bottom: 10px; }
+  .sub { font-size: 28px; color: var(--text2); margin-bottom: 34px; }
+  .card { background: var(--surface); border: 2px solid #292631; border-radius: 34px; padding: 30px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  .tile { min-height: 250px; position: relative; overflow: hidden; }
+  .tile .ic { width: 76px; height: 76px; border-radius: 24px; background: var(--accent-c);
+    display: flex; align-items: center; justify-content: center; }
+  .tile .ic svg { width: 40px; height: 40px; fill: var(--accent); }
+  .tile h4 { font-size: 31px; font-weight: 700; margin-top: 26px; }
+  .tile p { font-size: 23px; color: var(--text2); margin-top: 8px; line-height: 1.3; }
+  .ripple { position: absolute; border-radius: 50%; background: rgba(244,169,138,0.35); }
+  .chip { display: inline-flex; align-items: center; height: 58px; padding: 0 26px; border-radius: 999px;
+    background: var(--surface-highest); font-size: 27px; font-weight: 600; margin: 0 10px 12px 0; }
+  .chip.on { background: var(--accent); color: var(--on-accent); }
+  .loading { display: flex; align-items: center; gap: 28px; padding: 40px 34px; }
+  .spinner { width: 58px; height: 58px; border-radius: 50%; border: 7px solid rgba(244,169,138,0.25);
+    border-top-color: var(--accent); }
+  .loading span { font-size: 29px; font-weight: 600; white-space: nowrap; }
+  .dialog { position: absolute; left: 30px; right: 30px; top: 250px; background: var(--surface-high);
+    border-radius: 40px; padding: 44px 40px; box-shadow: 0 30px 80px rgba(0,0,0,0.5); }
+  .dialog h3 { font-size: 38px; font-weight: 700; margin-bottom: 26px; }
+  .dialog .count { font-size: 32px; color: var(--text2); margin-bottom: 26px; }
+  .dialog .label { font-size: 26px; color: var(--text3); margin: 10px 0 16px; text-transform: uppercase; letter-spacing: 2px; }
+  .dialog .section { font-size: 29px; color: var(--text); padding: 14px 0; border-top: 2px solid var(--outline); }
+  .dim { position: absolute; inset: 0; background: rgba(0,0,0,0.55); }
+  .role-chip { background: var(--violet-c); color: var(--violet); }
+
+  /* Rehearsal */
+  .progress { height: 10px; border-radius: 5px; background: var(--surface-highest); margin-bottom: 40px; overflow: hidden; }
+  .progress i { display: block; height: 100%; background: var(--accent); border-radius: 5px; }
+  .line { margin-bottom: 26px; }
+  .who { font-size: 26px; font-weight: 700; letter-spacing: 2px; margin-bottom: 14px; }
+  .said { font-family: "DejaVu Serif", Georgia, serif; font-size: 40px; line-height: 1.38; }
+  .said .w { color: var(--text3); }
+  .said .w.lit { color: var(--text); }
+  .mine { background: var(--accent-c); border-color: #4a332c; }
+  .mine .who { color: var(--accent); }
+  .mine .said { color: var(--on-accent-c); }
+  .waves { display: flex; gap: 8px; align-items: center; height: 60px; margin-top: 18px; }
+  .waves b { display: block; width: 10px; border-radius: 5px; background: var(--violet); }
+  .mic { display: flex; align-items: center; gap: 22px; margin-top: 26px; font-size: 28px; color: var(--accent); font-weight: 600; }
+  .mic .dot { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); position: relative; }
+  .mic .ring { position: absolute; inset: 0; border-radius: 50%; border: 5px solid var(--accent); }
+  .button { position: absolute; left: 44px; right: 44px; bottom: 60px; height: 112px; border-radius: 56px;
+    background: var(--accent); color: var(--on-accent); font-size: 34px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; }
+  .hiddenline { font-size: 32px; color: var(--on-accent-c); opacity: 0.75; font-style: italic; }
+
+  /* End card */
+  #end { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #end .mark { width: 300px; height: 300px; border-radius: 80px; background: #241D2B;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 30px 90px rgba(0,0,0,0.5); }
+  #end .mark svg { width: 300px; height: 300px; }
+  #end h1 { font-size: 100px; font-weight: 800; letter-spacing: -2px; margin-top: 70px; }
+  #end .tag { font-size: 52px; color: var(--accent); font-weight: 600; margin-top: 22px; }
+  #end .facts { margin-top: 70px; display: flex; flex-direction: column; gap: 22px; font-size: 36px; color: var(--text2); }
+  #end .store { margin-top: 90px; height: 120px; padding: 0 60px; border-radius: 60px; background: var(--text);
+    color: var(--bg); font-size: 40px; font-weight: 700; display: flex; align-items: center; }
+</style>
+</head>
+<body>
+<div class="glow" id="glow1"></div>
+<div class="glow v" id="glow2"></div>
+
+<!-- 1. Hook -->
+<div class="layer" id="hook">
+  <div class="big" id="hookWords"></div>
+  <div class="answer" id="hookAnswer" data-t="answer"></div>
+</div>
+
+<!-- Captions -->
+<div class="caption" id="cap1"><h2 data-t="cap1"></h2><p data-t="cap1s"></p></div>
+<div class="caption" id="cap2"><h2 data-t="cap2"></h2><p data-t="cap2s"></p></div>
+<div class="caption" id="cap3"><h2 data-t="cap3"></h2><p data-t="cap3s"></p></div>
+<div class="caption" id="cap4"><h2 data-t="cap4"></h2><p data-t="cap4s"></p></div>
+<div class="caption" id="cap5"><h2 data-t="cap5"></h2><p data-t="cap5s"></p></div>
+
+<!-- Phone -->
+<div id="phone">
+  <div id="screen">
+    <div class="notch"></div>
+
+    <!-- Source screen -->
+    <div class="page" id="pSource">
+      <div class="bar"><div class="icon"></div><span data-t="step"></span></div>
+      <div class="title" data-t="source"></div>
+      <div class="sub" data-t="category"></div>
+      <div class="grid" id="tiles">
+        <div class="card tile" id="tilePdf">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm7 1.5V9h5.5z"/></svg></div>
+          <h4 data-t="pdf"></h4><p data-t="pdfs"></p>
+          <div class="ripple" id="ripple"></div>
+        </div>
+        <div class="card tile">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 2 7.2 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-3.2L15 2zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></svg></div>
+          <h4 data-t="photo"></h4><p data-t="photos"></p>
+        </div>
+        <div class="card tile">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M6 2h8l6 6v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/></svg></div>
+          <h4 data-t="file"></h4><p data-t="files"></p>
+        </div>
+        <div class="card tile">
+          <div class="ic"><svg viewBox="0 0 24 24"><path d="M8 3h8v3H8zM5 5h2v3h10V5h2v16H5z"/></svg></div>
+          <h4 data-t="paste"></h4><p data-t="pastes"></p>
+        </div>
+      </div>
+      <div class="card loading" id="loading" style="margin-top: 26px">
+        <div class="spinner" id="spinner"></div><span id="loadText"></span>
+      </div>
+    </div>
+
+    <!-- Editor + preview dialog -->
+    <div class="page" id="pPreview">
+      <div class="bar"><div class="icon"></div><span data-t="newText"></span></div>
+      <div class="title" data-t="play"></div>
+      <div class="card said" style="font-size: 30px; line-height: 1.5; color: var(--text2)" data-h="draft"></div>
+      <div class="dim" id="dim"></div>
+      <div class="dialog" id="dialog">
+        <h3 data-t="review"></h3>
+        <div class="count" data-t="counts"></div>
+        <div class="label" data-t="characters"></div>
+        <div id="roleChips"></div>
+        <div class="label" style="margin-top: 22px" data-t="scenes"></div>
+        <div class="section" data-t="s1"></div>
+        <div class="section" data-t="s2"></div>
+        <div class="section" data-t="s3"></div>
+      </div>
+    </div>
+
+    <!-- Rehearsal -->
+    <div class="page" id="pRehearsal">
+      <div class="bar"><div class="icon"></div><span data-t="s1"></span></div>
+      <div class="progress"><i id="prog"></i></div>
+      <div class="card line" id="partner">
+        <div class="who" style="color: var(--violet)" data-t="partner"></div>
+        <div class="said" id="partnerText"></div>
+        <div class="waves" id="waves"></div>
+      </div>
+      <div class="card line mine" id="mine">
+        <div class="who" data-t="yourTurn"></div>
+        <div class="said" id="mineText"></div>
+        <div class="mic" id="mic"><div class="dot"><div class="ring" id="ring"></div></div><span data-t="listening"></span></div>
+      </div>
+      <div id="modes" style="margin-top: 10px; white-space: nowrap"></div>
+      <div class="card line" id="upcoming" style="opacity: 0.45">
+        <div class="who" style="color: var(--teal)" data-t="third"></div>
+        <div class="said" style="font-size: 34px" data-t="thirdLine"></div>
+      </div>
+      <div class="button" id="next" data-t="continue"></div>
+    </div>
+  </div>
+</div>
+
+<!-- End card -->
+<div class="layer" id="end">
+  <div class="mark"><svg viewBox="0 0 108 108"><path fill="#F3BDA4" d="M28,49 C27,43 31,36 38,32 C42,30 46,29 48,31 C50,33 49,35 46,36 C42,38 40,41 40,45 C45,44 50,47 54,51 C54,43 59,35 67,31 C71,29 75,29 76,32 C78,34 76,36 73,37 C69,39 67,42 66,45 C75,44 83,53 83,63 L83,74 C83,77 81,79 78,79 L73,79 C70,79 68,77 68,74 L68,65 C68,62 66,60 64,60 C61,60 59,62 59,65 L59,74 C59,77 57,79 54,79 L51,79 C48,79 46,77 46,74 L46,65 C46,62 44,60 42,60 C39,60 37,62 37,65 L37,74 C37,77 35,79 32,79 L28,79 C25,79 23,77 23,74 L23,62 C23,56 25,52 28,49 Z"/></svg></div>
+  <h1>Memo Everything</h1>
+  <div class="tag" data-t="tag"></div>
+  <div class="facts" id="facts">
+    <div data-t="fact1"></div>
+    <div data-t="fact2"></div>
+  </div>
+  <div class="store" id="store" data-t="store"></div>
+</div>
+
+<script>
+  const DURATION = 28;
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const ease = t => 1 - Math.pow(1 - clamp(t), 3);
+  /** 0 → 1 between start and start + d. */
+  const ramp = (t, start, d) => ease((t - start) / d);
+  /** Visible between a and b with fades of d at both ends. */
+  const span = (t, a, b, d = 0.35) => Math.min(ramp(t, a, d), 1 - ramp(t, b - d, d));
+  const $ = id => document.getElementById(id);
+  const show = (el, o, dy = 0, scale = 1) => {
+    el.style.opacity = o;
+    el.style.transform = `translateY(${dy}px) scale(${scale})`;
+    el.style.visibility = o <= 0.001 ? 'hidden' : 'visible';
+  };
+
+  // Every text in the video, per language; ?lang=en picks English. Phone texts follow the app's strings.
+  const TEXTS = {
+    tr: {
+      hook: 'Replik çalışacak partnerin yok mu?', answer: 'Memo Everything senin prova partnerin.',
+      cap1: 'Metnini ekle', cap1s: 'PDF, fotoğraf, Word ya da düz metin. Taranmış sayfalar da olur.',
+      cap2: 'Karakterleri ve sahneleri kendisi bulur', cap2s: 'Rolünü seç, gerisini uygulama hazırlar.',
+      cap3: 'Partnerin replikleri sesli okur', cap3s: 'Her karaktere ayrı ses.',
+      cap4: 'Sıra sana gelince seni bekler', cap4s: 'Takıldığında repliği aç.',
+      cap5: 'Repliğini adım adım gizle', cap5s: 'Tam replikten ezbere.',
+      step: 'Adım 2 / 2', source: 'Metnini ekle', category: 'Rol provası',
+      pdf: 'PDF içe aktar', pdfs: 'Metin içeren ya da taranmış PDF',
+      photo: 'Fotoğraftan', photos: 'Sayfaların fotoğrafını çek ya da galeriden seç',
+      file: 'Dosya içe aktar', files: 'TXT, Word (DOCX), Fountain ya da Final Draft (FDX)',
+      paste: 'Metin yapıştır', pastes: 'Kopyaladığın metni kullan',
+      scanning: (n, total) => `Taranmış sayfa okunuyor: ${n} / ${total}…`,
+      newText: 'Yeni metin', play: 'Kuşlar',
+      draft: 'I. PERDE<br>1. Sahne<br>MEHMET: Sabah oldu mu?<br>AYŞE: Pencereyi aç…<br>DOKTOR: Günaydın.<br>…',
+      review: 'Sahneleri ve rolleri kontrol et', counts: '3 sahne · 42 replik', characters: 'Karakterler',
+      roles: ['AYŞE', 'MEHMET', 'DOKTOR'], scenes: 'Sahneler',
+      s1: 'I. PERDE · 1. Sahne', s2: 'I. PERDE · 2. Sahne', s3: 'II. PERDE · 1. Sahne',
+      partner: 'MEHMET', partnerLine: 'Sabah oldu mu? Kuşlar çoktan ötmeye başladı.',
+      yourTurn: 'SIRA SENDE · AYŞE', mine: 'Pencereyi aç, bir de sen dinle.', listening: 'Dinliyorum…',
+      hidden: 'Repliğin gizli.', third: 'DOKTOR', thirdLine: 'Günaydın. Uyandığınızı görmek ne güzel.',
+      continue: 'Devam et', modes: ['Tam replik', 'İlk kelime', 'İlk harfler', 'Gizli'],
+      tag: 'Ezber provan, cebinde.', fact1: 'Oyun, konuşma ve şiir', fact2: '7 dil · Metinlerin telefonunda kalır',
+      store: 'Android için'
+    },
+    en: {
+      hook: 'No one to run your lines with?', answer: 'Memo Everything is your rehearsal partner.',
+      cap1: 'Add your script', cap1s: 'PDF, photos, Word or plain text. Scanned pages work too.',
+      cap2: 'It finds the characters and scenes', cap2s: 'Pick your role. The app does the rest.',
+      cap3: 'Your partner reads the other lines aloud', cap3s: 'A different voice for each character.',
+      cap4: 'It waits for your line', cap4s: 'Stuck? Reveal the line.',
+      cap5: 'Hide more as you learn', cap5s: 'From the full line to off book.',
+      step: 'Step 2 of 2', source: 'Add your text', category: 'Role rehearsal',
+      pdf: 'Import PDF', pdfs: 'Text PDF or scanned pages',
+      photo: 'From photos', photos: 'Take photos of the pages or pick them from your gallery',
+      file: 'Import a file', files: 'TXT, Word (DOCX), Fountain or Final Draft (FDX)',
+      paste: 'Paste text', pastes: 'Use the text you copied',
+      scanning: (n, total) => `Reading scanned page ${n} of ${total}…`,
+      newText: 'New text', play: 'Birds',
+      draft: 'ACT I<br>Scene 1<br>MARK: Is it morning yet?<br>ANNA: Open the window…<br>DOCTOR: Good morning.<br>…',
+      review: 'Review scenes and roles', counts: '3 scenes · 42 lines', characters: 'Characters',
+      roles: ['ANNA', 'MARK', 'DOCTOR'], scenes: 'Scenes',
+      s1: 'ACT I · Scene 1', s2: 'ACT I · Scene 2', s3: 'ACT II · Scene 1',
+      partner: 'MARK', partnerLine: 'Is it morning yet? The birds have started singing.',
+      yourTurn: 'YOUR TURN · ANNA', mine: 'Open the window and listen with me.', listening: 'Listening…',
+      hidden: 'Your line is hidden.', third: 'DOCTOR', thirdLine: 'Good morning. How lovely to see you both awake.',
+      continue: 'Continue', modes: ['Full line', 'First word', 'First letters', 'Hidden'],
+      tag: 'Your rehearsal partner, in your pocket.', fact1: 'Scripts, speeches and poems',
+      fact2: '7 languages · Your texts stay on your phone', store: 'For Android'
+    }
+  };
+  const LANG = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'tr';
+  const T = TEXTS[LANG];
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T[el.dataset.t]; });
+  document.querySelectorAll('[data-h]').forEach(el => { el.innerHTML = T[el.dataset.h]; });
+
+  const hookWords = T.hook.split(' ');
+  $('hookWords').innerHTML = hookWords.map(w => `<span>${w}</span>`).join(' ');
+  $('roleChips').innerHTML = T.roles.map(r => `<span class="chip role-chip">${r}</span>`).join('');
+  const partnerWords = T.partnerLine.split(' ');
+  $('partnerText').innerHTML = partnerWords.map(w => `<span class="w">${w}</span>`).join(' ');
+  $('waves').innerHTML = Array.from({length: 24}, () => '<b></b>').join('');
+  const mineLine = T.mine;
+  // Same masks as RehearsalOptions: first word, then initials with a middle dot.
+  const views = {
+    full: mineLine,
+    hint: mineLine.split(' ')[0] + ' …',
+    initials: mineLine.replace(/[\p{L}]+/gu, w => w.length > 1 ? w[0] + '·' : w),
+    hidden: ''
+  };
+  const modeNames = ['full', 'hint', 'initials', 'hidden'].map((k, i) => [k, T.modes[i]]);
+  $('modes').innerHTML = modeNames.map(([k, n]) =>
+    `<span class="chip" data-mode="${k}" style="font-size: 24px; padding: 0 20px; margin-right: 8px">${n}</span>`).join('');
+
+  function render(t) {
+    // Background glows drift slowly.
+    $('glow1').style.left = (-500 + Math.sin(t * 0.35) * 120) + 'px';
+    $('glow1').style.top = (-400 + Math.cos(t * 0.3) * 120) + 'px';
+    $('glow2').style.left = (300 + Math.cos(t * 0.28) * 140) + 'px';
+    $('glow2').style.top = (1000 + Math.sin(t * 0.33) * 140) + 'px';
+
+    // 1. Hook (0 – 3.4)
+    const hook = span(t, 0, 3.4, 0.4);
+    show($('hook'), hook === 0 && t > 1 ? 0 : (t < 0.4 ? 1 : hook));
+    [...$('hookWords').children].forEach((w, i) => {
+      const o = ramp(t, 0.15 + i * 0.22, 0.4);
+      show(w, o, (1 - o) * 40);
+    });
+    const answer = ramp(t, 1.7, 0.5);
+    show($('hookAnswer'), answer, (1 - answer) * 30);
+
+    // Phone enters at 3.2 and leaves at 24.
+    const phoneIn = ramp(t, 3.1, 0.7);
+    const phoneOut = ramp(t, 23.8, 0.6);
+    show($('phone'), Math.min(phoneIn, 1 - phoneOut), (1 - phoneIn) * 500 + phoneOut * 120);
+
+    // Captions
+    const caps = [['cap1', 3.3, 8.6], ['cap2', 8.6, 12.2], ['cap3', 12.2, 15.7], ['cap4', 15.7, 19.6], ['cap5', 19.6, 24.0]];
+    for (const [id, a, b] of caps) {
+      const o = span(t, a, b, 0.4);
+      show($(id), o, (1 - ramp(t, a, 0.4)) * 30);
+    }
+
+    // Source screen (3.2 – 8.6)
+    show($('pSource'), t < 8.4 ? 1 : 1 - ramp(t, 8.4, 0.3));
+    const tap = ramp(t, 4.7, 0.5);
+    const ripple = $('ripple');
+    const r = tap * 520;
+    ripple.style.width = ripple.style.height = r + 'px';
+    ripple.style.left = (150 - r / 2) + 'px';
+    ripple.style.top = (130 - r / 2) + 'px';
+    ripple.style.opacity = t < 4.7 ? 0 : (1 - ramp(t, 5.1, 0.4)) * 0.9;
+    $('tilePdf').style.borderColor = t > 4.7 ? '#F4A98A' : '#292631';
+    const loadIn = ramp(t, 5.3, 0.35);
+    show($('loading'), loadIn, (1 - loadIn) * 30);
+    show($('tiles'), 1 - ramp(t, 5.2, 0.3) * 0.55);
+    $('spinner').style.transform = `rotate(${t * 400}deg)`;
+    const pageNo = clamp(Math.floor(1 + (t - 5.4) / 2.2 * 11), 1, 12);
+    $('loadText').textContent = T.scanning(pageNo, 12);
+
+    // Preview (8.4 – 12.3)
+    show($('pPreview'), span(t, 8.4, 12.3, 0.3));
+    const dlg = ramp(t, 8.8, 0.45);
+    show($('dim'), dlg);
+    show($('dialog'), dlg, (1 - dlg) * 60, 0.94 + dlg * 0.06);
+    [...$('roleChips').children].forEach((c, i) => {
+      const o = ramp(t, 9.5 + i * 0.35, 0.35);
+      show(c, o, 0, 0.6 + o * 0.4);
+    });
+
+    // Rehearsal (12.1 – 24)
+    show($('pRehearsal'), ramp(t, 12.1, 0.3));
+    $('prog').style.width = (18 + ramp(t, 12.2, 7) * 30) + '%';
+    const spoken = (t - 12.7) / 2.6 * partnerWords.length;
+    [...$('partnerText').children].forEach((w, i) => w.classList.toggle('lit', i < spoken));
+    const talking = t > 12.6 && t < 15.5;
+    [...$('waves').children].forEach((b, i) => {
+      const h = talking ? 14 + Math.abs(Math.sin(t * 9 + i * 0.7) * Math.cos(t * 5.3 + i * 1.3)) * 46 : 8;
+      b.style.height = h + 'px';
+    });
+
+    const mineIn = ramp(t, 15.6, 0.4);
+    show($('mine'), t < 15.6 ? 0.35 : 0.35 + mineIn * 0.65, 0, 1);
+    let view = 'initials';
+    if (t < 15.6) view = 'hidden';
+    else if (t < 18.2) view = 'initials';
+    else if (t < 19.6) view = 'full';
+    // Memorisation views cycle in the last part.
+    const cycle = [[19.8, 'full'], [20.9, 'hint'], [22.0, 'initials'], [23.0, 'hidden']];
+    if (t >= 19.6) {
+      view = 'full';
+      for (const [at, v] of cycle) if (t >= at) view = v;
+    }
+    const mineText = $('mineText');
+    if (view === 'hidden') {
+      mineText.innerHTML = `<span class="hiddenline">${T.hidden}</span>`;
+    } else {
+      mineText.textContent = views[view];
+    }
+    const listening = t > 15.8 && t < 18.2;
+    show($('mic'), listening ? ramp(t, 15.8, 0.3) : 0);
+    const pulse = (t * 1.2) % 1;
+    $('ring').style.transform = `scale(${1 + pulse * 0.9})`;
+    $('ring').style.opacity = 1 - pulse;
+
+    const modesIn = ramp(t, 19.6, 0.4);
+    show($('modes'), modesIn, (1 - modesIn) * 20);
+    [...$('modes').children].forEach(c => c.classList.toggle('on', c.dataset.mode === view && t >= 19.6));
+    show($('next'), 1 - ramp(t, 19.4, 0.3));
+    $('upcoming').style.marginTop = (modesIn * 4) + 'px';
+
+    // End card (24 – 28)
+    const end = ramp(t, 24.2, 0.6);
+    show($('end'), end, (1 - end) * 40);
+    const facts = ramp(t, 25.0, 0.5);
+    show($('facts'), facts, (1 - facts) * 20);
+    const store = ramp(t, 25.6, 0.5);
+    show($('store'), store, 0, 0.9 + store * 0.1);
+  }
+  window.render = render;
+  window.DURATION = DURATION;
+  render(0);
+</script>
+</body>
+</html>

@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Speichern und Rolle wählen</string>
     <string name="sample_title">Beispielszene</string>
     <string name="imported_title">Importierter Text</string>
-    <string name="import_failed">Die Datei konnte nicht gelesen werden. Wähle eine UTF-8-TXT-Datei.</string>
+    <string name="import_failed">Die Datei konnte nicht gelesen werden. Wähle eine UTF-8-TXT-, Word- (DOCX), Fountain- oder Final-Draft-Datei (FDX).</string>
     <string name="import_too_long">Die Datei ist zu groß. PDFs dürfen bis zu 100 MB und 1.000 Seiten haben, Textdateien bis zu 150.000 Zeichen.</string>
     <string name="premium_description">Natürliche Figurenstimmen, Weiter per Stimme, detaillierte Ergebnisse und Videoproben.</string>
     <string name="premium_voices">Natürliche Figurenstimmen</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Lerne deinen Text Zeile für Zeile.</string>
     <string name="choose_text_source">Text hinzufügen</string>
     <string name="create_import_pdf">PDF importieren</string>
-    <string name="create_import_txt">TXT importieren</string>
+    <string name="create_import_txt">Datei importieren</string>
     <string name="create_paste">Text einfügen</string>
     <string name="create_write">Selbst schreiben</string>
     <string name="empty_clipboard">Kein Text zum Einfügen.</string>
@@ -123,6 +123,30 @@
     <string name="step_counter">Schritt %1$d von %2$d</string>
     <string name="importing">Dein Text wird importiert…</string>
     <string name="importing_scanned">Gescannte Seite %1$d von %2$d wird gelesen…</string>
+    <string name="ocr_review_start">Prüfen</string>
+    <string name="ocr_review_done">Prüfung abgeschlossen.</string>
+    <string name="ocr_review_page">Seite %1$d</string>
+    <string name="ocr_review_picture">Die Zeile, wie sie auf der Seite steht</string>
+    <string name="ocr_review_missing">Diese Zeile steht nicht mehr im Text, vielleicht wurde sie schon korrigiert.</string>
+    <string name="ocr_review_title">Unsichere Zeile %1$d von %2$d</string>
+    <string name="ocr_review_next">Weiter</string>
+    <string name="ocr_review_save">Speichern und weiter</string>
+    <string name="ocr_review_skip">Überspringen</string>
+    <string name="create_import_photo">Aus Fotos</string>
+    <string name="source_photo_details">Fotografiere die Seiten oder wähle sie aus deiner Galerie</string>
+    <string name="photo_take">Fotos aufnehmen</string>
+    <string name="photo_pick">Aus Galerie wählen</string>
+    <string name="photo_more_message">Fotografiere die nächste Seite oder lies den Text aus den bisherigen Fotos.</string>
+    <string name="photo_read">Text lesen</string>
+    <string name="photo_more">Nächste Seite</string>
+    <string name="photo_title">Text aus Fotos</string>
+    <string name="importing_photo">Foto %1$d von %2$d wird gelesen…</string>
+    <string name="photo_no_text">In diesen Fotos wurde kein Text gefunden. Fotografiere bei gutem Licht, gerade von oben und mit der ganzen Seite im Bild.</string>
+    <string name="photo_import_failed">Die Fotos konnten nicht gelesen werden.</string>
+    <string name="photo_camera_missing">Keine Kamera-App gefunden.</string>
+    <string name="photo_camera_permission">Erlaube die Kamera, um Seiten zu fotografieren.</string>
+    <string name="photo_too_many">Nur die ersten %1$d Fotos werden gelesen.</string>
+    <string name="import_cancelling">Wird abgebrochen…</string>
     <string name="pdf_pages_title">Welche Seiten?</string>
     <string name="pdf_pages_message">Dieses PDF hat %1$d Seiten. Gib die PDF-Seiten ein, auf denen dein Stück beginnt und endet, höchstens %2$d auf einmal. Die PDF-Seitenzahl kann von der im Buch gedruckten abweichen.</string>
     <string name="pdf_pages_first">Erste Seite</string>
@@ -130,9 +154,11 @@
     <string name="pdf_pages_import">Importieren</string>
     <string name="pdf_pages_invalid">Gib eine Seite von 1 bis %1$d ein.</string>
     <string name="pdf_pages_too_many">Wähle höchstens %1$d Seiten auf einmal.</string>
-    <string name="pdf_pages_cut_short">Die Seiten %1$d–%2$d wurden importiert; dort war das Textlimit erreicht. Importiere die Seiten %3$d–%4$d erneut als eigenen Text.</string>
+    <string name="pdf_pages_cut_short">Die Seiten %1$d–%2$d wurden importiert; dort war das Textlimit erreicht. Mit der Schaltfläche über dem Text importierst du die Seiten %3$d–%4$d als nächsten Text.</string>
+    <string name="pdf_rest_message">Die Seiten %1$d–%2$d dieses PDFs passten nicht mehr in diesen Text.</string>
+    <string name="pdf_rest_import">Speichern und nächste Seiten importieren</string>
     <string name="source_pdf_details">Text-PDF oder gescannte Seiten</string>
-    <string name="source_txt_details">UTF-8-Textdatei</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain oder Final Draft (FDX)</string>
     <string name="source_paste_details">Kopierten Text verwenden</string>
     <string name="source_write_details">Mit einer leeren Seite beginnen</string>
     <string name="editor_new_title">Neuer Text</string>
@@ -353,6 +379,18 @@
     <string name="backup_import_detail">Fügt die Texte einer Sicherung hinzu; nichts wird gelöscht</string>
     <string name="backup_write_failed">Die Sicherungsdatei konnte nicht gespeichert werden.</string>
     <string name="backup_read_failed">Diese Sicherungsdatei konnte nicht gelesen werden.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d Seite fotografiert</item>
+        <item quantity="other">%d Seiten fotografiert</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d Foto wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+        <item quantity="other">%d Fotos wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d Zeile war schwer zu lesen. Vergleiche sie mit der Seite und korrigiere sie.</item>
+        <item quantity="other">%d Zeilen waren schwer zu lesen. Vergleiche sie mit der Seite und korrigiere sie.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d gescannte Seite wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
         <item quantity="other">%d gescannte Seiten wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>

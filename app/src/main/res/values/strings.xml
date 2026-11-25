@@ -34,7 +34,7 @@
     <string name="script_save_and_rehearse">Save and choose a role</string>
     <string name="sample_title">Sample scene</string>
     <string name="imported_title">Imported text</string>
-    <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT file.</string>
+    <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT, Word (DOCX), Fountain or Final Draft (FDX) file.</string>
     <string name="import_too_long">This file is too large. PDFs can be up to 100 MB and 1,000 pages; text files up to 150,000 characters.</string>
     <string name="premium_description">Natural character voices, hands-free cues, detailed results and video practice.</string>
     <string name="premium_voices">Natural character voices</string>
@@ -90,7 +90,7 @@
     <string name="category_poem_details">Learn your text line by line.</string>
     <string name="choose_text_source">Add your text</string>
     <string name="create_import_pdf">Import PDF</string>
-    <string name="create_import_txt">Import TXT</string>
+    <string name="create_import_txt">Import a file</string>
     <string name="create_paste">Paste text</string>
     <string name="create_write">Write your own</string>
     <string name="empty_clipboard">No text to paste.</string>
@@ -124,6 +124,30 @@
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
     <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="ocr_review_start">Review</string>
+    <string name="ocr_review_done">Review finished.</string>
+    <string name="ocr_review_page">Page %1$d</string>
+    <string name="ocr_review_picture">The line as it appears on the page</string>
+    <string name="ocr_review_missing">This line is no longer in the text, perhaps because it was already corrected.</string>
+    <string name="ocr_review_title">Unsure line %1$d of %2$d</string>
+    <string name="ocr_review_next">Next</string>
+    <string name="ocr_review_save">Save and next</string>
+    <string name="ocr_review_skip">Skip</string>
+    <string name="create_import_photo">From photos</string>
+    <string name="source_photo_details">Take photos of the pages or pick them from your gallery</string>
+    <string name="photo_take">Take photos</string>
+    <string name="photo_pick">Choose from gallery</string>
+    <string name="photo_more_message">Take the next page, or read the text from the photos so far.</string>
+    <string name="photo_read">Read text</string>
+    <string name="photo_more">Next page</string>
+    <string name="photo_title">Text from photos</string>
+    <string name="importing_photo">Reading photo %1$d of %2$d…</string>
+    <string name="photo_no_text">No text was found in these photos. Take them in good light, straight from above, with the whole page in view.</string>
+    <string name="photo_import_failed">Couldn’t read the photos.</string>
+    <string name="photo_camera_missing">No camera app was found.</string>
+    <string name="photo_camera_permission">Allow the camera to photograph pages.</string>
+    <string name="photo_too_many">Only the first %1$d photos are read.</string>
+    <string name="import_cancelling">Stopping…</string>
     <string name="pdf_pages_title">Which pages?</string>
     <string name="pdf_pages_message">This PDF has %1$d pages. Enter the PDF pages where your play starts and ends, up to %2$d at a time. The PDF page number can differ from the number printed in the book.</string>
     <string name="pdf_pages_first">First page</string>
@@ -131,9 +155,11 @@
     <string name="pdf_pages_import">Import</string>
     <string name="pdf_pages_invalid">Enter a page from 1 to %1$d.</string>
     <string name="pdf_pages_too_many">Choose at most %1$d pages at a time.</string>
-    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Import pages %3$d–%4$d again as a separate text.</string>
+    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Use the button above the text to import pages %3$d–%4$d next.</string>
+    <string name="pdf_rest_message">Pages %1$d–%2$d of this PDF did not fit in this text.</string>
+    <string name="pdf_rest_import">Save and import the next pages</string>
     <string name="source_pdf_details">Text PDF or scanned pages</string>
-    <string name="source_txt_details">Plain UTF-8 text file</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain or Final Draft (FDX)</string>
     <string name="source_paste_details">Use the text you copied</string>
     <string name="source_write_details">Start from a blank page</string>
     <string name="editor_new_title">New text</string>
@@ -359,6 +385,18 @@
     <string name="backup_import_detail">Adds the texts in a backup; nothing is deleted</string>
     <string name="backup_write_failed">Couldn’t save the backup file.</string>
     <string name="backup_read_failed">Couldn’t read this backup file.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d page photographed</item>
+        <item quantity="other">%d pages photographed</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d photo was read with text recognition. Check the character names and lines before you rehearse.</item>
+        <item quantity="other">%d photos were read with text recognition. Check the character names and lines before you rehearse.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d line was hard to read. Compare it with the page and fix it.</item>
+        <item quantity="other">%d lines were hard to read. Compare them with the page and fix them.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d scanned page was read with text recognition. Check the character names and lines before you rehearse.</item>
         <item quantity="other">%d scanned pages were read with text recognition. Check the character names and lines before you rehearse.</item>

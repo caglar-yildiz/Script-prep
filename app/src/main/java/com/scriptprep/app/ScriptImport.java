@@ -8,11 +8,14 @@ import android.provider.OpenableColumns;
 
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 
 final class ScriptImport {
     private ScriptImport() {}
@@ -24,9 +27,25 @@ final class ScriptImport {
         final int firstPage;
         final int lastPage;
         final int requestedLastPage;
+        /** Read from photos rather than a file; {@link #scannedPages} counts the photos. */
+        final boolean photos;
+        /** Converted from Word, Fountain or Final Draft, so worth a look at the detected roles. */
+        final boolean converted;
 
         Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
             int requestedLastPage) {
+            this(script, scannedPages, firstPage, lastPage, requestedLastPage, false, false);
+        }
+
+        Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
+            int requestedLastPage, boolean photos) {
+            this(script, scannedPages, firstPage, lastPage, requestedLastPage, photos, false);
+        }
+
+        Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
+            int requestedLastPage, boolean photos, boolean converted) {
+            this.photos = photos;
+            this.converted = converted;
             this.script = script;
             this.scannedPages = scannedPages;
             this.firstPage = firstPage;
@@ -40,6 +59,13 @@ final class ScriptImport {
         }
     }
 
+    /** Reads script pages from photos; {@code title} names the text. */
+    static Result readPhotos(Context context, List<Uri> photos, String title, int lengthLimit,
+        PdfOcr.Progress progress, BooleanSupplier cancelled, OcrReview review) throws IOException {
+        PhotoOcr.Result read = PhotoOcr.read(context, photos, lengthLimit, progress, cancelled, review);
+        return new Result(new ScriptLibrary.Script(null, title, read.text), read.pages, 0, 0, 0, true);
+    }
+
     /** A picked PDF, copied and counted, waiting for the pages to read. */
     static final class PdfFile {
         final PdfScriptReader.Source source;
@@ -51,18 +77,56 @@ final class ScriptImport {
         }
     }
 
+    /** Reads a TXT, Word (DOCX), Fountain or Final Draft (FDX) file. */
     static Result readText(Context context, Uri uri, int lengthLimit) throws IOException {
         ContentResolver resolver = context.getContentResolver();
-        try (InputStream stream = resolver.openInputStream(uri)) {
-            if (stream == null) {
+        String name = displayName(resolver, uri);
+        ScriptFormats.Kind kind = ScriptFormats.kindOf(name);
+        String text;
+        try (InputStream opened = resolver.openInputStream(uri)) {
+            if (opened == null) {
                 throw new IOException("Missing stream");
             }
-            String text = readText(stream, lengthLimit);
-            return new Result(new ScriptLibrary.Script(null, readTitle(resolver, uri), text), 0, 0, 0, 0);
+            BufferedInputStream stream = new BufferedInputStream(opened);
+            if (kind == ScriptFormats.Kind.TEXT) {
+                kind = sniff(stream);
+            }
+            text = switch (kind) {
+                case DOCX -> ScriptFormats.docx(stream);
+                case FDX -> ScriptFormats.fdx(stream);
+                case FOUNTAIN -> ScriptFormats.fountain(readText(stream, lengthLimit * 2));
+                case TEXT -> readText(stream, lengthLimit);
+            };
         }
+        if (text.length() > lengthLimit) {
+            throw new LengthLimitException();
+        }
+        if (kind != ScriptFormats.Kind.TEXT && text.trim().isEmpty()) {
+            throw new IOException("No script text");
+        }
+        String title = name.replaceFirst("(?i)\\.(?:txt|text|docx|fountain|spmd|fdx)$", "");
+        return new Result(new ScriptLibrary.Script(null, title, text), 0, 0, 0, 0, false,
+            kind != ScriptFormats.Kind.TEXT);
     }
 
-    static PdfFile openPdf(Context context, Uri uri) throws IOException {
+    /** Word and Final Draft files picked without a telling name are known by how they start. */
+    private static ScriptFormats.Kind sniff(BufferedInputStream stream) throws IOException {
+        byte[] head = new byte[512];
+        stream.mark(head.length);
+        int count = 0;
+        int read;
+        while (count < head.length && (read = stream.read(head, count, head.length - count)) > 0) {
+            count += read;
+        }
+        stream.reset();
+        if (count >= 4 && head[0] == 'P' && head[1] == 'K' && head[2] == 3 && head[3] == 4) {
+            return ScriptFormats.Kind.DOCX;
+        }
+        String start = new String(head, 0, count, StandardCharsets.UTF_8);
+        return start.contains("<FinalDraft") ? ScriptFormats.Kind.FDX : ScriptFormats.Kind.TEXT;
+    }
+
+    static PdfFile openPdf(Context context, Uri uri, BooleanSupplier cancelled) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         // The text strip reader initializes PDFBox font resources in its superclass.
         PDFBoxResourceLoader.init(context);
@@ -70,16 +134,16 @@ final class ScriptImport {
             if (stream == null) {
                 throw new IOException("Missing stream");
             }
-            return new PdfFile(PdfScriptReader.open(context, stream), readTitle(resolver, uri));
+            return new PdfFile(PdfScriptReader.open(context, stream, cancelled), readTitle(resolver, uri));
         }
     }
 
     /** Reads pages {@code firstPage} to {@code lastPage} of the PDF and removes its copy. */
     static Result readPdf(Context context, PdfFile pdf, int firstPage, int lastPage, int lengthLimit,
-        PdfOcr.Progress progress) throws IOException {
+        PdfOcr.Progress progress, BooleanSupplier cancelled, OcrReview review) throws IOException {
         try {
             PdfScriptReader.Result text = PdfScriptReader.read(context, pdf.source, firstPage, lastPage,
-                lengthLimit, progress);
+                lengthLimit, progress, cancelled, review);
             String title = pdf.title;
             if (firstPage > 1 || lastPage < pdf.source.pageCount) {
                 title = (title.isEmpty() ? "" : title + " ") + "(" + text.firstPage + "–" + text.lastPage + ")";
@@ -112,12 +176,16 @@ final class ScriptImport {
     }
 
     private static String readTitle(ContentResolver resolver, Uri uri) {
+        return displayName(resolver, uri).replaceFirst("(?i)\\.(?:txt|pdf)$", "");
+    }
+
+    private static String displayName(ContentResolver resolver, Uri uri) {
         try (Cursor cursor = resolver.query(uri, new String[] {OpenableColumns.DISPLAY_NAME},
             null, null, null)) {
             if (cursor != null && cursor.moveToFirst() && cursor.getColumnCount() > 0) {
                 String name = cursor.getString(0);
                 if (name != null) {
-                    return name.replaceFirst("(?i)\\.(?:txt|pdf)$", "");
+                    return name;
                 }
             }
         } catch (RuntimeException ignored) {
@@ -127,4 +195,14 @@ final class ScriptImport {
     }
 
     static final class LengthLimitException extends IOException {}
+
+    /** The user stopped the import. */
+    static final class CancelledException extends IOException {}
+
+    /** Throws {@link CancelledException} once the user has stopped the import. */
+    static void check(BooleanSupplier cancelled) throws CancelledException {
+        if (cancelled != null && cancelled.getAsBoolean()) {
+            throw new CancelledException();
+        }
+    }
 }

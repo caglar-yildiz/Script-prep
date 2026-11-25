@@ -33,7 +33,7 @@
     <string name="script_save_and_rehearse">Enregistrer et choisir un rôle</string>
     <string name="sample_title">Scène d’exemple</string>
     <string name="imported_title">Texte importé</string>
-    <string name="import_failed">Impossible de lire le fichier. Choisis un fichier TXT en UTF-8.</string>
+    <string name="import_failed">Impossible de lire le fichier. Choisis un fichier TXT en UTF-8, Word (DOCX), Fountain ou Final Draft (FDX).</string>
     <string name="import_too_long">Ce fichier est trop volumineux. Les PDF peuvent faire jusqu’à 100 Mo et 1 000 pages ; les fichiers texte jusqu’à 150 000 caractères.</string>
     <string name="premium_description">Voix naturelles pour les personnages, avance à la voix, résultats détaillés et répétition vidéo.</string>
     <string name="premium_voices">Voix naturelles pour les personnages</string>
@@ -89,7 +89,7 @@
     <string name="category_poem_details">Apprends ton texte vers par vers.</string>
     <string name="choose_text_source">Ajoute ton texte</string>
     <string name="create_import_pdf">Importer un PDF</string>
-    <string name="create_import_txt">Importer un TXT</string>
+    <string name="create_import_txt">Importer un fichier</string>
     <string name="create_paste">Coller le texte</string>
     <string name="create_write">L’écrire toi-même</string>
     <string name="empty_clipboard">Aucun texte à coller.</string>
@@ -123,6 +123,30 @@
     <string name="step_counter">Étape %1$d sur %2$d</string>
     <string name="importing">Importation de ton texte…</string>
     <string name="importing_scanned">Lecture de la page numérisée %1$d sur %2$d…</string>
+    <string name="ocr_review_start">Vérifier</string>
+    <string name="ocr_review_done">Vérification terminée.</string>
+    <string name="ocr_review_page">Page %1$d</string>
+    <string name="ocr_review_picture">La ligne telle qu’elle apparaît sur la page</string>
+    <string name="ocr_review_missing">Cette ligne n’est plus dans le texte ; elle a peut-être déjà été corrigée.</string>
+    <string name="ocr_review_title">Ligne incertaine %1$d sur %2$d</string>
+    <string name="ocr_review_next">Suivante</string>
+    <string name="ocr_review_save">Enregistrer et continuer</string>
+    <string name="ocr_review_skip">Passer</string>
+    <string name="create_import_photo">Depuis des photos</string>
+    <string name="source_photo_details">Photographie les pages ou choisis-les dans ta galerie</string>
+    <string name="photo_take">Prendre des photos</string>
+    <string name="photo_pick">Choisir dans la galerie</string>
+    <string name="photo_more_message">Photographie la page suivante ou lis le texte des photos déjà prises.</string>
+    <string name="photo_read">Lire le texte</string>
+    <string name="photo_more">Page suivante</string>
+    <string name="photo_title">Texte depuis des photos</string>
+    <string name="importing_photo">Lecture de la photo %1$d sur %2$d…</string>
+    <string name="photo_no_text">Aucun texte trouvé sur ces photos. Prends-les avec une bonne lumière, bien d’aplomb et avec toute la page visible.</string>
+    <string name="photo_import_failed">Impossible de lire les photos.</string>
+    <string name="photo_camera_missing">Aucune app d’appareil photo trouvée.</string>
+    <string name="photo_camera_permission">Autorise l’appareil photo pour photographier les pages.</string>
+    <string name="photo_too_many">Seules les %1$d premières photos sont lues.</string>
+    <string name="import_cancelling">Arrêt en cours…</string>
     <string name="pdf_pages_title">Quelles pages ?</string>
     <string name="pdf_pages_message">Ce PDF compte %1$d pages. Saisis les pages du PDF où ta pièce commence et se termine, %2$d au maximum à la fois. Le numéro de page du PDF peut différer de celui imprimé dans le livre.</string>
     <string name="pdf_pages_first">Première page</string>
@@ -130,9 +154,11 @@
     <string name="pdf_pages_import">Importer</string>
     <string name="pdf_pages_invalid">Saisis une page entre 1 et %1$d.</string>
     <string name="pdf_pages_too_many">Choisis au maximum %1$d pages à la fois.</string>
-    <string name="pdf_pages_cut_short">Les pages %1$d–%2$d ont été importées ; la limite de texte a été atteinte à cet endroit. Importe à nouveau les pages %3$d–%4$d comme un texte séparé.</string>
+    <string name="pdf_pages_cut_short">Les pages %1$d–%2$d ont été importées ; la limite de texte a été atteinte à cet endroit. Le bouton au-dessus du texte importe les pages %3$d–%4$d comme texte suivant.</string>
+    <string name="pdf_rest_message">Les pages %1$d–%2$d de ce PDF n’ont pas tenu dans ce texte.</string>
+    <string name="pdf_rest_import">Enregistrer et importer les pages suivantes</string>
     <string name="source_pdf_details">PDF texte ou pages numérisées</string>
-    <string name="source_txt_details">Fichier texte UTF-8</string>
+    <string name="source_txt_details">TXT, Word (DOCX), Fountain ou Final Draft (FDX)</string>
     <string name="source_paste_details">Utilise le texte copié</string>
     <string name="source_write_details">Commence avec une page vierge</string>
     <string name="editor_new_title">Nouveau texte</string>
@@ -363,6 +389,18 @@
     <string name="backup_import_detail">Ajoute les textes d’une sauvegarde ; rien n’est supprimé</string>
     <string name="backup_write_failed">Impossible d’enregistrer la sauvegarde.</string>
     <string name="backup_read_failed">Impossible de lire cette sauvegarde.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d page photographiée</item>
+        <item quantity="other">%d pages photographiées</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d photo a été lue par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+        <item quantity="other">%d photos ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+    </plurals>
+    <plurals name="ocr_review_message">
+        <item quantity="one">%d ligne a été difficile à lire. Compare-la avec la page et corrige-la.</item>
+        <item quantity="other">%d lignes ont été difficiles à lire. Compare-les avec la page et corrige-les.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d page numérisée a été lue par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
         <item quantity="other">%d pages numérisées ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
