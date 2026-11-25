@@ -42,8 +42,10 @@ final class PdfScriptReader extends PDFTextStripper {
     private final int characterLimit;
     private final List<List<Row>> pages = new ArrayList<>();
     private final Map<PDFont, Integer> styles = new IdentityHashMap<>();
-    private final StringBuilder current = new StringBuilder();
+    /** Words of the line being read. */
     private final List<Part> parts = new ArrayList<>();
+    /** Lines of the page being read, as words with their position; an empty line is a paragraph gap. */
+    private final List<List<Part>> pageLines = new ArrayList<>();
     private List<Row> page;
     private int characters;
     private int scannedPages;
@@ -234,8 +236,9 @@ final class PdfScriptReader extends PDFTextStripper {
         if (characters > characterLimit * 2) {
             throw new Full();
         }
-        current.append(text);
         int style = 0;
+        float left = Float.NaN;
+        float right = Float.NaN;
         if (!positions.isEmpty()) {
             style = BOLD | ITALIC;
             for (TextPosition position : positions) {
@@ -243,9 +246,13 @@ final class PdfScriptReader extends PDFTextStripper {
                 if (glyph != null && !glyph.trim().isEmpty()) {
                     style &= fontStyle(position.getFont());
                 }
+                float x = position.getXDirAdj();
+                left = Float.isNaN(left) ? x : Math.min(left, x);
+                right = Float.isNaN(right) ? x + position.getWidthDirAdj()
+                    : Math.max(right, x + position.getWidthDirAdj());
             }
         }
-        parts.add(new Part(text, style));
+        parts.add(new Part(text, style, left, right));
     }
 
     private int fontStyle(PDFont font) {
@@ -270,8 +277,7 @@ final class PdfScriptReader extends PDFTextStripper {
 
     @Override
     protected void writeWordSeparator() {
-        current.append(' ');
-        parts.add(new Part(" ", 0));
+        parts.add(new Part(" ", 0, Float.NaN, Float.NaN));
     }
 
     @Override
@@ -282,26 +288,101 @@ final class PdfScriptReader extends PDFTextStripper {
     @Override
     protected void writeParagraphStart() {
         flushRow();
-        if (!page.isEmpty() && !page.get(page.size() - 1).text.isEmpty()) {
-            page.add(new Row("", ""));
+        if (!pageLines.isEmpty() && !pageLines.get(pageLines.size() - 1).isEmpty()) {
+            pageLines.add(new ArrayList<>());
         }
     }
 
     @Override
     protected void endPage(PDPage source) {
         flushRow();
+        float width = source.getRotation() % 180 == 0 ? source.getCropBox().getWidth()
+            : source.getCropBox().getHeight();
+        List<List<float[]>> spans = new ArrayList<>();
+        for (List<Part> line : pageLines) {
+            List<float[]> words = new ArrayList<>();
+            for (Part part : line) {
+                if (!Float.isNaN(part.left)) {
+                    words.add(new float[] {part.left, part.right});
+                }
+            }
+            if (!words.isEmpty()) {
+                spans.add(words);
+            }
+        }
+        float gutter = TextColumns.gutter(spans, width);
+        if (gutter < 0) {
+            for (List<Part> line : pageLines) {
+                addRow(line);
+            }
+        } else {
+            // Two pages side by side: the left column first, then the right one.
+            for (List<Part> line : pageLines) {
+                addRow(side(line, gutter, true));
+            }
+            addRow(new ArrayList<>());
+            for (List<Part> line : pageLines) {
+                addRow(side(line, gutter, false));
+            }
+        }
+        pageLines.clear();
     }
 
     private void flushRow() {
-        String text = current.toString().trim();
-        if (!text.isEmpty()) {
-            page.add(new Row(text, addStyle(text)));
+        boolean words = false;
+        for (Part part : parts) {
+            words |= !part.text.trim().isEmpty();
         }
-        current.setLength(0);
+        if (words) {
+            pageLines.add(new ArrayList<>(parts));
+        }
         parts.clear();
     }
 
-    private String addStyle(String text) {
+    /** The words of a line on one side of the gutter; spaces go with the word before them. */
+    private static List<Part> side(List<Part> line, float gutter, boolean left) {
+        if (line.isEmpty()) {
+            return line;
+        }
+        List<Part> kept = new ArrayList<>();
+        boolean onLeft = true;
+        boolean seenWord = false;
+        for (Part part : line) {
+            if (!Float.isNaN(part.left)) {
+                onLeft = (part.left + part.right) / 2 < gutter;
+                seenWord = true;
+            }
+            if (onLeft == left && (seenWord || !Float.isNaN(part.left))) {
+                kept.add(part);
+            }
+        }
+        boolean words = false;
+        for (Part part : kept) {
+            words |= !part.text.trim().isEmpty();
+        }
+        return words ? kept : null;
+    }
+
+    /** Adds a line to the page; an empty line marks a paragraph gap, null adds nothing. */
+    private void addRow(List<Part> line) {
+        if (line == null) {
+            return;
+        }
+        StringBuilder joined = new StringBuilder();
+        for (Part part : line) {
+            joined.append(part.text);
+        }
+        String text = joined.toString().trim();
+        if (text.isEmpty()) {
+            if (!page.isEmpty() && !page.get(page.size() - 1).text.isEmpty()) {
+                page.add(new Row("", ""));
+            }
+            return;
+        }
+        page.add(new Row(text, addStyle(line, joined.toString(), text)));
+    }
+
+    private String addStyle(List<Part> parts, String current, String text) {
         if (Scene.isHeading(text)) {
             return text;
         }
@@ -393,9 +474,15 @@ final class PdfScriptReader extends PDFTextStripper {
         final String text;
         final int style;
 
-        Part(String text, int style) {
+        /** Left and right edge on the page; not a number for the space between words. */
+        final float left;
+        final float right;
+
+        Part(String text, int style, float left, float right) {
             this.text = text;
             this.style = style;
+            this.left = left;
+            this.right = right;
         }
     }
 
