@@ -3,6 +3,13 @@ import java.security.MessageDigest
 
 plugins {
     id("com.android.application") version "8.13.2"
+    id("com.google.gms.google-services") version "4.4.4" apply false
+}
+
+// Ensemble rehearsal talks to Firebase. The project config comes from the Firebase console
+// (see docs/ensemble-setup.md); without it the app builds and runs with the feature hidden.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 // On-device neural text-to-speech (https://github.com/k2-fsa/sherpa-onnx, Apache-2.0).
@@ -114,6 +121,13 @@ dependencies {
     // The sherpa-onnx bindings are written in Kotlin.
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
     implementation("com.android.billingclient:billing:9.1.0")
+    // Ensemble rehearsal: shared texts and recordings (Firestore) behind Google sign-in.
+    implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
+    implementation("androidx.credentials:credentials:1.6.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
     // On-device text recognition for scanned PDF pages. The bundled model works offline from the
     // first launch and needs no Google Play services download.
     implementation("com.google.mlkit:text-recognition:16.0.1")

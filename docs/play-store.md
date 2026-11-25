@@ -67,13 +67,13 @@ Kimlikler kodla birebir aynı olmalı (`Billing.java`). İstersen bir temel plan
 ## 5. Mağaza sayfası ve politikalar
 
 - **Gizlilik politikası URL'si** zorunlu (mikrofon/kamera izni): `https://caglar-yildiz.github.io/Script-prep/`. Kaynağı `docs/index.html`. Yayınlamak için: GitHub → depo → Settings → Pages → *Deploy from a branch* → `main` / `docs` → Save (birkaç dakika sürer).
-- **Uygulama erişimi**: giriş gerekmez.
+- **Uygulama erişimi**: giriş gerekmez. Ekip provası hesap istemiyor (ad yazılıyor, anonim kimlik); Google hesabı bağlamak isteğe bağlı. İnceleme için bir davet kodu verilebilir.
 - **Reklamlar**: yok.
 - **İçerik derecelendirmesi** anketi: şiddet/kumar vb. yok → genelde "Herkes/3+" çıkar.
 - **Hedef kitle**: 13+ (uygulama çocuklara yönelik değil).
 - **Data safety** (önerilen yanıtlar, son kararı Play'in açıklamalarına bakarak ver):
-  - Toplanan/paylaşılan veri: geliştirici sunucusuna gönderilen veri yok.
-  - Ses: konuşma tanıma için cihazın Google hizmeti kullanılıyor; uygulama sesi saklamıyor veya göndermiyor.
+  - Toplanan/paylaşılan veri: yalnızca **ekip provası** kullanılırsa, Firebase'de (Google) kullanıcının yazdığı ad, anonim kullanıcı kimliği, Google hesabı bağlanırsa e-posta (hesap yönetimi, uygulama işlevi), paylaşılan metin (diğer kullanıcı içeriği) ve replik ses kayıtları (ses kayıtları, uygulama işlevi). Hepsi isteğe bağlı; satılmıyor, reklam için kullanılmıyor.
+  - Ses: konuşma tanıma için cihazın Google hizmeti kullanılıyor; uygulama bu sesi saklamıyor veya göndermiyor. Ekip provasında kaydedilen replikler ise grup üyeleri dinlesin diye Firebase'e yükleniyor.
   - Fotoğraf/video: yalnızca cihazda saklanıyor.
   - Taranmış PDF metin tanıma (ML Kit, cihazda): sayfa görüntüsü ve metin gönderilmiyor; ML Kit Google'a tanılama/performans verisi gönderebilir. Formu doldurmadan önce Google'ın [ML Kit Data safety rehberine](https://developers.google.com/ml-kit/android-data-disclosure) bak ve oradaki "App info and performance" yanıtlarını ekle.
   - Satın alma geçmişi: Google Play Billing üzerinden; Play'in kendi işlediği veriler.

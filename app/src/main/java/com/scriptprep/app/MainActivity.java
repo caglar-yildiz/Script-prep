@@ -98,6 +98,7 @@ public final class MainActivity extends Activity {
     private static final int IMPORT_PDF = 2;
     private static final int EXPORT_BACKUP = 3;
     private static final int IMPORT_BACKUP = 4;
+    private static final int ENSEMBLE = 5;
     private static final String SPEED_PREFERENCE = "reading_speed";
     private static final float[] SPEEDS = {0.75f, 1f, 1.25f, 1.5f};
     private static final int SNACKBAR_DURATION = 6000;
@@ -189,6 +190,14 @@ public final class MainActivity extends Activity {
     private boolean revealLine;
     /** Whether the line being read now uses the AI voice. */
     private boolean aiSpeaking;
+    /** Whether the line being read now is a cast member's recording. */
+    private boolean recordingSpeaking;
+    private android.media.MediaPlayer recordingPlayer;
+    /** Cast recordings of the open shared text, loaded once per text. */
+    private EnsembleRecordings.Voices castRecordings;
+    private String castRecordingsFor;
+    /** The text being created goes to ensemble rehearsal to be shared once it is saved. */
+    private boolean shareAfterSave;
 
     private String snackbarMessage;
     private String snackbarActionLabel;
@@ -241,6 +250,7 @@ public final class MainActivity extends Activity {
             mode = Mode.valueOf(state.getString("mode", Mode.PRACTICE.name()));
             lineVisibility = Visibility.valueOf(state.getString("line_visibility", Visibility.FULL.name()));
             revealLine = state.getBoolean("reveal_line");
+            shareAfterSave = state.getBoolean("share_after_save");
             if (screen == Screen.SETUP || screen == Screen.READER || screen == Screen.REHEARSAL
                 || screen == Screen.VOICES || screen == Screen.LINES) {
                 ensureRole();
@@ -248,6 +258,27 @@ public final class MainActivity extends Activity {
         }
         render();
         speech = new TextToSpeech(this, status -> main.post(() -> prepareSpeech(status)));
+        if (state == null) {
+            openFromIntent(getIntent());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openFromIntent(intent);
+    }
+
+    /** A shared text the ensemble screen asks to rehearse when it was opened from an invite link. */
+    private void openFromIntent(Intent intent) {
+        if (intent != null && intent.getBooleanExtra(EnsembleActivity.RESULT_ADD_TEXT, false)) {
+            intent.removeExtra(EnsembleActivity.RESULT_ADD_TEXT);
+            startTextForEnsemble();
+        } else if (intent != null && intent.hasExtra(EnsembleActivity.RESULT_SCRIPT_ID)) {
+            openEnsembleCopy(intent.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
+                intent.getStringExtra(EnsembleActivity.RESULT_ROLE));
+            intent.removeExtra(EnsembleActivity.RESULT_SCRIPT_ID);
+        }
     }
 
     @SuppressWarnings("deprecation")
@@ -298,6 +329,7 @@ public final class MainActivity extends Activity {
         state.putString("mode", mode.name());
         state.putString("line_visibility", lineVisibility.name());
         state.putBoolean("reveal_line", revealLine);
+        state.putBoolean("share_after_save", shareAfterSave);
         state.putIntegerArrayList("review_base", reviewBase);
         state.putIntegerArrayList("revealed_lines", new ArrayList<>(revealedLines));
         state.putIntegerArrayList("retried_lines", new ArrayList<>(retriedLines));
@@ -373,6 +405,15 @@ public final class MainActivity extends Activity {
     @SuppressWarnings("deprecation")
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ENSEMBLE) {
+            if (resultCode == RESULT_OK && data != null && data.getBooleanExtra(EnsembleActivity.RESULT_ADD_TEXT, false)) {
+                startTextForEnsemble();
+            } else if (resultCode == RESULT_OK && data != null) {
+                openEnsembleCopy(data.getStringExtra(EnsembleActivity.RESULT_SCRIPT_ID),
+                    data.getStringExtra(EnsembleActivity.RESULT_ROLE));
+            }
+            return;
+        }
         if ((requestCode == EXPORT_BACKUP || requestCode == IMPORT_BACKUP)
             && resultCode == RESULT_OK && data != null && data.getData() != null) {
             if (requestCode == EXPORT_BACKUP) {
@@ -648,6 +689,7 @@ public final class MainActivity extends Activity {
 
     private void cancelSpeech() {
         autoPlayPending = false;
+        releaseRecordingPlayer();
         if (activeUtterance != null || activePreview != null) {
             activeUtterance = null;
             activePreview = null;
@@ -664,6 +706,10 @@ public final class MainActivity extends Activity {
         if (!RehearsalOptions.shouldSpeak(mode, role, line.role)) {
             return;
         }
+        java.io.File recorded = castRecording(line);
+        if (recorded != null && playRecording(recorded)) {
+            return;
+        }
         if (useAiVoice() && neural.state() != NeuralVoice.State.FAILED) {
             playWithAiVoice(line);
             return;
@@ -675,6 +721,7 @@ public final class MainActivity extends Activity {
             stopListening();
             playbackFailed = false;
             aiSpeaking = false;
+            recordingSpeaking = false;
             VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
             VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
             speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
@@ -710,6 +757,70 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /** The cast member's recording of a line in a shared text, if one is on this device. */
+    private java.io.File castRecording(Scene.Line line) {
+        if (scriptId == null || !scriptId.startsWith(Ensemble.LOCAL_PREFIX)) {
+            return null;
+        }
+        if (castRecordings == null || !scriptId.equals(castRecordingsFor)) {
+            castRecordings = EnsembleRecordings.Voices.load(this,
+                scriptId.substring(Ensemble.LOCAL_PREFIX.length()), fullScene);
+            castRecordingsFor = scriptId;
+        }
+        return castRecordings.find(line);
+    }
+
+    /** Plays a recorded line; returns false when it cannot, so a voice reads it instead. */
+    private boolean playRecording(java.io.File file) {
+        cancelSpeech();
+        stopListening();
+        playbackFailed = false;
+        aiSpeaking = false;
+        String id = "line-" + ++utteranceNumber;
+        android.media.MediaPlayer player = new android.media.MediaPlayer();
+        try {
+            player.setDataSource(file.getPath());
+            player.prepare();
+            float speed = readingSpeed();
+            if (speed != 1f) {
+                player.setPlaybackParams(player.getPlaybackParams().setSpeed(speed));
+            }
+        } catch (java.io.IOException | RuntimeException error) {
+            Log.w("ScriptPrep", "Could not play a cast recording", error);
+            player.release();
+            return false;
+        }
+        player.setOnCompletionListener(done -> main.post(() -> {
+            releaseRecordingPlayer();
+            finishSpeech(id, false);
+        }));
+        player.setOnErrorListener((failed, what, extra) -> {
+            main.post(() -> {
+                releaseRecordingPlayer();
+                finishSpeech(id, true);
+            });
+            return true;
+        });
+        recordingPlayer = player;
+        activeUtterance = id;
+        recordingSpeaking = true;
+        player.start();
+        render();
+        return true;
+    }
+
+    private void releaseRecordingPlayer() {
+        if (recordingPlayer != null) {
+            try {
+                recordingPlayer.stop();
+            } catch (RuntimeException ignored) {
+                // Already finished.
+            }
+            recordingPlayer.release();
+            recordingPlayer = null;
+        }
+    }
+
     /** Beeps when the rehearsal reaches one of the actor's own lines. */
     private boolean cueTurn() {
         if (mode != Mode.PRACTICE || !visible || screen != Screen.REHEARSAL || !isMyTurn()
@@ -732,6 +843,10 @@ public final class MainActivity extends Activity {
     // ---------------------------------------------------------------- Frame
 
     private void show(Screen target) {
+        if (target == Screen.HOME || target == Screen.CATEGORIES) {
+            // Leaving the text creation screens: a text made later is not for the cast.
+            shareAfterSave = false;
+        }
         cancelSpeech();
         stopListening();
         if (target != Screen.REHEARSAL && reviewBase != null) {
@@ -965,21 +1080,11 @@ public final class MainActivity extends Activity {
             isFirst = false;
         }
 
-        LinearLayout sample = ui.card(0x00000000, view -> openSample());
-        GradientDrawable dashed = ui.shape(0x00000000, 20);
-        dashed.setStroke(ui.dp(1), Ui.OUTLINE, ui.dp(6), ui.dp(4));
-        sample.setBackground(ui.ripple(dashed, 0x22FFFFFF));
-        sample.setOrientation(LinearLayout.HORIZONTAL);
-        sample.setGravity(Gravity.CENTER_VERTICAL);
-        sample.addView(ui.iconTile(R.drawable.ic_play, TEXT_SECONDARY, SURFACE_HIGH, 44));
-        LinearLayout sampleText = new LinearLayout(this);
-        sampleText.setOrientation(LinearLayout.VERTICAL);
-        sampleText.addView(ui.text(getString(R.string.sample_button), Type.SUBTITLE, TEXT));
-        TextView sampleDetail = ui.text(getString(R.string.sample_details), Type.BODY, TEXT_TERTIARY);
-        sampleDetail.setPadding(0, ui.dp(2), 0, 0);
-        sampleText.addView(sampleDetail);
-        sample.addView(sampleText, weighted(14, ui));
-        content.addView(sample, ui.spaced(10));
+        addEnsembleCard();
+        // The library is not empty, so the sample scene is only a small link now.
+        LinearLayout sample = ui.button(getString(R.string.sample_button), R.drawable.ic_play, Kind.TEXT,
+            view -> openSample());
+        content.addView(sample, ui.wrapSpaced(6));
 
         // Leave room for the floating create button.
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, ui.dp(72)));
@@ -999,8 +1104,10 @@ public final class MainActivity extends Activity {
         card.setGravity(Gravity.CENTER_VERTICAL);
         card.setPadding(ui.dp(16), ui.dp(14), ui.dp(4), ui.dp(14));
 
-        int[] colors = categoryColors(entry.category);
-        card.addView(ui.iconTile(categoryIcon(entry.category), colors[0], colors[1], 48));
+        boolean shared = entry.id.startsWith(Ensemble.LOCAL_PREFIX);
+        int[] colors = shared ? new int[] {VIOLET, VIOLET_CONTAINER} : categoryColors(entry.category);
+        card.addView(ui.iconTile(shared ? R.drawable.ic_people : categoryIcon(entry.category),
+            colors[0], colors[1], 48));
 
         LinearLayout labels = new LinearLayout(this);
         labels.setOrientation(LinearLayout.VERTICAL);
@@ -1062,7 +1169,8 @@ public final class MainActivity extends Activity {
             }
             parsedCache.put(key, parsed);
         }
-        StringBuilder summary = new StringBuilder(getString(categoryTitle(entry.category)));
+        StringBuilder summary = new StringBuilder(getString(entry.id.startsWith(Ensemble.LOCAL_PREFIX)
+            ? R.string.ensemble_title : categoryTitle(entry.category)));
         if (entry.language != interfaceLanguage()) {
             summary.append(" · ").append(getString(entry.language.label));
         }
@@ -1118,7 +1226,114 @@ public final class MainActivity extends Activity {
         LinearLayout sample = ui.button(getString(R.string.sample_button), R.drawable.ic_play,
             Kind.TEXT, view -> openSample());
         content.addView(sample, ui.spaced(4));
+        if (Ensemble.available(this)) {
+            content.addView(ui.button(getString(R.string.ensemble_title), R.drawable.ic_people,
+                Kind.TEXT, view -> openEnsemble()), ui.spaced(0));
+        }
         content.addView(new View(this), new LinearLayout.LayoutParams(-1, 0, 1));
+    }
+
+    /** Adds a text with characters to share with the cast: paste, type or import it. */
+    private void startTextForEnsemble() {
+        category = TextCategory.ROLE_REHEARSAL;
+        shareAfterSave = true;
+        show(Screen.SOURCE);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void shareWithEnsemble(String id) {
+        startActivityForResult(new Intent(this, EnsembleActivity.class)
+            .putExtra(EnsembleActivity.EXTRA_SHARE_SCRIPT, id), ENSEMBLE);
+    }
+
+    /** Entry to ensemble rehearsal, shown when this build carries a Firebase project. */
+    private void addEnsembleCard() {
+        if (!Ensemble.available(this)) {
+            return;
+        }
+        LinearLayout card = ui.card(SURFACE, view -> openEnsemble());
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        card.addView(ui.iconTile(R.drawable.ic_people, VIOLET, VIOLET_CONTAINER, 44));
+        LinearLayout labels = new LinearLayout(this);
+        labels.setOrientation(LinearLayout.VERTICAL);
+        labels.addView(ui.text(getString(R.string.ensemble_title), Type.SUBTITLE, TEXT));
+        TextView detail = ui.text(getString(R.string.ensemble_home_detail), Type.BODY, TEXT_TERTIARY);
+        detail.setPadding(0, ui.dp(2), 0, 0);
+        labels.addView(detail);
+        card.addView(labels, weighted(14, ui));
+        card.addView(ui.icon(R.drawable.ic_chevron_right, TEXT_TERTIARY, 22));
+        content.addView(card, ui.spaced(10));
+    }
+
+    /** Settings: the ensemble identity, Google linking and sign-in, name and sign-out. */
+    private void renderEnsembleAccount() {
+        if (!Ensemble.available(this)) {
+            return;
+        }
+        Ensemble ensemble = new Ensemble(this);
+        EnsembleAccount.Listener redraw = new EnsembleAccount.Listener() {
+            @Override
+            public void busy() {}
+
+            @Override
+            public void changed(Ensemble.Connection connection) {
+                if (screen == Screen.SETTINGS && !isDestroyed()) {
+                    render();
+                }
+            }
+        };
+        sectionLabel(R.string.ensemble_account_section);
+        content.addView(ui.text(EnsembleAccount.status(this, ensemble), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout account = ui.card(SURFACE, null);
+        account.setPadding(0, ui.dp(4), 0, ui.dp(4));
+        if (ensemble.user() == null) {
+            account.addView(ui.listRow(R.drawable.ic_people, getString(R.string.ensemble_title),
+                getString(R.string.ensemble_home_detail), view -> openEnsemble()), Ui.matchWidth());
+            account.addView(ui.divider(70));
+            account.addView(ui.listRow(R.drawable.ic_person, getString(R.string.ensemble_sign_in),
+                getString(R.string.ensemble_returning), view -> EnsembleAccount.connectGoogle(this, ensemble, redraw)),
+                Ui.matchWidth());
+        } else {
+            String name = ensemble.name();
+            account.addView(ui.listRow(R.drawable.ic_person, getString(R.string.ensemble_rename),
+                name.isEmpty() ? getString(R.string.ensemble_unnamed) : name,
+                view -> EnsembleAccount.askName(this, ensemble, redraw)), Ui.matchWidth());
+            account.addView(ui.divider(70));
+            if (ensemble.linked()) {
+                account.addView(ui.listRow(R.drawable.ic_close, getString(R.string.ensemble_sign_out),
+                    ensemble.user().getEmail(), view -> EnsembleAccount.confirmSignOut(this, ensemble, redraw)),
+                    Ui.matchWidth());
+            } else {
+                account.addView(ui.listRow(R.drawable.ic_people, getString(R.string.ensemble_link),
+                    getString(R.string.ensemble_link_detail), view -> EnsembleAccount.connectGoogle(this, ensemble, redraw)),
+                    Ui.matchWidth());
+            }
+        }
+        content.addView(account, ui.spaced(10));
+    }
+
+    @SuppressWarnings("deprecation")
+    private void openEnsemble() {
+        startActivityForResult(new Intent(this, EnsembleActivity.class), ENSEMBLE);
+    }
+
+    /** Opens the local copy of a shared text, starting with the actor's first role. */
+    private void openEnsembleCopy(String id, String ensembleRole) {
+        if (id == null) {
+            return;
+        }
+        // The ensemble screen has just synced; read the recordings again.
+        castRecordings = null;
+        for (ScriptLibrary.Script entry : library.list()) {
+            if (entry.id.equals(id)) {
+                if (ensembleRole != null) {
+                    role = ensembleRole;
+                }
+                openSavedScript(entry);
+                return;
+            }
+        }
     }
 
     private void onboardingStep(LinearLayout parent, int drawable, int label) {
@@ -1233,6 +1448,8 @@ public final class MainActivity extends Activity {
         general.addView(ui.listRow(R.drawable.ic_translate, getString(R.string.language_title),
             getString(AppLanguage.current(this).label), view -> showLanguageOptions()), Ui.matchWidth());
         content.addView(general, ui.spaced(10));
+
+        renderEnsembleAccount();
 
         sectionLabel(R.string.voice_settings);
         TextView explanation = ui.text(getString(R.string.voice_settings_description), Type.BODY, TEXT_SECONDARY);
@@ -1754,7 +1971,7 @@ public final class MainActivity extends Activity {
             return;
         }
         Scene parsed = parseScript(candidate);
-        if (rehearse && parsed.roles.isEmpty()) {
+        if ((rehearse || shareAfterSave) && parsed.roles.isEmpty()) {
             editor.requestFocus();
             editor.setError(getString(category.hasRoles() ? R.string.invalid_scene : R.string.script_text_required));
             return;
@@ -1771,6 +1988,12 @@ public final class MainActivity extends Activity {
         savedTitle = title;
         savedScript = candidate;
         hideKeyboard();
+        if (shareAfterSave) {
+            shareAfterSave = false;
+            returnToLibrary();
+            shareWithEnsemble(scriptId);
+            return;
+        }
         if (rehearse || (editorReturn != Screen.HOME && !parsed.roles.isEmpty())) {
             if (!rehearse) {
                 notifyUser(R.string.saved);
@@ -3096,7 +3319,8 @@ public final class MainActivity extends Activity {
         previous.setEnabled(position > 0);
         previous.setAlpha(position > 0 ? 1f : 0.5f);
         row.addView(previous);
-        if (!myTurn && (speechState == SpeechState.READY || useAiVoice())) {
+        if (!myTurn && (speechState == SpeechState.READY || useAiVoice()
+            || (position < scene.lines.size() && castRecording(scene.lines.get(position)) != null))) {
             boolean playing = activeUtterance != null;
             FrameLayout play = ui.iconButton(playing ? R.drawable.ic_stop : R.drawable.ic_play,
                 getString(playing ? R.string.stop_line : R.string.play_line), ACCENT, ACCENT_CONTAINER, 56, view -> {
@@ -3727,6 +3951,7 @@ public final class MainActivity extends Activity {
         String id = "line-" + ++utteranceNumber;
         activeUtterance = id;
         aiSpeaking = true;
+        recordingSpeaking = false;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
             (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
@@ -4193,6 +4418,9 @@ public final class MainActivity extends Activity {
             return R.string.ai_voice_loading;
         }
         if (activeUtterance != null) {
+            if (recordingSpeaking) {
+                return R.string.ensemble_recording_playing;
+            }
             if (aiSpeaking) {
                 return R.string.ai_voice_playing;
             }

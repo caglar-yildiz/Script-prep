@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "353293921544",
+    "project_id": "memo-70a45",
+    "storage_bucket": "memo-70a45.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:353293921544:android:afad0f77faea0b660610bd",
+        "android_client_info": {
+          "package_name": "com.memoeverything.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "353293921544-nibaj6pbabd7to5o7o0kgmnn34ln4spv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.memoeverything.app",
+            "certificate_hash": "87a06b18e8d2e677b5c9f57bdad78526af5031c7"
+          }
+        },
+        {
+          "client_id": "353293921544-kmn7vd179cbgloa91k91c7qhi79e9uen.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDC-kyKN691FfPJZJKs452cbogFvBM_g6M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "353293921544-kmn7vd179cbgloa91k91c7qhi79e9uen.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
