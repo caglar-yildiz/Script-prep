@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>backup_exported</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d testo esportato</string>
+			<key>many</key>
+			<string>%d testi esportati</string>
+			<key>other</key>
+			<string>%d testi esportati</string>
+		</dict>
+	</dict>
+	<key>backup_imported</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d testo importato</string>
+			<key>many</key>
+			<string>%d testi importati</string>
+			<key>other</key>
+			<string>%d testi importati</string>
+		</dict>
+	</dict>
+	<key>ensemble_member_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d membro</string>
+			<key>many</key>
+			<string>%d membri</string>
+			<key>other</key>
+			<string>%d membri</string>
+		</dict>
+	</dict>
+	<key>hint_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d suggerimento</string>
+			<key>many</key>
+			<string>%d suggerimenti</string>
+			<key>other</key>
+			<string>%d suggerimenti</string>
+		</dict>
+	</dict>
+	<key>jump_to_turn</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>Vai alla tua battuta · fra %d battuta</string>
+			<key>many</key>
+			<string>Vai alla tua battuta · fra %d battute</string>
+			<key>other</key>
+			<string>Vai alla tua battuta · fra %d battute</string>
+		</dict>
+	</dict>
+	<key>library_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d testo</string>
+			<key>many</key>
+			<string>%d testi</string>
+			<key>other</key>
+			<string>%d testi</string>
+		</dict>
+	</dict>
+	<key>line_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d battuta</string>
+			<key>many</key>
+			<string>%d battute</string>
+			<key>other</key>
+			<string>%d battute</string>
+		</dict>
+	</dict>
+	<key>missed_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d sbagliata</string>
+			<key>many</key>
+			<string>%d sbagliate</string>
+			<key>other</key>
+			<string>%d sbagliate</string>
+		</dict>
+	</dict>
+	<key>ocr_review_message</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d riga era difficile da leggere. Confrontala con la pagina e correggila.</string>
+			<key>other</key>
+			<string>%d righe erano difficili da leggere. Confrontale con la pagina e correggile.</string>
+		</dict>
+	</dict>
+	<key>part_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d sezione</string>
+			<key>many</key>
+			<string>%d sezioni</string>
+			<key>other</key>
+			<string>%d sezioni</string>
+		</dict>
+	</dict>
+	<key>photo_pages_notice</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d foto è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</string>
+			<key>other</key>
+			<string>%d foto sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</string>
+		</dict>
+	</dict>
+	<key>photo_taken</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d pagina fotografata</string>
+			<key>other</key>
+			<string>%d pagine fotografate</string>
+		</dict>
+	</dict>
+	<key>retry_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d ripetizione</string>
+			<key>many</key>
+			<string>%d ripetizioni</string>
+			<key>other</key>
+			<string>%d ripetizioni</string>
+		</dict>
+	</dict>
+	<key>role_count</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d personaggio</string>
+			<key>many</key>
+			<string>%d personaggi</string>
+			<key>other</key>
+			<string>%d personaggi</string>
+		</dict>
+	</dict>
+	<key>scanned_pages_notice</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d pagina scansionata è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</string>
+			<key>other</key>
+			<string>%d pagine scansionate sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</string>
+		</dict>
+	</dict>
+	<key>trial_days</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d giorno di prova gratuita</string>
+			<key>many</key>
+			<string>%d giorni di prova gratuita</string>
+			<key>other</key>
+			<string>%d giorni di prova gratuita</string>
+		</dict>
+	</dict>
+	<key>trial_months</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d mese di prova gratuita</string>
+			<key>many</key>
+			<string>%d mesi di prova gratuita</string>
+			<key>other</key>
+			<string>%d mesi di prova gratuita</string>
+		</dict>
+	</dict>
+	<key>trial_weeks</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d settimana di prova gratuita</string>
+			<key>many</key>
+			<string>%d settimane di prova gratuita</string>
+			<key>other</key>
+			<string>%d settimane di prova gratuita</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
