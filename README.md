@@ -38,7 +38,7 @@ Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https:/
 Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 36 ve Build Tools 36.0.0 gerekir.
 
 ```sh
-./gradlew :app:assembleDebug :app:lintDebug
+./gradlew :app:assembleDebug :app:lintDebug :app:testDebugUnitTest
 ```
 
 İlk derlemede sherpa-onnx AAR dosyası (~50 MB) GitHub sürümünden `app/libs/` klasörüne indirilir ve SHA-256 ile doğrulanır; bu klasör depoya eklenmez.

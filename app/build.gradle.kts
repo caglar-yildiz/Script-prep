@@ -131,4 +131,7 @@ dependencies {
     // On-device text recognition for scanned PDF pages. The bundled model works offline from the
     // first launch and needs no Google Play services download.
     implementation("com.google.mlkit:text-recognition:16.0.1")
+
+    // Plain JVM tests for the text parsers (./gradlew :app:testDebugUnitTest).
+    testImplementation("junit:junit:4.13.2")
 }
