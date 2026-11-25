@@ -29,9 +29,13 @@ Script Prep, tiyatro oyuncularının tek başına replik çalışabilmesi için 
 - [ ] **Tam oyun hazırlığını hızlandır.** Uzun Türkçe oyunlarda perde/sahne başlıklarını, lakapları, birden fazla rolü ve sahne yönergelerini tanı. Aynı karakterin farklı adlarını tek işlemle birleştir. _(Birleştirme yapıldı: **Karakterleri düzenle**.)_ Aynı test metinlerinde rakiplerle kıyaslandığında medyan elle düzeltme süresini en az %30 düşürmeyi hedefle.
 - [x] **Takıldığım yerleri çalış.** İpucu istenen veya yeniden denenen replikleri çağrı repliğiyle birlikte kısa bir prova kuyruğuna al. Oyuncu bütün sahneyi başa sarmadan bu kesitleri tekrar edebilsin.
 - [ ] **Tiyatro ekibiyle ortak çalışma.** _(Başladı: ekip provası ile metin paylaşma, rol alma ve kendi repliklerini kaydetme.)_ Sahne ve rol bazında erişim, metin sürümleri, yönetmen notları ve replik değişikliklerini gösterme. Yeni sürüm geldiğinde oyuncunun kişisel notları ve prova konumu korunabilsin. İhtiyacı doğrulamak için önce tek bir ekipte pilot yap.
-- [ ] **iOS kapsamını beta sonrası belirle.** Android betasında hangi özelliklerin düzenli kullanıldığını ve iOS talebini ölç. Ortak dosya biçimi ve prova kuralları üzerinden port kapsamını çıkar.
+- [x] **iOS sürümü.** _Yapıldı: Android ile aynı ekranlar, prova kuralları, yedek dosyası biçimi ve ekip provası; ayrıntılar [ios/README.md](ios/README.md)._
 
 Rakip karşılaştırması ve ayrıntılı geliştirme takibi [Issue #1](https://github.com/caglar-yildiz/Script-prep/issues/1) üzerinden yapılır.
+
+## iOS geliştirme
+
+iPhone uygulaması `ios/` klasöründe (SwiftUI). Derleme, yapı ve Android'den farkları: [ios/README.md](ios/README.md).
 
 ## Android geliştirme
 
