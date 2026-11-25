@@ -52,7 +52,7 @@
     <string name="voice_preview">Écouter la voix</string>
     <string name="voice_no_alternatives">Aucune autre voix hors ligne n’est installée pour cette langue.</string>
     <string name="voice_change_failed">Impossible de sélectionner cette voix.</string>
-    <string name="pdf_no_text">Ce PDF ne contient pas de texte sélectionnable. Passe les pages numérisées à l’OCR avant de l’importer.</string>
+    <string name="pdf_no_text">Aucun texte trouvé dans ce PDF, même sur les pages numérisées. Essaie un scan plus net ou colle le texte.</string>
     <string name="pdf_import_failed">Impossible d’ouvrir le PDF. Vérifie qu’il est lisible et sans mot de passe.</string>
     <string name="parse_preview">Vérifier les scènes et les rôles</string>
     <string name="parse_preview_counts">%1$d scènes · %2$d répliques</string>
@@ -123,7 +123,8 @@
     <string name="settings_version">Version</string>
     <string name="step_counter">Étape %1$d sur %2$d</string>
     <string name="importing">Importation de ton texte…</string>
-    <string name="source_pdf_details">PDF avec texte sélectionnable</string>
+    <string name="importing_scanned">Lecture de la page numérisée %1$d sur %2$d…</string>
+    <string name="source_pdf_details">PDF texte ou pages numérisées</string>
     <string name="source_txt_details">Fichier texte UTF-8</string>
     <string name="source_paste_details">Utilise le texte copié</string>
     <string name="source_write_details">Commence avec une page vierge</string>
@@ -278,7 +279,7 @@
     <string name="cast_intro_ai">Choisis l’une des 10 voix IA et un débit pour chaque personnage. Touche lire pour les écouter.</string>
     <string name="licenses_title">Licences</string>
     <string name="licenses_value">Logiciels open source et modèle de voix</string>
-    <string name="licenses_text">Voix IA : Supertonic 3 de Supertone Inc., utilisé sous licence OpenRAIL-M. En utilisant la voix IA, tu t’engages à ne pas l’employer pour les usages restreints énumérés dans cette licence, notamment enfreindre la loi, nuire à des mineurs, diffuser des informations fausses ou nuisibles, harceler, usurper l’identité de personnes réelles sans leur consentement ou présenter une voix générée comme humaine sans indiquer qu’elle est générée par une machine.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nBibliothèque standard Kotlin (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">Voix IA : Supertonic 3 de Supertone Inc., utilisé sous licence OpenRAIL-M. En utilisant la voix IA, tu t’engages à ne pas l’employer pour les usages restreints énumérés dans cette licence, notamment enfreindre la loi, nuire à des mineurs, diffuser des informations fausses ou nuisibles, harceler, usurper l’identité de personnes réelles sans leur consentement ou présenter une voix générée comme humaine sans indiquer qu’elle est générée par une machine.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nBibliothèque standard Kotlin (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Désactivée · touche pour télécharger (environ %1$d Mo)</string>
     <string name="ai_voice_failed_detail">Raison : %1$s</string>
     <string name="ai_voice_playing">La voix IA lit la réplique…</string>
@@ -355,6 +356,10 @@
     <string name="backup_import_detail">Ajoute les textes d’une sauvegarde ; rien n’est supprimé</string>
     <string name="backup_write_failed">Impossible d’enregistrer la sauvegarde.</string>
     <string name="backup_read_failed">Impossible de lire cette sauvegarde.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d page numérisée a été lue par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+        <item quantity="other">%d pages numérisées ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d texte exporté</item>
         <item quantity="many">%d textes exportés</item>

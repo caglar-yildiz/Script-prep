@@ -52,7 +52,7 @@
     <string name="voice_preview">Stimme anhören</string>
     <string name="voice_no_alternatives">Für diese Sprache sind keine weiteren Offline-Stimmen installiert.</string>
     <string name="voice_change_failed">Diese Stimme konnte nicht ausgewählt werden.</string>
-    <string name="pdf_no_text">Dieses PDF enthält keinen markierbaren Text. Wende vor dem Import OCR auf gescannte Seiten an.</string>
+    <string name="pdf_no_text">In diesem PDF wurde kein Text gefunden, auch nicht auf den gescannten Seiten. Versuche einen schärferen Scan oder füge den Text ein.</string>
     <string name="pdf_import_failed">Das PDF konnte nicht geöffnet werden. Prüfe, ob die Datei lesbar und nicht passwortgeschützt ist.</string>
     <string name="parse_preview">Szenen und Rollen prüfen</string>
     <string name="parse_preview_counts">%1$d Szenen · %2$d Repliken</string>
@@ -123,7 +123,8 @@
     <string name="settings_version">Version</string>
     <string name="step_counter">Schritt %1$d von %2$d</string>
     <string name="importing">Dein Text wird importiert…</string>
-    <string name="source_pdf_details">PDF mit markierbarem Text</string>
+    <string name="importing_scanned">Gescannte Seite %1$d von %2$d wird gelesen…</string>
+    <string name="source_pdf_details">Text-PDF oder gescannte Seiten</string>
     <string name="source_txt_details">UTF-8-Textdatei</string>
     <string name="source_paste_details">Kopierten Text verwenden</string>
     <string name="source_write_details">Mit einer leeren Seite beginnen</string>
@@ -271,7 +272,7 @@
     <string name="cast_intro_ai">Wähle für jede Figur eine der 10 KI-Stimmen und ein Tempo. Tippe auf Abspielen, um sie zu hören.</string>
     <string name="licenses_title">Lizenzen</string>
     <string name="licenses_value">Open-Source-Software und Stimmmodell</string>
-    <string name="licenses_text">KI-Stimme: Supertonic 3 von Supertone Inc., verwendet unter der OpenRAIL-M-Lizenz. Mit der Nutzung der KI-Stimme verpflichtest du dich, sie nicht für die in dieser Lizenz genannten eingeschränkten Zwecke zu verwenden, darunter Gesetzesverstöße, die Schädigung Minderjähriger, die Verbreitung falscher oder schädlicher Informationen, Belästigung, das Nachahmen realer Personen ohne deren Zustimmung oder das Ausgeben erzeugter Sprache als menschlich, ohne auf die maschinelle Erzeugung hinzuweisen.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin-Standardbibliothek (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">KI-Stimme: Supertonic 3 von Supertone Inc., verwendet unter der OpenRAIL-M-Lizenz. Mit der Nutzung der KI-Stimme verpflichtest du dich, sie nicht für die in dieser Lizenz genannten eingeschränkten Zwecke zu verwenden, darunter Gesetzesverstöße, die Schädigung Minderjähriger, die Verbreitung falscher oder schädlicher Informationen, Belästigung, das Nachahmen realer Personen ohne deren Zustimmung oder das Ausgeben erzeugter Sprache als menschlich, ohne auf die maschinelle Erzeugung hinzuweisen.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nKotlin-Standardbibliothek (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Aus · zum Herunterladen tippen (etwa %1$d MB)</string>
     <string name="ai_voice_failed_detail">Grund: %1$s</string>
     <string name="ai_voice_playing">Die KI-Stimme liest die Replik…</string>
@@ -345,6 +346,10 @@
     <string name="backup_import_detail">Fügt die Texte einer Sicherung hinzu; nichts wird gelöscht</string>
     <string name="backup_write_failed">Die Sicherungsdatei konnte nicht gespeichert werden.</string>
     <string name="backup_read_failed">Diese Sicherungsdatei konnte nicht gelesen werden.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d gescannte Seite wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+        <item quantity="other">%d gescannte Seiten wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d Text exportiert</item>
         <item quantity="other">%d Texte exportiert</item>

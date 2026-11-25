@@ -53,7 +53,7 @@
     <string name="voice_preview">Preview voice</string>
     <string name="voice_no_alternatives">No additional offline voices are installed for this language.</string>
     <string name="voice_change_failed">Couldn’t select this voice.</string>
-    <string name="pdf_no_text">This PDF has no selectable text. Run OCR on scanned pages before importing.</string>
+    <string name="pdf_no_text">Couldn’t find any text in this PDF, not even on the scanned pages. Try a sharper scan, or paste the text instead.</string>
     <string name="pdf_import_failed">Couldn’t open the PDF. Make sure the file is readable and password-free.</string>
     <string name="parse_preview">Review scenes and roles</string>
     <string name="parse_preview_counts">%1$d scenes · %2$d lines</string>
@@ -124,7 +124,8 @@
     <string name="settings_version">Version</string>
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
-    <string name="source_pdf_details">PDF with selectable text</string>
+    <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="source_pdf_details">Text PDF or scanned pages</string>
     <string name="source_txt_details">Plain UTF-8 text file</string>
     <string name="source_paste_details">Use the text you copied</string>
     <string name="source_write_details">Start from a blank page</string>
@@ -272,7 +273,7 @@
     <string name="cast_intro_ai">Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.</string>
     <string name="licenses_title">Licenses</string>
     <string name="licenses_value">Open-source software and voice model</string>
-    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Off · tap to download (about %1$d MB)</string>
     <string name="ai_voice_failed_detail">Reason: %1$s</string>
     <string name="ai_voice_playing">The AI voice is reading the line…</string>
@@ -351,6 +352,10 @@
     <string name="backup_import_detail">Adds the texts in a backup; nothing is deleted</string>
     <string name="backup_write_failed">Couldn’t save the backup file.</string>
     <string name="backup_read_failed">Couldn’t read this backup file.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d scanned page was read with text recognition. Check the character names and lines before you rehearse.</item>
+        <item quantity="other">%d scanned pages were read with text recognition. Check the character names and lines before you rehearse.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d text exported</item>
         <item quantity="other">%d texts exported</item>

@@ -52,7 +52,7 @@
     <string name="voice_preview">Ascolta la voce</string>
     <string name="voice_no_alternatives">Non ci sono altre voci offline installate per questa lingua.</string>
     <string name="voice_change_failed">Impossibile selezionare questa voce.</string>
-    <string name="pdf_no_text">Questo PDF non contiene testo selezionabile. Applica l’OCR alle pagine scansionate prima di importarlo.</string>
+    <string name="pdf_no_text">Nessun testo trovato in questo PDF, nemmeno nelle pagine scansionate. Prova una scansione più nitida o incolla il testo.</string>
     <string name="pdf_import_failed">Impossibile aprire il PDF. Controlla che sia leggibile e senza password.</string>
     <string name="parse_preview">Controlla scene e ruoli</string>
     <string name="parse_preview_counts">%1$d scene · %2$d battute</string>
@@ -123,7 +123,8 @@
     <string name="settings_version">Versione</string>
     <string name="step_counter">Passaggio %1$d di %2$d</string>
     <string name="importing">Importazione del testo…</string>
-    <string name="source_pdf_details">PDF con testo selezionabile</string>
+    <string name="importing_scanned">Lettura della pagina scansionata %1$d di %2$d…</string>
+    <string name="source_pdf_details">PDF di testo o pagine scansionate</string>
     <string name="source_txt_details">File di testo UTF-8</string>
     <string name="source_paste_details">Usa il testo che hai copiato</string>
     <string name="source_write_details">Inizia da una pagina bianca</string>
@@ -278,7 +279,7 @@
     <string name="cast_intro_ai">Scegli una delle 10 voci IA e un ritmo per ogni personaggio. Tocca riproduci per ascoltarle.</string>
     <string name="licenses_title">Licenze</string>
     <string name="licenses_value">Software open source e modello vocale</string>
-    <string name="licenses_text">Voce IA: Supertonic 3 di Supertone Inc., usato con licenza OpenRAIL-M. Usando la voce IA accetti di non utilizzarla per gli usi vietati elencati in quella licenza, tra cui violare la legge, danneggiare minori, diffondere informazioni false o dannose, molestare, impersonare persone reali senza il loro consenso o presentare voce generata come umana senza indicare che è prodotta da una macchina.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nLibreria standard Kotlin (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">Voce IA: Supertonic 3 di Supertone Inc., usato con licenza OpenRAIL-M. Usando la voce IA accetti di non utilizzarla per gli usi vietati elencati in quella licenza, tra cui violare la legge, danneggiare minori, diffondere informazioni false o dannose, molestare, impersonare persone reali senza il loro consenso o presentare voce generata come umana senza indicare che è prodotta da una macchina.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nLibreria standard Kotlin (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Disattivata · tocca per scaricare (circa %1$d MB)</string>
     <string name="ai_voice_failed_detail">Motivo: %1$s</string>
     <string name="ai_voice_playing">La voce IA sta leggendo la battuta…</string>
@@ -355,6 +356,10 @@
     <string name="backup_import_detail">Aggiunge i testi di un backup; non viene eliminato nulla</string>
     <string name="backup_write_failed">Impossibile salvare il backup.</string>
     <string name="backup_read_failed">Impossibile leggere questo backup.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d pagina scansionata è stata letta con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
+        <item quantity="other">%d pagine scansionate sono state lette con il riconoscimento del testo. Controlla i nomi dei personaggi e le battute prima di provare.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d testo esportato</item>
         <item quantity="many">%d testi esportati</item>

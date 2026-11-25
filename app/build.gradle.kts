@@ -114,4 +114,7 @@ dependencies {
     // The sherpa-onnx bindings are written in Kotlin.
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.1.21")
     implementation("com.android.billingclient:billing:9.1.0")
+    // On-device text recognition for scanned PDF pages. The bundled model works offline from the
+    // first launch and needs no Google Play services download.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 }

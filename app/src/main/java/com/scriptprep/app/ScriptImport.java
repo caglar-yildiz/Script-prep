@@ -17,10 +17,22 @@ import java.nio.charset.StandardCharsets;
 final class ScriptImport {
     private ScriptImport() {}
 
-    static ScriptLibrary.Script read(Context context, Uri uri, boolean pdf, int lengthLimit)
-        throws IOException {
+    /** An imported script and how many of its PDF pages were read with text recognition. */
+    static final class Result {
+        final ScriptLibrary.Script script;
+        final int scannedPages;
+
+        Result(ScriptLibrary.Script script, int scannedPages) {
+            this.script = script;
+            this.scannedPages = scannedPages;
+        }
+    }
+
+    static Result read(Context context, Uri uri, boolean pdf, int lengthLimit,
+        PdfOcr.Progress progress) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         String text;
+        int scannedPages = 0;
         try (InputStream stream = resolver.openInputStream(uri)) {
             if (stream == null) {
                 throw new IOException("Missing stream");
@@ -28,12 +40,14 @@ final class ScriptImport {
             if (pdf) {
                 // The text strip reader initializes PDFBox font resources in its superclass.
                 PDFBoxResourceLoader.init(context);
-                text = PdfScriptReader.read(context, stream, lengthLimit);
+                PdfScriptReader.Result pdfText = PdfScriptReader.read(context, stream, lengthLimit, progress);
+                text = pdfText.text;
+                scannedPages = pdfText.scannedPages;
             } else {
                 text = readText(stream, lengthLimit);
             }
         }
-        return new ScriptLibrary.Script(null, readTitle(resolver, uri), text);
+        return new Result(new ScriptLibrary.Script(null, readTitle(resolver, uri), text), scannedPages);
     }
 
     private static String readText(InputStream stream, int lengthLimit) throws IOException {

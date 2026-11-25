@@ -154,6 +154,9 @@ public final class MainActivity extends Activity {
     private boolean playbackFailed;
     private boolean visible;
     private boolean importing;
+    /** Progress shown while scanned PDF pages are read; null while the file itself is read. */
+    private String importStatus;
+    private TextView importLabel;
     private String activePreview;
 
     private Screen screen = Screen.HOME;
@@ -389,10 +392,14 @@ public final class MainActivity extends Activity {
         TextCategory selectedCategory = category;
         String narrator = getString(R.string.solo_role);
         importing = true;
+        importStatus = null;
         render();
         imports.execute(() -> {
             try {
-                ScriptLibrary.Script imported = ScriptImport.read(getApplicationContext(), uri, pdf, MAX_SCRIPT_LENGTH);
+                ScriptImport.Result result = ScriptImport.read(getApplicationContext(), uri, pdf,
+                    MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
+                        getString(R.string.importing_scanned, done + 1, total))));
+                ScriptLibrary.Script imported = result.script;
                 Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
                 main.post(() -> {
                     finishImport();
@@ -403,7 +410,7 @@ public final class MainActivity extends Activity {
                         savedScript = "";
                         savedTitle = "";
                         if (preview != null) {
-                            showParsePreview(preview);
+                            showParsePreview(preview, result.scannedPages);
                         }
                     }
                 });
@@ -418,8 +425,17 @@ public final class MainActivity extends Activity {
         });
     }
 
+    private void showImportStatus(String status) {
+        importStatus = status;
+        if (importing && importLabel != null) {
+            importLabel.setText(status);
+        }
+    }
+
     private void finishImport() {
         importing = false;
+        importStatus = null;
+        importLabel = null;
         if (!isDestroyed() && screen == Screen.SOURCE) {
             render();
         }
@@ -1278,7 +1294,9 @@ public final class MainActivity extends Activity {
             ProgressBar spinner = new ProgressBar(this);
             spinner.setIndeterminateTintList(ColorStateList.valueOf(ACCENT));
             loading.addView(spinner, new LinearLayout.LayoutParams(ui.dp(28), ui.dp(28)));
-            TextView label = ui.text(getString(R.string.importing), Type.SUBTITLE, TEXT);
+            TextView label = ui.text(importStatus == null ? getString(R.string.importing) : importStatus,
+                Type.SUBTITLE, TEXT);
+            importLabel = label;
             label.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
             loading.addView(label, weighted(16, ui));
             content.addView(loading, ui.spaced(24));
@@ -1627,13 +1645,19 @@ public final class MainActivity extends Activity {
     }
 
     private void showParsePreview(Scene parsed) {
+        showParsePreview(parsed, 0);
+    }
+
+    private void showParsePreview(Scene parsed, int scannedPages) {
+        String scanned = scannedPages == 0 ? ""
+            : getResources().getQuantityString(R.plurals.scanned_pages_notice, scannedPages, scannedPages) + "\n\n";
         if (!category.hasRoles()) {
             new AlertDialog.Builder(this).setTitle(R.string.solo_preview_title)
-                .setMessage(getString(R.string.solo_preview_count, parsed.lines.size()))
+                .setMessage(scanned + getString(R.string.solo_preview_count, parsed.lines.size()))
                 .setPositiveButton(android.R.string.ok, null).show();
             return;
         }
-        StringBuilder summary = new StringBuilder(getString(
+        StringBuilder summary = new StringBuilder(scanned).append(getString(
             R.string.parse_preview_counts, parsed.sections.size(), parsed.lines.size()
         ));
         summary.append("\n\n");

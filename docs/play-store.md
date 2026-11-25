@@ -75,6 +75,7 @@ Kimlikler kodla birebir aynı olmalı (`Billing.java`). İstersen bir temel plan
   - Toplanan/paylaşılan veri: geliştirici sunucusuna gönderilen veri yok.
   - Ses: konuşma tanıma için cihazın Google hizmeti kullanılıyor; uygulama sesi saklamıyor veya göndermiyor.
   - Fotoğraf/video: yalnızca cihazda saklanıyor.
+  - Taranmış PDF metin tanıma (ML Kit, cihazda): sayfa görüntüsü ve metin gönderilmiyor; ML Kit Google'a tanılama/performans verisi gönderebilir. Formu doldurmadan önce Google'ın [ML Kit Data safety rehberine](https://developers.google.com/ml-kit/android-data-disclosure) bak ve oradaki "App info and performance" yanıtlarını ekle.
   - Satın alma geçmişi: Google Play Billing üzerinden; Play'in kendi işlediği veriler.
   - Veriler aktarım sırasında şifreleniyor: evet (HTTPS). Kullanıcı verileri silebilir: evet (uygulama içinden).
   - Yedekleme: metinler ve ayarlar Android'in kendi yedeğine (Google hesabı) giriyor; bu, geliştiricinin veri toplaması sayılmaz. Kullanıcı ayrıca dosyaya dışa aktarabiliyor.
