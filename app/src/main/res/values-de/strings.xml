@@ -123,6 +123,20 @@
     <string name="step_counter">Schritt %1$d von %2$d</string>
     <string name="importing">Dein Text wird importiert…</string>
     <string name="importing_scanned">Gescannte Seite %1$d von %2$d wird gelesen…</string>
+    <string name="create_import_photo">Aus Fotos</string>
+    <string name="source_photo_details">Fotografiere die Seiten oder wähle sie aus deiner Galerie</string>
+    <string name="photo_take">Fotos aufnehmen</string>
+    <string name="photo_pick">Aus Galerie wählen</string>
+    <string name="photo_more_message">Fotografiere die nächste Seite oder lies den Text aus den bisherigen Fotos.</string>
+    <string name="photo_read">Text lesen</string>
+    <string name="photo_more">Nächste Seite</string>
+    <string name="photo_title">Text aus Fotos</string>
+    <string name="importing_photo">Foto %1$d von %2$d wird gelesen…</string>
+    <string name="photo_no_text">In diesen Fotos wurde kein Text gefunden. Fotografiere bei gutem Licht, gerade von oben und mit der ganzen Seite im Bild.</string>
+    <string name="photo_import_failed">Die Fotos konnten nicht gelesen werden.</string>
+    <string name="photo_camera_missing">Keine Kamera-App gefunden.</string>
+    <string name="photo_camera_permission">Erlaube die Kamera, um Seiten zu fotografieren.</string>
+    <string name="photo_too_many">Nur die ersten %1$d Fotos werden gelesen.</string>
     <string name="import_cancelling">Wird abgebrochen…</string>
     <string name="pdf_pages_title">Welche Seiten?</string>
     <string name="pdf_pages_message">Dieses PDF hat %1$d Seiten. Gib die PDF-Seiten ein, auf denen dein Stück beginnt und endet, höchstens %2$d auf einmal. Die PDF-Seitenzahl kann von der im Buch gedruckten abweichen.</string>
@@ -356,6 +370,14 @@
     <string name="backup_import_detail">Fügt die Texte einer Sicherung hinzu; nichts wird gelöscht</string>
     <string name="backup_write_failed">Die Sicherungsdatei konnte nicht gespeichert werden.</string>
     <string name="backup_read_failed">Diese Sicherungsdatei konnte nicht gelesen werden.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d Seite fotografiert</item>
+        <item quantity="other">%d Seiten fotografiert</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d Foto wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+        <item quantity="other">%d Fotos wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d gescannte Seite wurde mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>
         <item quantity="other">%d gescannte Seiten wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</item>

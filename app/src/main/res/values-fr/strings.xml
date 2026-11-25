@@ -123,6 +123,20 @@
     <string name="step_counter">Étape %1$d sur %2$d</string>
     <string name="importing">Importation de ton texte…</string>
     <string name="importing_scanned">Lecture de la page numérisée %1$d sur %2$d…</string>
+    <string name="create_import_photo">Depuis des photos</string>
+    <string name="source_photo_details">Photographie les pages ou choisis-les dans ta galerie</string>
+    <string name="photo_take">Prendre des photos</string>
+    <string name="photo_pick">Choisir dans la galerie</string>
+    <string name="photo_more_message">Photographie la page suivante ou lis le texte des photos déjà prises.</string>
+    <string name="photo_read">Lire le texte</string>
+    <string name="photo_more">Page suivante</string>
+    <string name="photo_title">Texte depuis des photos</string>
+    <string name="importing_photo">Lecture de la photo %1$d sur %2$d…</string>
+    <string name="photo_no_text">Aucun texte trouvé sur ces photos. Prends-les avec une bonne lumière, bien d’aplomb et avec toute la page visible.</string>
+    <string name="photo_import_failed">Impossible de lire les photos.</string>
+    <string name="photo_camera_missing">Aucune app d’appareil photo trouvée.</string>
+    <string name="photo_camera_permission">Autorise l’appareil photo pour photographier les pages.</string>
+    <string name="photo_too_many">Seules les %1$d premières photos sont lues.</string>
     <string name="import_cancelling">Arrêt en cours…</string>
     <string name="pdf_pages_title">Quelles pages ?</string>
     <string name="pdf_pages_message">Ce PDF compte %1$d pages. Saisis les pages du PDF où ta pièce commence et se termine, %2$d au maximum à la fois. Le numéro de page du PDF peut différer de celui imprimé dans le livre.</string>
@@ -366,6 +380,14 @@
     <string name="backup_import_detail">Ajoute les textes d’une sauvegarde ; rien n’est supprimé</string>
     <string name="backup_write_failed">Impossible d’enregistrer la sauvegarde.</string>
     <string name="backup_read_failed">Impossible de lire cette sauvegarde.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d page photographiée</item>
+        <item quantity="other">%d pages photographiées</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d photo a été lue par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+        <item quantity="other">%d photos ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d page numérisée a été lue par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>
         <item quantity="other">%d pages numérisées ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</item>

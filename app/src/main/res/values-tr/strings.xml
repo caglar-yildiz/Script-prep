@@ -123,6 +123,20 @@
     <string name="step_counter">Adım %1$d / %2$d</string>
     <string name="importing">Metnin içe aktarılıyor…</string>
     <string name="importing_scanned">Taranmış sayfa okunuyor: %1$d / %2$d…</string>
+    <string name="create_import_photo">Fotoğraftan</string>
+    <string name="source_photo_details">Sayfaların fotoğrafını çek ya da galeriden seç</string>
+    <string name="photo_take">Fotoğraf çek</string>
+    <string name="photo_pick">Galeriden seç</string>
+    <string name="photo_more_message">Sonraki sayfayı çek ya da şimdiye kadarki fotoğraflardan metni oku.</string>
+    <string name="photo_read">Metni oku</string>
+    <string name="photo_more">Sonraki sayfa</string>
+    <string name="photo_title">Fotoğraftan metin</string>
+    <string name="importing_photo">Fotoğraf okunuyor: %1$d / %2$d…</string>
+    <string name="photo_no_text">Bu fotoğraflarda metin bulunamadı. Sayfayı iyi ışıkta, tam üstten ve bütünüyle çek.</string>
+    <string name="photo_import_failed">Fotoğraflar okunamadı.</string>
+    <string name="photo_camera_missing">Kamera uygulaması bulunamadı.</string>
+    <string name="photo_camera_permission">Sayfaları çekmek için kamera izni ver.</string>
+    <string name="photo_too_many">Yalnızca ilk %1$d fotoğraf okunur.</string>
     <string name="import_cancelling">Durduruluyor…</string>
     <string name="pdf_pages_title">Hangi sayfalar?</string>
     <string name="pdf_pages_message">Bu PDF’de %1$d sayfa var. Oyununun başladığı ve bittiği PDF sayfalarını yaz; bir seferde en fazla %2$d sayfa. PDF sayfa numarası kitapta yazan numaradan farklı olabilir.</string>
@@ -356,6 +370,14 @@
     <string name="backup_import_detail">Yedekteki metinleri ekler; hiçbir şey silinmez</string>
     <string name="backup_write_failed">Yedek dosyası kaydedilemedi.</string>
     <string name="backup_read_failed">Bu yedek dosyası okunamadı.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d sayfa çekildi</item>
+        <item quantity="other">%d sayfa çekildi</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d fotoğraf metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
+        <item quantity="other">%d fotoğraf metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
         <item quantity="other">%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>

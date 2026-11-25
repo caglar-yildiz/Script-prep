@@ -78,6 +78,7 @@ import com.scriptprep.app.Ui.Type;
 
 import java.io.IOException;
 import java.text.NumberFormat;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -99,6 +100,9 @@ public final class MainActivity extends Activity {
     private static final int EXPORT_BACKUP = 3;
     private static final int IMPORT_BACKUP = 4;
     private static final int ENSEMBLE = 5;
+    private static final int IMPORT_PHOTOS = 6;
+    private static final int TAKE_PHOTO = 7;
+    private static final int REQUEST_CAMERA = 12;
     private static final String SPEED_PREFERENCE = "reading_speed";
     private static final float[] SPEEDS = {0.75f, 1f, 1.25f, 1.5f};
     private static final int SNACKBAR_DURATION = 6000;
@@ -160,6 +164,10 @@ public final class MainActivity extends Activity {
     /** Progress shown while scanned PDF pages are read; null while the file itself is read. */
     private String importStatus;
     private TextView importLabel;
+    /** Page photos taken with the camera for the import in progress, in order. */
+    private final ArrayList<Uri> takenPhotos = new ArrayList<>();
+    /** Where the camera app is writing the next page photo. */
+    private Uri pendingPhoto;
     /** Pages left after an import that reached the text limit; offered in the editor. */
     private RemainingPages remainingPages;
     /** Set from the import screen's cancel button; the import thread checks it between steps. */
@@ -237,6 +245,11 @@ public final class MainActivity extends Activity {
             screen = "ROLES".equals(restoredScreen) ? Screen.SETUP : Screen.valueOf(restoredScreen);
             premiumReturn = Screen.valueOf(state.getString("premium_return", Screen.SETTINGS.name()));
             linesReturn = Screen.valueOf(state.getString("lines_return", Screen.SETUP.name()));
+            ArrayList<Uri> photos = state.getParcelableArrayList("taken_photos");
+            if (photos != null) {
+                takenPhotos.addAll(photos);
+            }
+            pendingPhoto = state.getParcelable("pending_photo");
             category = TextCategory.fromSavedValue(state.getString("category"));
             language = ScriptLanguage.fromCode(state.getString("language"));
             fullScene = parseScript(script);
@@ -327,6 +340,9 @@ public final class MainActivity extends Activity {
         state.putString("screen", screen.name());
         state.putString("premium_return", premiumReturn.name());
         state.putString("lines_return", linesReturn.name());
+        // The camera app can push this activity out of memory while a page photo is taken.
+        state.putParcelableArrayList("taken_photos", takenPhotos);
+        state.putParcelable("pending_photo", pendingPhoto);
         state.putString("role", role);
         state.putInt("section_index", sectionIndex);
         state.putInt("position", position);
@@ -427,6 +443,36 @@ public final class MainActivity extends Activity {
             }
             return;
         }
+        if (requestCode == TAKE_PHOTO) {
+            if (resultCode == RESULT_OK && pendingPhoto != null) {
+                takenPhotos.add(pendingPhoto);
+            }
+            pendingPhoto = null;
+            if (!takenPhotos.isEmpty()) {
+                askForMorePhotos();
+            }
+            return;
+        }
+        if (requestCode == IMPORT_PHOTOS) {
+            if (resultCode == RESULT_OK && data != null) {
+                List<Uri> picked = new ArrayList<>();
+                if (data.getClipData() != null) {
+                    for (int i = 0; i < data.getClipData().getItemCount(); i++) {
+                        picked.add(data.getClipData().getItemAt(i).getUri());
+                    }
+                } else if (data.getData() != null) {
+                    picked.add(data.getData());
+                }
+                if (picked.size() > PhotoOcr.MAX_PHOTOS) {
+                    notifyUser(getString(R.string.photo_too_many, PhotoOcr.MAX_PHOTOS));
+                    picked = picked.subList(0, PhotoOcr.MAX_PHOTOS);
+                }
+                if (!picked.isEmpty()) {
+                    startPhotoImport(new ArrayList<>(picked), false);
+                }
+            }
+            return;
+        }
         if ((requestCode != IMPORT_TEXT && requestCode != IMPORT_PDF)
             || resultCode != RESULT_OK || data == null) {
             return;
@@ -487,6 +533,10 @@ public final class MainActivity extends Activity {
     }
 
     private void runImport(boolean pdf, ImportStep step) {
+        runImport(pdf ? R.string.pdf_import_failed : R.string.import_failed, step);
+    }
+
+    private void runImport(int failure, ImportStep step) {
         imports.execute(() -> {
             try {
                 step.run();
@@ -495,10 +545,11 @@ public final class MainActivity extends Activity {
             } catch (ScriptImport.LengthLimitException error) {
                 main.post(() -> failImport(R.string.import_too_long));
             } catch (PdfScriptReader.NoTextException error) {
-                main.post(() -> failImport(R.string.pdf_no_text));
+                main.post(() -> failImport(failure == R.string.photo_import_failed
+                    ? R.string.photo_no_text : R.string.pdf_no_text));
             } catch (IOException | RuntimeException | LinkageError | OutOfMemoryError error) {
                 Log.w("ScriptPrep", "Could not import a script", error);
-                main.post(() -> failImport(pdf ? R.string.pdf_import_failed : R.string.import_failed));
+                main.post(() -> failImport(failure));
             }
         });
     }
@@ -600,14 +651,14 @@ public final class MainActivity extends Activity {
     /** Runs on the import thread: parses the result and opens it in the editor. {@code pdf} is null for text. */
     private void deliverImport(ScriptImport.Result result, Uri pdf, TextCategory selectedCategory,
         String narrator) {
-        boolean isPdf = pdf != null;
+        boolean isPdf = pdf != null || result.photos;
         ScriptLibrary.Script imported = result.script;
         Scene preview = isPdf ? selectedCategory.parse(imported.text, narrator) : null;
         main.post(() -> {
             boolean wanted = !importCancelled;
             finishImport();
             if (wanted && !isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
-                remainingPages = result.cutShort()
+                remainingPages = pdf != null && result.cutShort()
                     ? new RemainingPages(pdf, result.lastPage + 1, result.requestedLastPage) : null;
                 String title = imported.title.trim();
                 openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
@@ -632,8 +683,8 @@ public final class MainActivity extends Activity {
             if (notice.length() > 0) {
                 notice.append("\n\n");
             }
-            notice.append(getResources().getQuantityString(R.plurals.scanned_pages_notice,
-                result.scannedPages, result.scannedPages));
+            notice.append(getResources().getQuantityString(result.photos ? R.plurals.photo_pages_notice
+                : R.plurals.scanned_pages_notice, result.scannedPages, result.scannedPages));
         }
         return notice.toString();
     }
@@ -1710,16 +1761,136 @@ public final class MainActivity extends Activity {
         first.setGravity(Gravity.TOP);
         sourceTile(first, R.drawable.ic_pdf, R.string.create_import_pdf, R.string.source_pdf_details,
             view -> openImportPicker(true));
-        sourceTile(first, R.drawable.ic_file, R.string.create_import_txt, R.string.source_txt_details,
-            view -> openImportPicker(false));
+        sourceTile(first, R.drawable.ic_photo_camera, R.string.create_import_photo,
+            R.string.source_photo_details, view -> choosePhotoSource());
         content.addView(first, ui.spaced(24));
         LinearLayout second = horizontal();
         second.setGravity(Gravity.TOP);
+        sourceTile(second, R.drawable.ic_file, R.string.create_import_txt, R.string.source_txt_details,
+            view -> openImportPicker(false));
         sourceTile(second, R.drawable.ic_paste, R.string.create_paste, R.string.source_paste_details,
             view -> pasteFromClipboard());
-        sourceTile(second, R.drawable.ic_edit, R.string.create_write, R.string.source_write_details,
-            view -> openEditor(null, "", ""));
         content.addView(second, ui.spaced(12));
+        LinearLayout third = horizontal();
+        third.setGravity(Gravity.TOP);
+        sourceTile(third, R.drawable.ic_edit, R.string.create_write, R.string.source_write_details,
+            view -> openEditor(null, "", ""));
+        third.addView(new View(this), new LinearLayout.LayoutParams(0, 1, 1));
+        ((LinearLayout.LayoutParams) third.getChildAt(1).getLayoutParams()).leftMargin = ui.dp(12);
+        content.addView(third, ui.spaced(12));
+    }
+
+    // ---------------------------------------------------------------- Photo import
+
+    private void choosePhotoSource() {
+        String[] choices = {getString(R.string.photo_take), getString(R.string.photo_pick)};
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.create_import_photo)
+            .setItems(choices, (dialog, which) -> {
+                if (which == 0) {
+                    takenPhotos.clear();
+                    clearPhotoFolder();
+                    takePhoto();
+                } else {
+                    openPhotoPicker();
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    @SuppressWarnings("deprecation")
+    private void openPhotoPicker() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("image/*")
+            .putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        try {
+            startActivityForResult(intent, IMPORT_PHOTOS);
+        } catch (ActivityNotFoundException error) {
+            notifyUser(R.string.photo_import_failed);
+        }
+    }
+
+    /** The camera permission is declared for video practice, so the camera app needs it granted. */
+    private void takePhoto() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {Manifest.permission.CAMERA}, REQUEST_CAMERA);
+            return;
+        }
+        File folder = new File(getCacheDir(), "photos");
+        if (!folder.isDirectory() && !folder.mkdirs()) {
+            notifyUser(R.string.photo_import_failed);
+            return;
+        }
+        File file = new File(folder, "page-" + (takenPhotos.size() + 1) + "-" + System.currentTimeMillis() + ".jpg");
+        Uri target = androidx.core.content.FileProvider.getUriForFile(this, getPackageName() + ".photos", file);
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE)
+            .putExtra(android.provider.MediaStore.EXTRA_OUTPUT, target)
+            .addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        intent.setClipData(android.content.ClipData.newRawUri("", target));
+        pendingPhoto = target;
+        try {
+            startActivityForResult(intent, TAKE_PHOTO);
+        } catch (ActivityNotFoundException error) {
+            pendingPhoto = null;
+            notifyUser(R.string.photo_camera_missing);
+        }
+    }
+
+    private void askForMorePhotos() {
+        int count = takenPhotos.size();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+            .setTitle(getResources().getQuantityString(R.plurals.photo_taken, count, count))
+            .setMessage(R.string.photo_more_message)
+            .setPositiveButton(R.string.photo_read, (dialog, which) ->
+                startPhotoImport(new ArrayList<>(takenPhotos), true))
+            .setNegativeButton(android.R.string.cancel, (dialog, which) -> {
+                takenPhotos.clear();
+                clearPhotoFolder();
+            })
+            .setCancelable(false);
+        if (count < PhotoOcr.MAX_PHOTOS) {
+            builder.setNeutralButton(R.string.photo_more, (dialog, which) -> takePhoto());
+        }
+        builder.show();
+    }
+
+    private void startPhotoImport(List<Uri> photos, boolean taken) {
+        TextCategory selectedCategory = category;
+        String narrator = getString(R.string.solo_role);
+        String title = getString(R.string.photo_title);
+        takenPhotos.clear();
+        importing = true;
+        importStatus = null;
+        importCancelled = false;
+        if (screen != Screen.SOURCE) {
+            show(Screen.SOURCE);
+        } else {
+            render();
+        }
+        runImport(R.string.photo_import_failed, () -> {
+            try {
+                ScriptImport.Result result = ScriptImport.readPhotos(getApplicationContext(), photos, title,
+                    MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
+                        getString(R.string.importing_photo, done + 1, total))), () -> importCancelled);
+                deliverImport(result, null, selectedCategory, narrator);
+            } finally {
+                if (taken) {
+                    clearPhotoFolder();
+                }
+            }
+        });
+    }
+
+    private void clearPhotoFolder() {
+        File[] files = new File(getCacheDir(), "photos").listFiles();
+        if (files != null) {
+            for (File file : files) {
+                file.delete();
+            }
+        }
     }
 
     private void sourceTile(LinearLayout row, int drawable, int title, int detail, View.OnClickListener action) {
@@ -4298,6 +4469,14 @@ public final class MainActivity extends Activity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
+        if (requestCode == REQUEST_CAMERA) {
+            if (results.length > 0 && results[0] == PackageManager.PERMISSION_GRANTED) {
+                takePhoto();
+            } else {
+                notifyUser(R.string.photo_camera_permission);
+            }
+            return;
+        }
         if (requestCode != REQUEST_MICROPHONE) {
             return;
         }

@@ -105,7 +105,7 @@
           <thead><tr><th>Permission</th><th>Why</th><th>When</th></tr></thead>
           <tbody>
             <tr><td>Microphone</td><td>Hands-free cues listen while you say your line; video practice records sound.</td><td>Only when you turn on hands-free cues or record a video.</td></tr>
-            <tr><td>Camera</td><td>Video practice records your self-tape.</td><td>Only while the video practice screen is open.</td></tr>
+            <tr><td>Camera</td><td>Video practice records your self-tape; page photos are taken for importing a script.</td><td>Only while the video practice screen is open or you photograph pages.</td></tr>
             <tr><td>Internet</td><td>Downloading the optional AI voice model, talking to Google Play for subscriptions and, if you use it, ensemble rehearsal.</td><td>Only for these actions.</td></tr>
           </tbody>
         </table>
@@ -114,7 +114,7 @@
       <h2>Services provided by others</h2>
       <ul>
         <li><strong>Speech recognition (hands-free cues).</strong> The app uses your device’s speech recognition service, usually provided by Google. Audio is handled by that service under its own privacy terms. The app only receives the recognised text, compares it with your line and does not store it.</li>
-        <li><strong>Text recognition for scanned PDFs.</strong> When a PDF page has no text layer, the app reads the page image on your device with Google’s ML Kit text recognition. Page images and the recognised text are not sent anywhere. ML Kit may send Google basic diagnostic information, such as the device model and how long recognition took, under the <a href="https://developers.google.com/ml-kit/terms">ML Kit terms</a>.</li>
+        <li><strong>Text recognition for scanned PDFs and photos.</strong> When a PDF page has no text layer, or when you import page photos, the app reads the images on your device with Google’s ML Kit text recognition. Page images, photos and the recognised text are not sent anywhere. Photos you take for an import are deleted once they are read. ML Kit may send Google basic diagnostic information, such as the device model and how long recognition took, under the <a href="https://developers.google.com/ml-kit/terms">ML Kit terms</a>.</li>
         <li><strong>Device text-to-speech.</strong> Lines are read by the text-to-speech engine installed on your device. If you choose an online voice, the engine’s provider processes the text under its own terms.</li>
         <li><strong>AI voice download.</strong> The model files are downloaded from Hugging Face (huggingface.co) through Android’s download manager. As with any download, the server sees your IP address. Afterwards the AI voice runs entirely on your device and your texts are not sent anywhere.</li>
         <li><strong>Google Play Billing.</strong> Subscriptions are processed by Google Play. We receive confirmation that a subscription is active, not your payment details. See <a href="https://policies.google.com/privacy">Google’s privacy policy</a>.</li>
@@ -165,7 +165,7 @@
           <thead><tr><th>İzin</th><th>Neden</th><th>Ne zaman</th></tr></thead>
           <tbody>
             <tr><td>Mikrofon</td><td>Sesle ilerleme, repliğini söylerken dinler; videolu prova sesi kaydeder.</td><td>Yalnızca sesle ilerlemeyi açtığında veya video çektiğinde.</td></tr>
-            <tr><td>Kamera</td><td>Videolu prova self-tape’ini kaydeder.</td><td>Yalnızca videolu prova ekranı açıkken.</td></tr>
+            <tr><td>Kamera</td><td>Videolu prova self-tape’ini kaydeder; metin aktarmak için sayfa fotoğrafı çekilir.</td><td>Yalnızca videolu prova ekranı açıkken ya da sayfa fotoğrafı çekerken.</td></tr>
             <tr><td>İnternet</td><td>İsteğe bağlı yapay zekâ ses modelini indirmek, abonelikler için Google Play ile iletişim ve kullanırsan ekip provası.</td><td>Yalnızca bu işlemler için.</td></tr>
           </tbody>
         </table>
@@ -174,7 +174,7 @@
       <h2>Başkalarının sağladığı hizmetler</h2>
       <ul>
         <li><strong>Konuşma tanıma (sesle ilerleme).</strong> Uygulama cihazının konuşma tanıma hizmetini (çoğunlukla Google) kullanır. Ses, o hizmetin kendi gizlilik koşullarıyla işlenir. Uygulama yalnızca tanınan metni alır, repliğinle karşılaştırır ve saklamaz.</li>
-        <li><strong>Taranmış PDF için metin tanıma.</strong> Bir PDF sayfasında metin katmanı yoksa uygulama sayfa görüntüsünü cihazında Google’ın ML Kit metin tanıma özelliğiyle okur. Sayfa görüntüleri ve tanınan metin hiçbir yere gönderilmez. ML Kit, <a href="https://developers.google.com/ml-kit/terms">ML Kit koşulları</a> kapsamında Google’a cihaz modeli ve tanımanın ne kadar sürdüğü gibi temel tanılama bilgileri gönderebilir.</li>
+        <li><strong>Taranmış PDF ve fotoğraflar için metin tanıma.</strong> Bir PDF sayfasında metin katmanı yoksa ya da sayfa fotoğrafı aktarırsan uygulama görüntüleri cihazında Google’ın ML Kit metin tanıma özelliğiyle okur. Sayfa görüntüleri, fotoğraflar ve tanınan metin hiçbir yere gönderilmez. Aktarma için çektiğin fotoğraflar okunduktan sonra silinir. ML Kit, <a href="https://developers.google.com/ml-kit/terms">ML Kit koşulları</a> kapsamında Google’a cihaz modeli ve tanımanın ne kadar sürdüğü gibi temel tanılama bilgileri gönderebilir.</li>
         <li><strong>Cihaz sesi.</strong> Replikler cihazında yüklü metin okuma motoruyla okunur. Çevrimiçi bir ses seçersen metin, motorun sağlayıcısı tarafından kendi koşullarıyla işlenir.</li>
         <li><strong>Yapay zekâ sesi indirmesi.</strong> Model dosyaları Android’in indirme yöneticisiyle Hugging Face’ten (huggingface.co) indirilir; her indirmede olduğu gibi sunucu IP adresini görür. Sonrasında yapay zekâ sesi tamamen cihazında çalışır, metinlerin hiçbir yere gönderilmez.</li>
         <li><strong>Google Play Faturalandırma.</strong> Abonelikler Google Play tarafından işlenir. Biz ödeme bilgilerini değil, yalnızca aboneliğin etkin olduğu onayını alırız. Bkz. <a href="https://policies.google.com/privacy?hl=tr">Google Gizlilik Politikası</a>.</li>

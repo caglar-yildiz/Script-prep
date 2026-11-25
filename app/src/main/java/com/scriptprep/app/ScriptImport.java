@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 
 final class ScriptImport {
@@ -25,9 +26,17 @@ final class ScriptImport {
         final int firstPage;
         final int lastPage;
         final int requestedLastPage;
+        /** Read from photos rather than a file; {@link #scannedPages} counts the photos. */
+        final boolean photos;
 
         Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
             int requestedLastPage) {
+            this(script, scannedPages, firstPage, lastPage, requestedLastPage, false);
+        }
+
+        Result(ScriptLibrary.Script script, int scannedPages, int firstPage, int lastPage,
+            int requestedLastPage, boolean photos) {
+            this.photos = photos;
             this.script = script;
             this.scannedPages = scannedPages;
             this.firstPage = firstPage;
@@ -39,6 +48,13 @@ final class ScriptImport {
         boolean cutShort() {
             return lastPage < requestedLastPage;
         }
+    }
+
+    /** Reads script pages from photos; {@code title} names the text. */
+    static Result readPhotos(Context context, List<Uri> photos, String title, int lengthLimit,
+        PdfOcr.Progress progress, BooleanSupplier cancelled) throws IOException {
+        PhotoOcr.Result read = PhotoOcr.read(context, photos, lengthLimit, progress, cancelled);
+        return new Result(new ScriptLibrary.Script(null, title, read.text), read.pages, 0, 0, 0, true);
     }
 
     /** A picked PDF, copied and counted, waiting for the pages to read. */

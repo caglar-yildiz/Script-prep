@@ -124,6 +124,20 @@
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
     <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="create_import_photo">From photos</string>
+    <string name="source_photo_details">Take photos of the pages or pick them from your gallery</string>
+    <string name="photo_take">Take photos</string>
+    <string name="photo_pick">Choose from gallery</string>
+    <string name="photo_more_message">Take the next page, or read the text from the photos so far.</string>
+    <string name="photo_read">Read text</string>
+    <string name="photo_more">Next page</string>
+    <string name="photo_title">Text from photos</string>
+    <string name="importing_photo">Reading photo %1$d of %2$d…</string>
+    <string name="photo_no_text">No text was found in these photos. Take them in good light, straight from above, with the whole page in view.</string>
+    <string name="photo_import_failed">Couldn’t read the photos.</string>
+    <string name="photo_camera_missing">No camera app was found.</string>
+    <string name="photo_camera_permission">Allow the camera to photograph pages.</string>
+    <string name="photo_too_many">Only the first %1$d photos are read.</string>
     <string name="import_cancelling">Stopping…</string>
     <string name="pdf_pages_title">Which pages?</string>
     <string name="pdf_pages_message">This PDF has %1$d pages. Enter the PDF pages where your play starts and ends, up to %2$d at a time. The PDF page number can differ from the number printed in the book.</string>
@@ -362,6 +376,14 @@
     <string name="backup_import_detail">Adds the texts in a backup; nothing is deleted</string>
     <string name="backup_write_failed">Couldn’t save the backup file.</string>
     <string name="backup_read_failed">Couldn’t read this backup file.</string>
+    <plurals name="photo_taken">
+        <item quantity="one">%d page photographed</item>
+        <item quantity="other">%d pages photographed</item>
+    </plurals>
+    <plurals name="photo_pages_notice">
+        <item quantity="one">%d photo was read with text recognition. Check the character names and lines before you rehearse.</item>
+        <item quantity="other">%d photos were read with text recognition. Check the character names and lines before you rehearse.</item>
+    </plurals>
     <plurals name="scanned_pages_notice">
         <item quantity="one">%d scanned page was read with text recognition. Check the character names and lines before you rehearse.</item>
         <item quantity="other">%d scanned pages were read with text recognition. Check the character names and lines before you rehearse.</item>
