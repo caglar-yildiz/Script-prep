@@ -261,9 +261,21 @@ final class Scene {
         }
 
         Matcher separated = CUE.matcher(row);
-        if (separated.matches() && isRoleName(separated.group(1).trim())) {
-            String aside = separated.group(2);
-            return new Cue(separated.group(1).trim(), (aside == null ? "" : aside + " ") + separated.group(3));
+        if (separated.matches()) {
+            String name = separated.group(1).trim();
+            // Printed plays often end the name with a period before the dash: "ORGON. — Text".
+            if (!isRoleName(name) && name.endsWith(".") && separated.group(2) == null
+                && !row.substring(separated.end(1)).trim().startsWith(":")) {
+                String bare = name.substring(0, name.length() - 1).trim();
+                if (isRoleName(bare) && bare.equals(bare.toUpperCase(TURKISH))
+                    && !bare.equals(bare.toLowerCase(TURKISH))) {
+                    name = bare;
+                }
+            }
+            if (isRoleName(name)) {
+                String aside = separated.group(2);
+                return new Cue(name, (aside == null ? "" : aside + " ") + separated.group(3));
+            }
         }
         return null;
     }

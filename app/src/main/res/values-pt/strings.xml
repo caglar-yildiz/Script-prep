@@ -34,7 +34,7 @@
     <string name="sample_title">Cena de exemplo</string>
     <string name="imported_title">Texto importado</string>
     <string name="import_failed">Não foi possível ler o arquivo. Escolha um arquivo TXT em UTF-8.</string>
-    <string name="import_too_long">Este arquivo ultrapassa o limite de importação. Os limites para PDF são 25 MB, 200 páginas e 150.000 caracteres de texto.</string>
+    <string name="import_too_long">O arquivo é grande demais. PDFs podem ter até 100 MB e 1.000 páginas; arquivos de texto, até 150.000 caracteres.</string>
     <string name="premium_description">Vozes naturais para os personagens, avanço por voz, resultados detalhados e ensaio em vídeo.</string>
     <string name="premium_voices">Vozes naturais para personagens</string>
     <string name="premium_voices_description">Escolha uma voz diferente e natural para cada personagem.</string>
@@ -52,7 +52,7 @@
     <string name="voice_preview">Ouvir a voz</string>
     <string name="voice_no_alternatives">Não há outras vozes offline instaladas para este idioma.</string>
     <string name="voice_change_failed">Não foi possível selecionar esta voz.</string>
-    <string name="pdf_no_text">Este PDF não tem texto selecionável. Aplique OCR nas páginas digitalizadas antes de importar.</string>
+    <string name="pdf_no_text">Nenhum texto foi encontrado neste PDF, nem nas páginas digitalizadas. Tente uma digitalização mais nítida ou cole o texto.</string>
     <string name="pdf_import_failed">Não foi possível abrir o PDF. Verifique se o arquivo pode ser lido e não tem senha.</string>
     <string name="parse_preview">Revisar cenas e papéis</string>
     <string name="parse_preview_counts">%1$d cenas · %2$d falas</string>
@@ -122,7 +122,16 @@
     <string name="settings_version">Versão</string>
     <string name="step_counter">Etapa %1$d de %2$d</string>
     <string name="importing">Importando seu texto…</string>
-    <string name="source_pdf_details">PDF com texto selecionável</string>
+    <string name="importing_scanned">Lendo a página digitalizada %1$d de %2$d…</string>
+    <string name="pdf_pages_title">Quais páginas?</string>
+    <string name="pdf_pages_message">Este PDF tem %1$d páginas. Digite as páginas do PDF onde a sua peça começa e termina, até %2$d por vez. O número da página no PDF pode ser diferente do impresso no livro.</string>
+    <string name="pdf_pages_first">Primeira página</string>
+    <string name="pdf_pages_last">Última página</string>
+    <string name="pdf_pages_import">Importar</string>
+    <string name="pdf_pages_invalid">Digite uma página de 1 a %1$d.</string>
+    <string name="pdf_pages_too_many">Escolha no máximo %1$d páginas por vez.</string>
+    <string name="pdf_pages_cut_short">As páginas %1$d–%2$d foram importadas; o limite de texto foi atingido ali. Importe as páginas %3$d–%4$d de novo como um texto separado.</string>
+    <string name="source_pdf_details">PDF com texto ou páginas digitalizadas</string>
     <string name="source_txt_details">Arquivo de texto UTF-8</string>
     <string name="source_paste_details">Use o texto que você copiou</string>
     <string name="source_write_details">Comece com uma página em branco</string>
@@ -277,7 +286,7 @@
     <string name="cast_intro_ai">Escolha uma das 10 vozes de IA e um ritmo para cada personagem. Toque em ouvir para escutá-las.</string>
     <string name="licenses_title">Licenças</string>
     <string name="licenses_value">Software de código aberto e modelo de voz</string>
-    <string name="licenses_text">Voz de IA: Supertonic 3, da Supertone Inc., usado sob a licença OpenRAIL-M. Ao usar a voz de IA, você concorda em não utilizá-la para os usos restritos listados nessa licença, como violar a lei, prejudicar menores, espalhar informações falsas ou prejudiciais, assediar, se passar por pessoas reais sem consentimento ou apresentar voz gerada como humana sem informar que foi gerada por máquina.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nBiblioteca padrão do Kotlin (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">Voz de IA: Supertonic 3, da Supertone Inc., usado sob a licença OpenRAIL-M. Ao usar a voz de IA, você concorda em não utilizá-la para os usos restritos listados nessa licença, como violar a lei, prejudicar menores, espalhar informações falsas ou prejudiciais, assediar, se passar por pessoas reais sem consentimento ou apresentar voz gerada como humana sem informar que foi gerada por máquina.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nBiblioteca padrão do Kotlin (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Desativada · toque para baixar (cerca de %1$d MB)</string>
     <string name="ai_voice_failed_detail">Motivo: %1$s</string>
     <string name="ai_voice_playing">A voz de IA está lendo a fala…</string>
@@ -354,6 +363,10 @@
     <string name="backup_import_detail">Adiciona os textos de um backup; nada é excluído</string>
     <string name="backup_write_failed">Não foi possível salvar o backup.</string>
     <string name="backup_read_failed">Não foi possível ler este backup.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d página digitalizada foi lida com reconhecimento de texto. Confira os nomes dos personagens e as falas antes de ensaiar.</item>
+        <item quantity="other">%d páginas digitalizadas foram lidas com reconhecimento de texto. Confira os nomes dos personagens e as falas antes de ensaiar.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d texto exportado</item>
         <item quantity="many">%d textos exportados</item>
@@ -382,6 +395,9 @@
     <string name="line_role_invalid">Use um nome com letras, de até 40 caracteres.</string>
     <string name="line_text_required">Escreva a fala.</string>
     <string name="line_add">Adicionar fala</string>
+    <string name="roles_edit">Editar personagens</string>
+    <string name="role_rename_hint">Corrija o nome. Digite ou escolha o nome de outro personagem para juntar as falas a esse personagem.</string>
+    <string name="role_merge_into">Juntar com</string>
     <string name="edit_as_text">Editar como texto</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Ir para a sua fala · daqui a %d fala</item>

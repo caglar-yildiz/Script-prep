@@ -34,7 +34,7 @@
     <string name="sample_title">Örnek sahne</string>
     <string name="imported_title">İçe aktarılan metin</string>
     <string name="import_failed">Dosya okunamadı. UTF-8 biçiminde bir TXT dosyası seç.</string>
-    <string name="import_too_long">Dosya aktarım sınırını aşıyor. PDF sınırı 25 MB, 200 sayfa ve 150.000 metin karakteri.</string>
+    <string name="import_too_long">Dosya çok büyük. PDF en fazla 100 MB ve 1.000 sayfa, metin dosyası en fazla 150.000 karakter olabilir.</string>
     <string name="premium_description">Doğal karakter sesleri, sesle ilerleme, ayrıntılı sonuçlar ve videolu prova.</string>
     <string name="premium_voices">Doğal karakter sesleri</string>
     <string name="premium_voices_description">Her karaktere farklı, daha doğal bir ses ata.</string>
@@ -52,7 +52,7 @@
     <string name="voice_preview">Sesi dinle</string>
     <string name="voice_no_alternatives">Bu dil için cihazında ek çevrimdışı ses yüklü değil.</string>
     <string name="voice_change_failed">Bu ses seçilemedi.</string>
-    <string name="pdf_no_text">Bu PDF’de seçilebilir metin bulunamadı. Taranmış sayfalar için önce OCR ile metin oluştur.</string>
+    <string name="pdf_no_text">Bu PDF’de, taranmış sayfalar dahil, metin bulunamadı. Daha net bir tarama dene ya da metni yapıştır.</string>
     <string name="pdf_import_failed">PDF açılamadı. Dosyanın sağlam ve parolasız olduğunu kontrol et.</string>
     <string name="parse_preview">Sahneleri ve rolleri kontrol et</string>
     <string name="parse_preview_counts">%1$d sahne · %2$d replik</string>
@@ -122,7 +122,16 @@
     <string name="settings_version">Sürüm</string>
     <string name="step_counter">Adım %1$d / %2$d</string>
     <string name="importing">Metnin içe aktarılıyor…</string>
-    <string name="source_pdf_details">Seçilebilir metin içeren PDF</string>
+    <string name="importing_scanned">Taranmış sayfa okunuyor: %1$d / %2$d…</string>
+    <string name="pdf_pages_title">Hangi sayfalar?</string>
+    <string name="pdf_pages_message">Bu PDF’de %1$d sayfa var. Oyununun başladığı ve bittiği PDF sayfalarını yaz; bir seferde en fazla %2$d sayfa. PDF sayfa numarası kitapta yazan numaradan farklı olabilir.</string>
+    <string name="pdf_pages_first">İlk sayfa</string>
+    <string name="pdf_pages_last">Son sayfa</string>
+    <string name="pdf_pages_import">İçe aktar</string>
+    <string name="pdf_pages_invalid">1 ile %1$d arasında bir sayfa yaz.</string>
+    <string name="pdf_pages_too_many">Bir seferde en fazla %1$d sayfa seçebilirsin.</string>
+    <string name="pdf_pages_cut_short">%1$d–%2$d. sayfalar aktarıldı; metin sınırına burada ulaşıldı. %3$d–%4$d. sayfaları yeniden, ayrı bir metin olarak aktar.</string>
+    <string name="source_pdf_details">Metin içeren ya da taranmış PDF</string>
     <string name="source_txt_details">UTF-8 düz metin dosyası</string>
     <string name="source_paste_details">Kopyaladığın metni kullan</string>
     <string name="source_write_details">Boş bir sayfayla başla</string>
@@ -270,7 +279,7 @@
     <string name="cast_intro_ai">Her karakter için 10 yapay zekâ sesinden birini ve hızını seç. Dinlemek için oynat düğmesine dokun.</string>
     <string name="licenses_title">Lisanslar</string>
     <string name="licenses_value">Açık kaynak yazılımlar ve ses modeli</string>
-    <string name="licenses_text">Yapay zekâ sesi: Supertone Inc. tarafından geliştirilen Supertonic 3, OpenRAIL-M lisansıyla kullanılır. Yapay zekâ sesini kullanarak onu bu lisansta sayılan kısıtlı amaçlar için kullanmamayı kabul edersin: yasaları çiğnemek, reşit olmayanlara zarar vermek, yanlış veya zararlı bilgi yaymak, taciz etmek, gerçek kişileri izinsiz taklit etmek ya da üretilen sesi makine üretimi olduğunu belirtmeden insan sesi gibi sunmak bunlara dahildir.\n\nsherpa-onnx (k2-fsa), Apache Lisansı 2.0.\nONNX Runtime (Microsoft), MIT Lisansı.\nPdfBox-Android (Tom Roush), Apache Lisansı 2.0.\nKotlin standart kütüphanesi (JetBrains), Apache Lisansı 2.0.</string>
+    <string name="licenses_text">Yapay zekâ sesi: Supertone Inc. tarafından geliştirilen Supertonic 3, OpenRAIL-M lisansıyla kullanılır. Yapay zekâ sesini kullanarak onu bu lisansta sayılan kısıtlı amaçlar için kullanmamayı kabul edersin: yasaları çiğnemek, reşit olmayanlara zarar vermek, yanlış veya zararlı bilgi yaymak, taciz etmek, gerçek kişileri izinsiz taklit etmek ya da üretilen sesi makine üretimi olduğunu belirtmeden insan sesi gibi sunmak bunlara dahildir.\n\nsherpa-onnx (k2-fsa), Apache Lisansı 2.0.\nONNX Runtime (Microsoft), MIT Lisansı.\nPdfBox-Android (Tom Roush), Apache Lisansı 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nKotlin standart kütüphanesi (JetBrains), Apache Lisansı 2.0.</string>
     <string name="ai_voice_tap_download">Kapalı · indirmek için dokun (yaklaşık %1$d MB)</string>
     <string name="ai_voice_failed_detail">Neden: %1$s</string>
     <string name="ai_voice_playing">Replik yapay zekâ sesiyle okunuyor…</string>
@@ -344,6 +353,10 @@
     <string name="backup_import_detail">Yedekteki metinleri ekler; hiçbir şey silinmez</string>
     <string name="backup_write_failed">Yedek dosyası kaydedilemedi.</string>
     <string name="backup_read_failed">Bu yedek dosyası okunamadı.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
+        <item quantity="other">%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d metin dışa aktarıldı</item>
         <item quantity="other">%d metin dışa aktarıldı</item>
@@ -370,6 +383,9 @@
     <string name="line_role_invalid">Harflerden oluşan, en fazla 40 karakterlik bir ad yaz.</string>
     <string name="line_text_required">Repliği yaz.</string>
     <string name="line_add">Replik ekle</string>
+    <string name="roles_edit">Karakterleri düzenle</string>
+    <string name="role_rename_hint">Adı düzelt. Başka bir karakterin adını yazar ya da aşağıdan seçersen replikleri o karakterle birleşir.</string>
+    <string name="role_merge_into">Şununla birleştir</string>
     <string name="edit_as_text">Düz metin olarak düzenle</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Repliğine geç · %d replik sonra</item>

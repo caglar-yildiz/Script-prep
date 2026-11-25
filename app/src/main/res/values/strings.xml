@@ -35,7 +35,7 @@
     <string name="sample_title">Sample scene</string>
     <string name="imported_title">Imported text</string>
     <string name="import_failed">Couldn’t read the file. Choose a UTF-8 TXT file.</string>
-    <string name="import_too_long">This file exceeds the import limit. The PDF limits are 25 MB, 200 pages and 150,000 text characters.</string>
+    <string name="import_too_long">This file is too large. PDFs can be up to 100 MB and 1,000 pages; text files up to 150,000 characters.</string>
     <string name="premium_description">Natural character voices, hands-free cues, detailed results and video practice.</string>
     <string name="premium_voices">Natural character voices</string>
     <string name="premium_voices_description">Choose a distinct, natural-sounding voice for each character.</string>
@@ -53,7 +53,7 @@
     <string name="voice_preview">Preview voice</string>
     <string name="voice_no_alternatives">No additional offline voices are installed for this language.</string>
     <string name="voice_change_failed">Couldn’t select this voice.</string>
-    <string name="pdf_no_text">This PDF has no selectable text. Run OCR on scanned pages before importing.</string>
+    <string name="pdf_no_text">Couldn’t find any text in this PDF, not even on the scanned pages. Try a sharper scan, or paste the text instead.</string>
     <string name="pdf_import_failed">Couldn’t open the PDF. Make sure the file is readable and password-free.</string>
     <string name="parse_preview">Review scenes and roles</string>
     <string name="parse_preview_counts">%1$d scenes · %2$d lines</string>
@@ -123,7 +123,16 @@
     <string name="settings_version">Version</string>
     <string name="step_counter">Step %1$d of %2$d</string>
     <string name="importing">Importing your text…</string>
-    <string name="source_pdf_details">PDF with selectable text</string>
+    <string name="importing_scanned">Reading scanned page %1$d of %2$d…</string>
+    <string name="pdf_pages_title">Which pages?</string>
+    <string name="pdf_pages_message">This PDF has %1$d pages. Enter the PDF pages where your play starts and ends, up to %2$d at a time. The PDF page number can differ from the number printed in the book.</string>
+    <string name="pdf_pages_first">First page</string>
+    <string name="pdf_pages_last">Last page</string>
+    <string name="pdf_pages_import">Import</string>
+    <string name="pdf_pages_invalid">Enter a page from 1 to %1$d.</string>
+    <string name="pdf_pages_too_many">Choose at most %1$d pages at a time.</string>
+    <string name="pdf_pages_cut_short">Pages %1$d–%2$d were imported; the text limit was reached there. Import pages %3$d–%4$d again as a separate text.</string>
+    <string name="source_pdf_details">Text PDF or scanned pages</string>
     <string name="source_txt_details">Plain UTF-8 text file</string>
     <string name="source_paste_details">Use the text you copied</string>
     <string name="source_write_details">Start from a blank page</string>
@@ -271,7 +280,7 @@
     <string name="cast_intro_ai">Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.</string>
     <string name="licenses_title">Licenses</string>
     <string name="licenses_value">Open-source software and voice model</string>
-    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
+    <string name="licenses_text">AI voice: Supertonic 3 by Supertone Inc., used under the OpenRAIL-M license. By using the AI voice you agree not to use it for the restricted uses listed in that license, including breaking the law, harming minors, spreading false or harmful information, harassment, impersonating real people without their consent, or presenting generated speech as human-made without saying it is machine generated.\n\nsherpa-onnx (k2-fsa), Apache License 2.0.\nONNX Runtime (Microsoft), MIT License.\nPdfBox-Android (Tom Roush), Apache License 2.0.\nML Kit Text Recognition (Google), ML Kit Terms of Service.\nKotlin standard library (JetBrains), Apache License 2.0.</string>
     <string name="ai_voice_tap_download">Off · tap to download (about %1$d MB)</string>
     <string name="ai_voice_failed_detail">Reason: %1$s</string>
     <string name="ai_voice_playing">The AI voice is reading the line…</string>
@@ -350,6 +359,10 @@
     <string name="backup_import_detail">Adds the texts in a backup; nothing is deleted</string>
     <string name="backup_write_failed">Couldn’t save the backup file.</string>
     <string name="backup_read_failed">Couldn’t read this backup file.</string>
+    <plurals name="scanned_pages_notice">
+        <item quantity="one">%d scanned page was read with text recognition. Check the character names and lines before you rehearse.</item>
+        <item quantity="other">%d scanned pages were read with text recognition. Check the character names and lines before you rehearse.</item>
+    </plurals>
     <plurals name="backup_exported">
         <item quantity="one">%d text exported</item>
         <item quantity="other">%d texts exported</item>
@@ -376,6 +389,10 @@
     <string name="line_role_invalid">Use a name of letters, up to 40 characters.</string>
     <string name="line_text_required">Write the line.</string>
     <string name="line_add">Add line</string>
+    <string name="roles_edit">Edit characters</string>
+    <string name="role_rename_hint">Fix the name. Type or pick another character’s name to merge their lines into that character.</string>
+    <string name="role_merge_into">Merge into</string>
+    <string name="role_renamed" translatable="false">%1$s → %2$s</string>
     <string name="edit_as_text">Edit as plain text</string>
     <plurals name="jump_to_turn">
         <item quantity="one">Skip to your line · %d line away</item>

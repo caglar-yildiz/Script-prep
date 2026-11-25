@@ -128,4 +128,7 @@ dependencies {
     implementation("androidx.credentials:credentials:1.6.0")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.2.1")
+    // On-device text recognition for scanned PDF pages. The bundled model works offline from the
+    // first launch and needs no Google Play services download.
+    implementation("com.google.mlkit:text-recognition:16.0.1")
 }

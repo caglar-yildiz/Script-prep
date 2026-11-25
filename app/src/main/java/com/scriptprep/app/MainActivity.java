@@ -91,6 +91,8 @@ import java.util.concurrent.Executors;
 
 public final class MainActivity extends Activity {
     private static final int MAX_SCRIPT_LENGTH = 150_000;
+    /** Longer PDFs ask which pages to import. */
+    private static final int PAGE_CHOICE_FROM = 30;
     private static final int MAX_TITLE_LENGTH = 80;
     private static final int IMPORT_TEXT = 1;
     private static final int IMPORT_PDF = 2;
@@ -155,6 +157,9 @@ public final class MainActivity extends Activity {
     private boolean playbackFailed;
     private boolean visible;
     private boolean importing;
+    /** Progress shown while scanned PDF pages are read; null while the file itself is read. */
+    private String importStatus;
+    private TextView importLabel;
     private String activePreview;
 
     private Screen screen = Screen.HOME;
@@ -430,37 +435,186 @@ public final class MainActivity extends Activity {
         TextCategory selectedCategory = category;
         String narrator = getString(R.string.solo_role);
         importing = true;
+        importStatus = null;
         render();
+        runImport(pdf, () -> {
+            if (!pdf) {
+                deliverImport(ScriptImport.readText(getApplicationContext(), uri, MAX_SCRIPT_LENGTH),
+                    false, selectedCategory, narrator);
+                return;
+            }
+            ScriptImport.PdfFile file = ScriptImport.openPdf(getApplicationContext(), uri);
+            int pages = file.source.pageCount;
+            if (pages > PAGE_CHOICE_FROM) {
+                main.post(() -> choosePages(file, selectedCategory, narrator));
+            } else {
+                readPdfPages(file, 1, pages, selectedCategory, narrator);
+            }
+        });
+    }
+
+    /** Work that runs off the main thread while the import spinner shows. */
+    private interface ImportStep {
+        void run() throws IOException;
+    }
+
+    private void runImport(boolean pdf, ImportStep step) {
         imports.execute(() -> {
             try {
-                ScriptLibrary.Script imported = ScriptImport.read(getApplicationContext(), uri, pdf, MAX_SCRIPT_LENGTH);
-                Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
-                main.post(() -> {
-                    finishImport();
-                    if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
-                        String title = imported.title.trim();
-                        openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
-                            : title, imported.text);
-                        savedScript = "";
-                        savedTitle = "";
-                        if (preview != null) {
-                            showParsePreview(preview);
-                        }
-                    }
-                });
+                step.run();
             } catch (ScriptImport.LengthLimitException error) {
                 main.post(() -> failImport(R.string.import_too_long));
             } catch (PdfScriptReader.NoTextException error) {
                 main.post(() -> failImport(R.string.pdf_no_text));
-            } catch (IOException | RuntimeException | LinkageError error) {
+            } catch (IOException | RuntimeException | LinkageError | OutOfMemoryError error) {
                 Log.w("ScriptPrep", "Could not import a script", error);
                 main.post(() -> failImport(pdf ? R.string.pdf_import_failed : R.string.import_failed));
             }
         });
     }
 
+    /** Runs on the import thread. */
+    private void readPdfPages(ScriptImport.PdfFile file, int first, int last,
+        TextCategory selectedCategory, String narrator) throws IOException {
+        ScriptImport.Result result = ScriptImport.readPdf(getApplicationContext(), file, first, last,
+            MAX_SCRIPT_LENGTH, (done, total) -> main.post(() -> showImportStatus(
+                getString(R.string.importing_scanned, done + 1, total))));
+        deliverImport(result, true, selectedCategory, narrator);
+    }
+
+    /** A long PDF often holds more than the play, or the play starts late: ask which pages to read. */
+    private void choosePages(ScriptImport.PdfFile file, TextCategory selectedCategory, String narrator) {
+        if (isDestroyed() || screen != Screen.SOURCE || category != selectedCategory) {
+            file.source.close();
+            finishImport();
+            return;
+        }
+        int pages = file.source.pageCount;
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        form.addView(ui.text(getString(R.string.pdf_pages_message, pages, PdfScriptReader.MAX_RANGE),
+            Type.BODY, TEXT_SECONDARY));
+        LinearLayout row = horizontal();
+        EditText firstField = pageField(R.string.pdf_pages_first, 1);
+        EditText lastField = pageField(R.string.pdf_pages_last, Math.min(pages, PdfScriptReader.MAX_RANGE));
+        LinearLayout firstColumn = new LinearLayout(this);
+        firstColumn.setOrientation(LinearLayout.VERTICAL);
+        firstColumn.addView(ui.text(getString(R.string.pdf_pages_first), Type.LABEL, TEXT_SECONDARY));
+        firstColumn.addView(firstField, ui.spaced(6));
+        LinearLayout lastColumn = new LinearLayout(this);
+        lastColumn.setOrientation(LinearLayout.VERTICAL);
+        lastColumn.addView(ui.text(getString(R.string.pdf_pages_last), Type.LABEL, TEXT_SECONDARY));
+        lastColumn.addView(lastField, ui.spaced(6));
+        row.addView(firstColumn, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout.LayoutParams lastParams = new LinearLayout.LayoutParams(0, -2, 1);
+        lastParams.leftMargin = ui.dp(12);
+        row.addView(lastColumn, lastParams);
+        form.addView(row, ui.spaced(16));
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(form);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(R.string.pdf_pages_title)
+            .setView(scroll)
+            .setPositiveButton(R.string.pdf_pages_import, null)
+            .setNegativeButton(android.R.string.cancel, (shown, which) -> {
+                file.source.close();
+                finishImport();
+            })
+            .setOnCancelListener(shown -> {
+                file.source.close();
+                finishImport();
+            })
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            int first = pageNumber(firstField);
+            int last = pageNumber(lastField);
+            if (first < 1 || first > pages) {
+                firstField.setError(getString(R.string.pdf_pages_invalid, pages));
+                firstField.requestFocus();
+                return;
+            }
+            if (last < first || last > pages) {
+                lastField.setError(getString(R.string.pdf_pages_invalid, pages));
+                lastField.requestFocus();
+                return;
+            }
+            if (last - first + 1 > PdfScriptReader.MAX_RANGE) {
+                lastField.setError(getString(R.string.pdf_pages_too_many, PdfScriptReader.MAX_RANGE));
+                lastField.requestFocus();
+                return;
+            }
+            dialog.dismiss();
+            hideKeyboard();
+            runImport(true, () -> readPdfPages(file, first, last, selectedCategory, narrator));
+        }));
+        dialog.show();
+    }
+
+    private EditText pageField(int hint, int value) {
+        EditText field = field(hint, String.valueOf(value), InputType.TYPE_CLASS_NUMBER, 4);
+        field.setSingleLine(true);
+        field.setSelectAllOnFocus(true);
+        return field;
+    }
+
+    private static int pageNumber(EditText field) {
+        try {
+            return Integer.parseInt(field.getText().toString().trim());
+        } catch (NumberFormatException error) {
+            return -1;
+        }
+    }
+
+    /** Runs on the import thread: parses the result and opens it in the editor. */
+    private void deliverImport(ScriptImport.Result result, boolean pdf, TextCategory selectedCategory,
+        String narrator) {
+        ScriptLibrary.Script imported = result.script;
+        Scene preview = pdf ? selectedCategory.parse(imported.text, narrator) : null;
+        main.post(() -> {
+            finishImport();
+            if (!isDestroyed() && screen == Screen.SOURCE && category == selectedCategory) {
+                String title = imported.title.trim();
+                openEditor(null, title.isEmpty() ? getString(R.string.imported_title)
+                    : title, imported.text);
+                savedScript = "";
+                savedTitle = "";
+                if (preview != null) {
+                    showParsePreview(preview, importNotice(result));
+                }
+            }
+        });
+    }
+
+    /** What the preview should say about scanned pages and pages left for another import. */
+    private String importNotice(ScriptImport.Result result) {
+        StringBuilder notice = new StringBuilder();
+        if (result.cutShort()) {
+            notice.append(getString(R.string.pdf_pages_cut_short, result.firstPage, result.lastPage,
+                result.lastPage + 1, result.requestedLastPage));
+        }
+        if (result.scannedPages > 0) {
+            if (notice.length() > 0) {
+                notice.append("\n\n");
+            }
+            notice.append(getResources().getQuantityString(R.plurals.scanned_pages_notice,
+                result.scannedPages, result.scannedPages));
+        }
+        return notice.toString();
+    }
+
+    private void showImportStatus(String status) {
+        importStatus = status;
+        if (importing && importLabel != null) {
+            importLabel.setText(status);
+        }
+    }
+
     private void finishImport() {
         importing = false;
+        importStatus = null;
+        importLabel = null;
         if (!isDestroyed() && screen == Screen.SOURCE) {
             render();
         }
@@ -1495,7 +1649,9 @@ public final class MainActivity extends Activity {
             ProgressBar spinner = new ProgressBar(this);
             spinner.setIndeterminateTintList(ColorStateList.valueOf(ACCENT));
             loading.addView(spinner, new LinearLayout.LayoutParams(ui.dp(28), ui.dp(28)));
-            TextView label = ui.text(getString(R.string.importing), Type.SUBTITLE, TEXT);
+            TextView label = ui.text(importStatus == null ? getString(R.string.importing) : importStatus,
+                Type.SUBTITLE, TEXT);
+            importLabel = label;
             label.setAccessibilityLiveRegion(View.ACCESSIBILITY_LIVE_REGION_POLITE);
             loading.addView(label, weighted(16, ui));
             content.addView(loading, ui.spaced(24));
@@ -1850,13 +2006,18 @@ public final class MainActivity extends Activity {
     }
 
     private void showParsePreview(Scene parsed) {
+        showParsePreview(parsed, "");
+    }
+
+    private void showParsePreview(Scene parsed, String notice) {
+        String scanned = notice.isEmpty() ? "" : notice + "\n\n";
         if (!category.hasRoles()) {
             new AlertDialog.Builder(this).setTitle(R.string.solo_preview_title)
-                .setMessage(getString(R.string.solo_preview_count, parsed.lines.size()))
+                .setMessage(scanned + getString(R.string.solo_preview_count, parsed.lines.size()))
                 .setPositiveButton(android.R.string.ok, null).show();
             return;
         }
-        StringBuilder summary = new StringBuilder(getString(
+        StringBuilder summary = new StringBuilder(scanned).append(getString(
             R.string.parse_preview_counts, parsed.sections.size(), parsed.lines.size()
         ));
         summary.append("\n\n");
@@ -1870,8 +2031,12 @@ public final class MainActivity extends Activity {
                 summary.append("\n").append(section.title);
             }
         }
-        new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
-            .setMessage(summary).setPositiveButton(android.R.string.ok, null).show();
+        AlertDialog.Builder preview = new AlertDialog.Builder(this).setTitle(R.string.parse_preview)
+            .setMessage(summary).setPositiveButton(android.R.string.ok, null);
+        if (screen == Screen.EDITOR && editor != null && !parsed.roles.isEmpty()) {
+            preview.setNeutralButton(R.string.roles_edit, (dialog, which) -> editEditorRoles());
+        }
+        preview.show();
     }
 
     // ---------------------------------------------------------------- Backup file
@@ -2370,6 +2535,7 @@ public final class MainActivity extends Activity {
 
     private void renderLines() {
         LinearLayout bar = topBar(R.drawable.ic_back, getString(R.string.lines_title), () -> show(linesReturn));
+        barAction(bar, R.drawable.ic_people, R.string.roles_edit, view -> editSavedRoles());
         barAction(bar, R.drawable.ic_texts, R.string.edit_as_text, view -> editCurrent());
         content.addView(ui.text(getString(R.string.lines_hint), Type.BODY, TEXT_SECONDARY), ui.spaced(4));
 
@@ -2524,6 +2690,155 @@ public final class MainActivity extends Activity {
             }
             if (saveLines(lines)) {
                 dialog.dismiss();
+            }
+        }));
+        dialog.show();
+    }
+
+    // ---------------------------------------------------------------- Characters
+
+    /** Applies renamed lines and returns the text as parsed again, or null when it was not saved. */
+    private interface RoleEdit {
+        Scene apply(List<Scene.Line> lines, String from, String to);
+    }
+
+    /** Renames or merges characters in the text open in the editor, before it is saved. */
+    private void editEditorRoles() {
+        showRoles(parseScript(editor.getText().toString()), (lines, from, to) -> {
+            String before = editor.getText().toString();
+            String text = Scene.toText(lines);
+            if (text.length() > MAX_SCRIPT_LENGTH) {
+                notifyUser(R.string.import_too_long);
+                return null;
+            }
+            EditText field = editor;
+            field.setText(text);
+            script = text;
+            showSnackbar(getString(R.string.role_renamed, from, to), getString(R.string.undo), () -> {
+                field.setText(before);
+                script = before;
+            });
+            return parseScript(text);
+        });
+    }
+
+    /** Renames or merges characters in the saved text; the voice of a renamed character stays. */
+    private void editSavedRoles() {
+        showRoles(fullScene, (lines, from, to) -> {
+            String before = script;
+            String previousRole = role;
+            boolean merged = fullScene.roles.contains(to);
+            VoiceCast.Part voice = currentCast().get(from);
+            if (from.equals(role)) {
+                role = to;
+            }
+            if (!saveLines(lines)) {
+                role = previousRole;
+                return null;
+            }
+            if (!merged && voice != null) {
+                Map<String, VoiceCast.Part> cast = currentCast();
+                cast.put(to, voice);
+                VoiceCast.save(preferences, castKey(), cast);
+            }
+            showSnackbar(getString(R.string.role_renamed, from, to), getString(R.string.undo), () -> {
+                role = previousRole;
+                saveText(before);
+            });
+            return fullScene;
+        });
+    }
+
+    /** Lists the characters with their line counts; tapping one renames it or merges it into another. */
+    private void showRoles(Scene parsed, RoleEdit edit) {
+        if (parsed == null || parsed.roles.isEmpty()) {
+            notifyUser(R.string.invalid_scene);
+            return;
+        }
+        Map<String, Integer> counts = new java.util.HashMap<>();
+        for (Scene.Line line : parsed.lines) {
+            counts.merge(line.role, 1, Integer::sum);
+        }
+        String[] items = new String[parsed.roles.size()];
+        for (int i = 0; i < items.length; i++) {
+            String name = parsed.roles.get(i);
+            int count = counts.getOrDefault(name, 0);
+            items[i] = name + " · " + getResources().getQuantityString(R.plurals.line_count, count, count);
+        }
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.roles_edit)
+            .setItems(items, (dialog, which) -> renameRole(parsed, parsed.roles.get(which), edit))
+            .setNegativeButton(R.string.action_close, null)
+            .show();
+    }
+
+    private void renameRole(Scene parsed, String from, RoleEdit edit) {
+        LinearLayout form = new LinearLayout(this);
+        form.setOrientation(LinearLayout.VERTICAL);
+        form.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        form.addView(ui.text(getString(R.string.role_rename_hint), Type.BODY, TEXT_SECONDARY));
+        EditText nameField = field(R.string.line_role, from,
+            InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS, 40);
+        nameField.setSingleLine(true);
+        nameField.setSelection(nameField.length());
+        form.addView(nameField, ui.spaced(12));
+
+        List<String> others = new ArrayList<>(parsed.roles);
+        others.remove(from);
+        if (!others.isEmpty()) {
+            form.addView(ui.text(getString(R.string.role_merge_into), Type.LABEL, TEXT_SECONDARY), ui.spaced(16));
+            android.widget.HorizontalScrollView scroll = new android.widget.HorizontalScrollView(this);
+            scroll.setHorizontalScrollBarEnabled(false);
+            LinearLayout chips = horizontal();
+            for (String name : others) {
+                TextView option = ui.chip(name, TEXT, SURFACE_HIGHEST);
+                option.setBackground(ui.ripple(ui.shape(SURFACE_HIGHEST, 999), 0x22FFFFFF));
+                option.setOnClickListener(view -> {
+                    nameField.setText(name);
+                    nameField.setSelection(name.length());
+                });
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-2, -2);
+                params.rightMargin = ui.dp(6);
+                chips.addView(option, params);
+            }
+            scroll.addView(chips);
+            form.addView(scroll, ui.spaced(8));
+        }
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+            .setTitle(from)
+            .setView(form)
+            .setPositiveButton(R.string.script_save, null)
+            .setNegativeButton(android.R.string.cancel, (shown, which) -> showRoles(parsed, edit))
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            String typed = nameField.getText().toString().trim().replaceAll("\\s+", " ");
+            if (!Scene.isRoleName(typed)) {
+                nameField.setError(getString(R.string.line_role_invalid));
+                nameField.requestFocus();
+                return;
+            }
+            // Typing another character's name in any case merges into that character's spelling.
+            String to = typed;
+            for (String name : others) {
+                if (name.toLowerCase(language.locale).equals(typed.toLowerCase(language.locale))) {
+                    to = name;
+                }
+            }
+            dialog.dismiss();
+            hideKeyboard();
+            if (to.equals(from)) {
+                showRoles(parsed, edit);
+                return;
+            }
+            List<Scene.Line> lines = new ArrayList<>();
+            for (Scene.Line line : parsed.lines) {
+                lines.add(line.role.equals(from)
+                    ? Scene.Line.of(to, line.text, line.section, line.notes) : line);
+            }
+            Scene updated = edit.apply(lines, from, to);
+            if (updated != null && updated.roles.size() > 1) {
+                showRoles(updated, edit);
             }
         }));
         dialog.show();
