@@ -117,6 +117,37 @@ public class SceneTest {
         assertEquals(scene.roles, Scene.parse(Scene.toText(scene.lines)).roles);
     }
 
+    @Test
+    public void takesScreenplayHeadingsOnlyInCapitalsOrWithAPeriod() {
+        assertEquals(true, Scene.isHeading("İÇ. MUTFAK - GECE"));
+        assertEquals(true, Scene.isHeading("İç. Mutfak - Gece"));
+        assertEquals(true, Scene.isHeading("12 EXT. BAHÇE"));
+        assertEquals(false, Scene.isHeading("İç çeker."));
+        assertEquals(false, Scene.isHeading("Dış kapı açılır."));
+
+        Scene scene = Scene.parse("AYŞE: Peki.\nİç çeker.\nAHMET: Ne oldu?");
+        assertEquals("Peki. İç çeker.", scene.lines.get(0).text);
+    }
+
+    @Test
+    public void endsASceneOnlyWithAClearEndMarker() {
+        assertEquals(true, Scene.isHeading("SON"));
+        assertEquals(true, Scene.isHeading("Perde sonu."));
+        assertEquals(true, Scene.isHeading("I. Perde Sonu"));
+        assertEquals(false, Scene.isHeading("Son."));
+        assertEquals(false, Scene.isHeading("Fin."));
+    }
+
+    @Test
+    public void closesABracketLeftOpenAtTheNextHeadingOrCue() {
+        Scene scene = Scene.parse("SAHNE 1\nAHMET: Bir (güler\nSAHNE 2\nAYŞE: İki (oturur\nAHMET: Üç.");
+
+        assertEquals(2, scene.sections.size());
+        assertEquals(Arrays.asList("AHMET", "AYŞE"), scene.roles);
+        assertEquals(Arrays.asList("(güler)"), scene.lines.get(0).notes);
+        assertEquals("Üç.", scene.lines.get(2).text);
+    }
+
     private static java.util.List<String> texts(Scene scene) {
         java.util.List<String> texts = new java.util.ArrayList<>();
         for (Scene.Line line : scene.lines) {

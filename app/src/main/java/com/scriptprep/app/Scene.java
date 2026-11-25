@@ -40,6 +40,15 @@ final class Scene {
         + "BLACKOUT|CURTAIN|FADE OUT|(?:CUT|DISSOLVE|FADE) TO|SON|END|KARARIR|"
         + "FIN|TELON|OSCURO|ENDE|VORHANG|RIDEAU|NOIR|FIM|PANO|FINE|SIPARIO|BUIO)[.!:]?$"
     );
+    /** A screenplay heading marked with a period or slash: "İç. Mutfak", "INT./EXT. CAR". */
+    private static final Pattern SCREEN_MARKED = Pattern.compile(
+        "^(?:\\d+[A-Z]?\\s+)?(?:INT\\.?/EXT|I/E|IC\\s*/\\s*DIS|INT|EXT|EST|IC|DIS)[./].+$"
+    );
+    /** End markers that cannot be an ordinary short line, so any case will do. */
+    private static final Pattern END_PHRASE = Pattern.compile(
+        "^(?:(?:[IVXLCDM]+|\\d+)\\.?\\s+)?(?:PERDE SONU|SAHNE SONU|END OF (?:ACT|SCENE).*|"
+        + "FADE OUT|(?:CUT|DISSOLVE|FADE) TO|KARARIR)[.!:]?$"
+    );
     private static final Pattern EXERCISE = Pattern.compile("^ETKINLIK\\s+\\d+\\b");
     private static final Pattern LINK = Pattern.compile("https?://", Pattern.CASE_INSENSITIVE);
     /** A dash at the start of a row, before a role name: "- AHMET: Text", "— AHMET — Text". */
@@ -247,8 +256,17 @@ final class Scene {
         }
         String folded = fold(plain);
         if (ACT.matcher(folded).matches() || STAGE.matcher(folded).matches()
-            || TRADITIONAL.matcher(folded).matches() || SCREEN.matcher(folded).matches()
-            || END.matcher(folded).matches()) {
+            || TRADITIONAL.matcher(folded).matches()) {
+            return plain;
+        }
+        // "İç çeker." and "Dış kapı açılır." are directions; a screenplay heading is in capitals
+        // or marks İÇ/DIŞ/INT/EXT with a period.
+        if (SCREEN.matcher(folded).matches()
+            && (isCapitals(plain) || SCREEN_MARKED.matcher(folded).matches())) {
+            return plain;
+        }
+        // "Son." can be a whole line of dialogue; "SON" and "Perde sonu" end a scene.
+        if (END.matcher(folded).matches() && (isCapitals(plain) || END_PHRASE.matcher(folded).matches())) {
             return plain;
         }
         return null;
