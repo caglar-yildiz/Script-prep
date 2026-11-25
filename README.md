@@ -50,6 +50,10 @@ Android Studio'da bu depoyu aç. Derleme için JDK 17 veya üzeri, Android SDK 3
 - Provada sıra oyuncuya uzaksa **Repliğine geç** düğmesi, oyuncunun sıradaki repliğinden 3 replik öncesine atlar; böylece ipucu replikleri duyulur. Üst çubuktaki liste simgesi **Sahne akışı**nı açar: bütün replikler kaydırılabilir listede, oyuncunun replikleri vurgulu; dokunulan replikten prova devam eder.
 - Rol metinleri **Replikleri düzenle** ekranında replik replik düzenlenir: karakter, metin ve repliğin ardından gelen notlar değiştirilebilir; ⋮ menüsüyle araya replik veya not eklenir, replik silinir (geri alınabilir). Düzenlenen replikler `Scene.toText` ile metne geri yazılır ve aynı satırlar olarak yeniden okunur. Düz metin düzenleyicisi üst çubuktan açılmaya devam eder.
 
+### Ekip provası
+
+Ana ekrandaki **Ekip provası** kartı, hesap açmadan (ad yazıp anonim kimlikle) bir metni ekiple paylaşmayı ya da davet linki veya koduyla bir gruba katılmayı sağlar. Google hesabı bağlanırsa aynı kimlik tablette ve yeni telefonda da açılır. Herkes kendi rollerini seçer ve **Repliklerimi kaydet** ekranında kendi repliklerini ipucu repliğiyle birlikte kaydeder (replik başına 10 dakikaya kadar). **Prova et** ekibin kayıtlarını indirir ve metnin çevrimdışı kopyasıyla provayı açar: kaydı olan replik oyuncunun sesiyle, olmayan cihaz sesiyle çalar. Altyapı Firebase'in ücretsiz Spark planıdır: Authentication ve Cloud Firestore. Kurulum adımları ve güvenlik kuralları [docs/ensemble-setup.md](docs/ensemble-setup.md) ve [firestore.rules](firestore.rules) dosyalarında. `app/google-services.json` yoksa uygulama derlenir ve kart gizlenir.
+
 ### Yedekleme
 
 Metinler ve ayarlar Android otomatik yedeklemesine dahil (yapay zekâ ses modeli ve indirme kayıtları hariç), böylece yeniden kurulumda ya da yeni telefonda geri gelir. **Ayarlar → Yedekleme** ile metinler bir JSON dosyasına dışa aktarılıp içe aktarılabilir; içe aktarma aynı kimlikli metinleri günceller, diğerlerini ekler, hiçbir şeyi silmez. Debug derlemeleri depodaki sabit `app/debug.keystore` ile imzalanır; böylece CI'dan gelen her APK öncekinin üzerine güncelleme olarak kurulur.

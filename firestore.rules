@@ -1,0 +1,90 @@
+rules_version = '2';
+
+// Ensemble rehearsal (see app/src/main/java/com/scriptprep/app/Ensemble.java).
+// Paste into Firebase console → Firestore Database → Rules, or deploy with the Firebase CLI.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function production(p) {
+      return /databases/$(database)/documents/productions/$(p);
+    }
+
+    function isMember(p) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/productions/$(p)/members/$(request.auth.uid));
+    }
+
+    function isOwner(p) {
+      return signedIn() && get(production(p)).data.ownerUid == request.auth.uid;
+    }
+
+    // Each user's own list of the productions they belong to.
+    match /users/{uid}/productions/{p} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Invite code → production. Anyone signed in may look up a code they know, but not list codes.
+    match /invites/{code} {
+      allow get: if signedIn();
+      allow list, update: if false;
+      allow create: if signedIn()
+        && code.size() == 6
+        && request.resource.data.keys().hasOnly(['productionId', 'ownerUid'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && getAfter(production(request.resource.data.productionId)).data.ownerUid == request.auth.uid
+        && getAfter(production(request.resource.data.productionId)).data.inviteCode == code;
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+
+    match /productions/{p} {
+      allow read: if isMember(p);
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.title is string && request.resource.data.title.size() <= 200
+        && request.resource.data.text is string && request.resource.data.text.size() <= 300000
+        && request.resource.data.inviteCode is string;
+      // The owner may change the text; ownership and the invite code stay as they are.
+      allow update: if isOwner(p)
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.inviteCode == resource.data.inviteCode
+        && request.resource.data.title is string && request.resource.data.title.size() <= 200
+        && request.resource.data.text is string && request.resource.data.text.size() <= 300000;
+      allow delete: if isOwner(p);
+
+      match /members/{uid} {
+        allow read: if isMember(p);
+        allow create: if signedIn() && request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['name', 'roles', 'owner', 'code', 'joinedAt'])
+          && request.resource.data.roles is list && request.resource.data.roles.size() <= 50
+          && request.resource.data.code is string
+          && (
+            // The owner, in the same batch that creates the production.
+            (request.resource.data.owner == true
+              && getAfter(production(p)).data.ownerUid == request.auth.uid)
+            // Anyone else, with the production's invite code.
+            || (request.resource.data.owner == false
+              && get(/databases/$(database)/documents/invites/$(request.resource.data.code)).data.productionId == p)
+          );
+        // Members change their own name and roles only.
+        allow update: if signedIn() && request.auth.uid == uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name', 'roles'])
+          && request.resource.data.roles is list && request.resource.data.roles.size() <= 50;
+        // Leave the group, or the owner removes someone.
+        allow delete: if signedIn() && (request.auth.uid == uid || isOwner(p));
+      }
+
+      // Recorded lines: every member hears them; each member writes only their own.
+      match /recordings/{r} {
+        allow read: if isMember(p);
+        allow create, update: if isMember(p)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.audio is bytes
+          && request.resource.data.audio.size() <= 900000;
+        allow delete: if signedIn() && (resource.data.uid == request.auth.uid || isOwner(p));
+      }
+    }
+  }
+}

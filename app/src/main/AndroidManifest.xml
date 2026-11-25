@@ -42,5 +42,23 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.ScriptPrep" />
+        <activity
+            android:name=".EnsembleActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize"
+            android:theme="@style/Theme.ScriptPrep">
+            <!-- Invite links: the join page opens memoeverything://join/CODE. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="memoeverything" android:host="join" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".RecordLinesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.ScriptPrep" />
     </application>
 </manifest>
