@@ -1,0 +1,101 @@
+# The Xcode project is generated from this file: brew install xcodegen && xcodegen generate
+name: MemoEverything
+options:
+  bundleIdPrefix: com.memoeverything
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.3.0"
+    CURRENT_PROJECT_VERSION: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+packages:
+  MemoCore:
+    path: MemoCore
+  SherpaOnnx:
+    # On-device neural text-to-speech for the AI voice (Apache-2.0).
+    url: https://github.com/k2-fsa/sherpa-onnx
+    exactVersion: 2.0.1
+  Firebase:
+    url: https://github.com/firebase/firebase-ios-sdk
+    majorVersion: 11.0.0
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    majorVersion: 8.0.0
+targets:
+  MemoEverything:
+    type: application
+    platform: iOS
+    sources:
+      - path: MemoEverything
+    postBuildScripts:
+      # The Firebase project for ensemble rehearsal (see ios/README.md) is optional: copied when present.
+      - name: Copy the Firebase project file
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ -f "$SRCROOT/GoogleService-Info.plist" ]; then
+            cp "$SRCROOT/GoogleService-Info.plist" "$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/"
+          fi
+    dependencies:
+      - package: MemoCore
+      - package: SherpaOnnx
+        product: sherpa-onnx
+      - package: Firebase
+        product: FirebaseAuth
+      - package: Firebase
+        product: FirebaseFirestore
+      - package: GoogleSignIn
+        product: GoogleSignIn
+    info:
+      path: MemoEverything/Info.plist
+      properties:
+        CFBundleDisplayName: Memo Everything
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, tr, es, de, fr, pt-BR, it]
+        CFBundleAllowMixedLocalizations: true
+        ITSAppUsesNonExemptEncryption: false
+        LSRequiresIPhoneOS: true
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        UIApplicationSupportsIndirectInputEvents: true
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIUserInterfaceStyle: Dark
+        NSMicrophoneUsageDescription: Hands-free cues and recording your lines use the microphone.
+        NSSpeechRecognitionUsageDescription: Hands-free cues listen to your line so the rehearsal can move on by itself.
+        NSCameraUsageDescription: The camera records your self-tape and photographs script pages.
+        NSPhotoLibraryAddUsageDescription: Your self-tapes are saved to Photos.
+        NSPhotoLibraryUsageDescription: Your self-tapes are kept in the Memo Everything album in Photos.
+        CFBundleURLTypes:
+          # Invite links: the join page opens memoeverything://join/CODE.
+          - CFBundleURLName: com.memoeverything.app.join
+            CFBundleURLSchemes: [memoeverything]
+          # Google sign-in replies; the reversed client id comes from GoogleService-Info.plist.
+          - CFBundleURLName: com.memoeverything.app.google
+            CFBundleURLSchemes: [$(GOOGLE_REVERSED_CLIENT_ID)]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.memoeverything.app
+        TARGETED_DEVICE_FAMILY: "1,2"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GOOGLE_REVERSED_CLIENT_ID: com.googleusercontent.apps.not-configured
+        OTHER_LDFLAGS: $(inherited) -ObjC
+schemes:
+  MemoEverything:
+    build:
+      targets:
+        MemoEverything: all
+    run:
+      config: Debug
+    archive:
+      config: Release

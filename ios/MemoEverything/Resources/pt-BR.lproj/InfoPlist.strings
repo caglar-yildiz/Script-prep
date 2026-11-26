@@ -1,0 +1,8 @@
+/* Permission prompts, in the app's seven languages. */
+
+"CFBundleDisplayName" = "Memo Everything";
+"NSMicrophoneUsageDescription" = "As deixas mãos livres e a gravação das suas falas usam o microfone.";
+"NSSpeechRecognitionUsageDescription" = "As deixas mãos livres ouvem sua fala para o ensaio avançar sozinho.";
+"NSCameraUsageDescription" = "A câmera grava seu self-tape e fotografa as páginas do texto.";
+"NSPhotoLibraryAddUsageDescription" = "Seus self-tapes são salvos no app Fotos.";
+"NSPhotoLibraryUsageDescription" = "Seus self-tapes ficam no álbum Memo Everything do app Fotos.";

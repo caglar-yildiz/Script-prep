@@ -1,0 +1,119 @@
+{
+  "billing_loading": {
+    "en": "Loading plans from the App Store…",
+    "tr": "Planlar App Store’dan yükleniyor…",
+    "es": "Cargando planes del App Store…",
+    "de": "Tarife werden aus dem App Store geladen…",
+    "fr": "Chargement des offres de l’App Store…",
+    "pt": "Carregando planos da App Store…",
+    "it": "Caricamento dei piani dall’App Store…"
+  },
+  "billing_unavailable": {
+    "en": "Plans couldn’t be loaded. Make sure you’re signed in to the App Store and online.",
+    "tr": "Planlar yüklenemedi. App Store’da oturum açtığından ve internete bağlı olduğundan emin ol.",
+    "es": "No se pudieron cargar los planes. Comprueba que has iniciado sesión en el App Store y que tienes conexión.",
+    "de": "Die Tarife konnten nicht geladen werden. Prüfe, ob du im App Store angemeldet und online bist.",
+    "fr": "Impossible de charger les offres. Vérifie que tu es connecté à l’App Store et à Internet.",
+    "pt": "Não foi possível carregar os planos. Verifique se você está conectado à App Store e à internet.",
+    "it": "Impossibile caricare i piani. Controlla di aver effettuato l’accesso all’App Store e di essere online."
+  },
+  "billing_pending": {
+    "en": "Your payment is pending. Premium unlocks as soon as the App Store confirms it.",
+    "tr": "Ödemen bekleniyor. App Store onayladığı anda Premium açılır.",
+    "es": "Tu pago está pendiente. Premium se activará en cuanto el App Store lo confirme.",
+    "de": "Deine Zahlung steht noch aus. Premium wird freigeschaltet, sobald der App Store sie bestätigt.",
+    "fr": "Ton paiement est en attente. Premium sera débloqué dès que l’App Store l’aura confirmé.",
+    "pt": "Seu pagamento está pendente. O Premium será liberado assim que a App Store confirmar.",
+    "it": "Il pagamento è in attesa. Premium si sblocca appena l’App Store lo conferma."
+  },
+  "billing_terms": {
+    "en": "The subscription renews automatically until you cancel. You can cancel anytime in your Apple ID subscription settings.",
+    "tr": "Abonelik sen iptal edene kadar otomatik yenilenir. İstediğin zaman Apple Kimliği abonelik ayarlarından iptal edebilirsin.",
+    "es": "La suscripción se renueva automáticamente hasta que la canceles. Puedes cancelarla cuando quieras en los ajustes de suscripciones de tu ID de Apple.",
+    "de": "Das Abo verlängert sich automatisch, bis du es kündigst. Du kannst jederzeit in den Abo-Einstellungen deiner Apple-ID kündigen.",
+    "fr": "L’abonnement se renouvelle automatiquement jusqu’à ce que tu le résilies. Tu peux le résilier à tout moment dans les réglages d’abonnement de ton identifiant Apple.",
+    "pt": "A assinatura é renovada automaticamente até você cancelar. Você pode cancelar a qualquer momento nos ajustes de assinaturas do seu ID Apple.",
+    "it": "L’abbonamento si rinnova automaticamente finché non lo annulli. Puoi annullarlo in qualsiasi momento nelle impostazioni degli abbonamenti del tuo ID Apple."
+  },
+  "billing_failed": {
+    "en": "Couldn’t open the App Store. Try again.",
+    "tr": "App Store açılamadı. Yeniden dene.",
+    "es": "No se pudo abrir el App Store. Inténtalo de nuevo.",
+    "de": "Der App Store konnte nicht geöffnet werden. Versuche es erneut.",
+    "fr": "Impossible d’ouvrir l’App Store. Réessaie.",
+    "pt": "Não foi possível abrir a App Store. Tente de novo.",
+    "it": "Impossibile aprire l’App Store. Riprova."
+  },
+  "premium_test_description": {
+    "en": "Purchases aren’t connected to the App Store yet. In this development build you can switch plans here to try both experiences.",
+    "tr": "Satın alma henüz App Store’a bağlı değil. Bu geliştirme sürümünde planı buradan değiştirerek iki deneyimi de deneyebilirsin.",
+    "es": "Las compras aún no están conectadas al App Store. En esta versión de desarrollo puedes cambiar de plan aquí para probar ambas experiencias.",
+    "de": "Käufe sind noch nicht mit dem App Store verbunden. In dieser Entwicklungsversion kannst du hier den Tarif wechseln, um beide Varianten auszuprobieren.",
+    "fr": "Les achats ne sont pas encore reliés à l’App Store. Dans cette version de développement, tu peux changer d’offre ici pour essayer les deux expériences.",
+    "pt": "As compras ainda não estão conectadas à App Store. Nesta versão de desenvolvimento, você pode trocar de plano aqui para testar as duas experiências.",
+    "it": "Gli acquisti non sono ancora collegati all’App Store. In questa versione di sviluppo puoi cambiare piano qui per provare entrambe le esperienze."
+  },
+  "video_saved_message": {
+    "en": "You’ll find it in Photos › Memo Everything.",
+    "tr": "Videoyu Fotoğraflar › Memo Everything albümünde bulabilirsin.",
+    "es": "Lo encontrarás en Fotos › Memo Everything.",
+    "de": "Du findest es unter Fotos › Memo Everything.",
+    "fr": "Tu la trouveras dans Photos › Memo Everything.",
+    "pt": "Você vai encontrá-lo em Fotos › Memo Everything.",
+    "it": "Lo trovi in Foto › Memo Everything."
+  },
+  "backup_description": {
+    "en": "Your texts and settings are included in your iPhone’s iCloud or computer backup. For a copy you keep yourself, export them to a file.",
+    "tr": "Metinlerin ve ayarların iPhone’unun iCloud ya da bilgisayar yedeğine dahildir. Kendi elinde tutacağın bir kopya için bir dosyaya dışa aktar.",
+    "es": "Tus textos y ajustes se incluyen en la copia de seguridad de iCloud o del ordenador de tu iPhone. Para tener tu propia copia, expórtalos a un archivo.",
+    "de": "Deine Texte und Einstellungen sind in der iCloud- oder Computer-Sicherung deines iPhone enthalten. Für eine eigene Kopie exportiere sie in eine Datei.",
+    "fr": "Tes textes et réglages sont inclus dans la sauvegarde iCloud ou ordinateur de ton iPhone. Pour garder ta propre copie, exporte-les dans un fichier.",
+    "pt": "Seus textos e configurações fazem parte do backup do iCloud ou do computador do seu iPhone. Para ter sua própria cópia, exporte-os para um arquivo.",
+    "it": "Testi e impostazioni sono inclusi nel backup di iCloud o del computer del tuo iPhone. Per una copia tutta tua, esportali in un file."
+  },
+  "ensemble_error_no_account": {
+    "en": "Couldn’t sign in with Google. Check your Google account, then try again.",
+    "tr": "Google ile oturum açılamadı. Google hesabını kontrol edip tekrar dene.",
+    "es": "No se pudo iniciar sesión con Google. Revisa tu cuenta de Google e inténtalo de nuevo.",
+    "de": "Die Anmeldung mit Google hat nicht geklappt. Prüfe dein Google-Konto und versuche es erneut.",
+    "fr": "Impossible de se connecter avec Google. Vérifie ton compte Google, puis réessaie.",
+    "pt": "Não foi possível entrar com o Google. Verifique sua conta do Google e tente de novo.",
+    "it": "Impossibile accedere con Google. Controlla il tuo account Google, poi riprova."
+  },
+  "photo_camera_missing": {
+    "en": "No camera is available on this device.",
+    "tr": "Bu cihazda kullanılabilir kamera yok.",
+    "es": "Este dispositivo no tiene cámara disponible.",
+    "de": "Auf diesem Gerät ist keine Kamera verfügbar.",
+    "fr": "Aucun appareil photo n’est disponible sur cet appareil.",
+    "pt": "Nenhuma câmera está disponível neste aparelho.",
+    "it": "Nessuna fotocamera disponibile su questo dispositivo."
+  },
+  "cancel": {
+    "en": "Cancel",
+    "tr": "İptal",
+    "es": "Cancelar",
+    "de": "Abbrechen",
+    "fr": "Annuler",
+    "pt": "Cancelar",
+    "it": "Annulla"
+  },
+  "ok": {
+    "en": "OK",
+    "tr": "Tamam",
+    "es": "Aceptar",
+    "de": "OK",
+    "fr": "OK",
+    "pt": "OK",
+    "it": "OK"
+  },
+  "photo_library_denied": {
+    "en": "Allow Memo Everything to add videos to Photos in Settings.",
+    "tr": "Ayarlar’dan Memo Everything’in Fotoğraflar’a video eklemesine izin ver.",
+    "es": "Permite en Ajustes que Memo Everything añada vídeos a Fotos.",
+    "de": "Erlaube Memo Everything in den Einstellungen, Videos zu Fotos hinzuzufügen.",
+    "fr": "Autorise Memo Everything à ajouter des vidéos à Photos dans les Réglages.",
+    "pt": "Permita nos Ajustes que o Memo Everything adicione vídeos ao app Fotos.",
+    "it": "Consenti a Memo Everything di aggiungere video a Foto nelle Impostazioni."
+  }
+}

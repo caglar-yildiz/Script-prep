@@ -4,3 +4,12 @@ local.properties
 **/build/
 *.iml
 app/libs/
+
+# iOS
+ios/MemoEverything.xcodeproj/
+ios/build/
+ios/Payload/
+ios/*.ipa
+ios/*.log
+ios/MemoCore/.build/
+.DS_Store

@@ -1,0 +1,8 @@
+/* Permission prompts, in the app's seven languages. */
+
+"CFBundleDisplayName" = "Memo Everything";
+"NSMicrophoneUsageDescription" = "Eller serbest ilerleme ve repliklerini kaydetmek için mikrofon kullanılır.";
+"NSSpeechRecognitionUsageDescription" = "Eller serbest ilerleme, prova kendiliğinden ilerlesin diye repliğini dinler.";
+"NSCameraUsageDescription" = "Kamera, self-tape videonu kaydeder ve metin sayfalarını fotoğraflar.";
+"NSPhotoLibraryAddUsageDescription" = "Self-tape videoların Fotoğraflar’a kaydedilir.";
+"NSPhotoLibraryUsageDescription" = "Self-tape videoların Fotoğraflar’daki Memo Everything albümünde tutulur.";
