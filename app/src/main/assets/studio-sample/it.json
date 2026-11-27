@@ -1,0 +1,354 @@
+{
+ "version": 1,
+ "language": "it",
+ "cast": {
+  "GIULIA": "female",
+  "MARCO": "male"
+ },
+ "lines": [
+  {
+   "role": "GIULIA",
+   "text": "Marco! Sei sveglio? Il sipario si apre tra dieci minuti.",
+   "notes": [
+    "(sussurrando)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Cerca di svegliare Marco con urgenza ma mantenendo un tono basso.",
+    "segments": [
+     {
+      "text": "Marco! Sei sveglio? Il sipario si apre tra dieci minuti.",
+      "volume": "whisper",
+      "style": "urgent, whispering",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-1.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Dieci minuti? Stavo solo riposando gli occhi.",
+   "notes": [
+    "(assonnato)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Rispondi ancora mezza addormentata per giustificare il ritardo.",
+    "segments": [
+     {
+      "text": "Dieci minuti? Stavo solo riposando gli occhi.",
+      "volume": "quiet",
+      "style": "sleepy, sluggish",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-2.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "La regista me l’ha appena detto. È tutto esaurito!",
+   "notes": [
+    "(emozionata)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Dai la notizia grandiosa con entusiasmo contagioso.",
+    "segments": [
+     {
+      "text": "La regista me l’ha appena detto. È tutto esaurito!",
+      "volume": "loud",
+      "style": "excited, joyful",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-3.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Esaurito? Tutti i posti?",
+   "notes": [
+    "(balzando in piedi)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Esprimi grande sorpresa per la notizia inaspettata.",
+    "segments": [
+     {
+      "text": "Esaurito? Tutti i posti?",
+      "volume": "loud",
+      "style": "shocked, incredulous",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-4.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Tutti i posti. Persino la galleria.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Conferma con sicurezza il tutto esaurito.",
+    "segments": [
+     {
+      "text": "Tutti i posti. Persino la galleria.",
+      "volume": "normal",
+      "style": "reassuring, smiling",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-5.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "E allora dov’è il mio cappello? Non posso entrare in scena senza il mio cappello!",
+   "notes": [
+    "(in preda al panico)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "desperate",
+    "pace": "fast",
+    "note": "Mostra il panico totale per la mancanza dell'oggetto di scena.",
+    "segments": [
+     {
+      "text": "E allora dov’è il mio cappello? Non posso entrare in scena senza il mio cappello!",
+      "volume": "shout",
+      "style": "panicked, frantic",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-6.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Ah, certo. Tutto lo spettacolo dipende dal tuo cappello.",
+   "notes": [
+    "(sarcastica)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Prendi in giro l'esagerazione drammatica di Marco.",
+    "segments": [
+     {
+      "text": "Ah, certo. Tutto lo spettacolo dipende dal tuo cappello.",
+      "volume": "normal",
+      "style": "mocking, ironic",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-7.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Proprio così! Il secondo atto parla del cappello!",
+   "notes": [
+    "(gridando)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Difendi la tua posizione con enfasi esagerata.",
+    "segments": [
+     {
+      "text": "Proprio così! Il secondo atto parla del cappello!",
+      "volume": "shout",
+      "style": "defensive, dramatic",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-8.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Marco. Respira. Ce l’hai in testa.",
+   "notes": [
+    "(calma)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Riporta la calma con un tono materno e fermo.",
+    "segments": [
+     {
+      "text": "Marco. Respira. Ce l’hai in testa.",
+      "volume": "normal",
+      "style": "calm, soothing",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-9.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "…Ah.",
+   "notes": [
+    "(sottovoce, imbarazzato)",
+    "(Le luci tremolano. Entrambi si immobilizzano.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "nervous",
+    "pace": "slow",
+    "note": "Realizza l'errore con un filo di imbarazzo.",
+    "segments": [
+     {
+      "text": "…Ah.",
+      "volume": "quiet",
+      "style": "embarrassed, realizing",
+      "pauseAfterMs": 600
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-10.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Hai sentito? C’è qualcuno sul palco.",
+   "notes": [
+    "(sussurrando)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Condividi un timore improvviso sottovoce.",
+    "segments": [
+     {
+      "text": "Hai sentito? C’è qualcuno sul palco.",
+      "volume": "whisper",
+      "style": "mysterious, cautious",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-11.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Sarà il direttore di scena… vero?",
+   "notes": [
+    "(sussurrando, spaventato)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Cerca rassicurazioni con la voce tremante di paura.",
+    "segments": [
+     {
+      "text": "Sarà il direttore di scena… vero?",
+      "volume": "whisper",
+      "style": "fearful, uncertain",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-12.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "È il gatto. Il gatto del teatro è di nuovo sul palco.",
+   "notes": [
+    "(ridendo)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Sciogli la tensione ridendo della situazione.",
+    "segments": [
+     {
+      "text": "È il gatto. Il gatto del teatro è di nuovo sul palco.",
+      "volume": "normal",
+      "style": "amused, laughing",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-13.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Giulia… grazie. Prima di ogni debutto sono sempre così nervoso.",
+   "notes": [
+    "(con tenerezza)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Mostra gratitudine e vulnerabilità verso un'amica fidata.",
+    "segments": [
+     {
+      "text": "Giulia… grazie. Prima di ogni debutto sono sempre così nervoso.",
+      "volume": "normal",
+      "style": "tender, vulnerable",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-14.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Lo so. Per questo vengo sempre a svegliarti. Dai, vai, ti stanno aspettando.",
+   "notes": [
+    "(con calore)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Incoraggialo con affetto e calore umano.",
+    "segments": [
+     {
+      "text": "Lo so. Per questo vengo sempre a svegliarti. Dai, vai, ti stanno aspettando.",
+      "volume": "normal",
+      "style": "warm, encouraging",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "it-15.m4a"
+  }
+ ]
+}

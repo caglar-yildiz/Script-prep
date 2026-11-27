@@ -1,0 +1,354 @@
+{
+ "version": 1,
+ "language": "tr",
+ "cast": {
+  "ECE": "female",
+  "MERT": "male"
+ },
+ "lines": [
+  {
+   "role": "ECE",
+   "text": "Mert! Uyanık mısın? Perdenin açılmasına on dakika var.",
+   "notes": [
+    "(fısıldayarak)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Mert'in uykuda olup olmadığını merak eden endişeli bir ses.",
+    "segments": [
+     {
+      "text": "Mert! Uyanık mısın? Perdenin açılmasına on dakika var.",
+      "volume": "whisper",
+      "style": "urgent, hushed, secretive",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-1.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "On dakika mı? Gözlerimi biraz dinlendiriyordum.",
+   "notes": [
+    "(uykulu)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Yeni uyanmış birinin sersemliği ve şaşkınlığı.",
+    "segments": [
+     {
+      "text": "On dakika mı? Gözlerimi biraz dinlendiriyordum.",
+      "volume": "quiet",
+      "style": "sleepy, groggy, slow",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-2.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Yönetmen az önce söyledi. Bütün biletler tükendi!",
+   "notes": [
+    "(heyecanla)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Müjdeli haberi vermenin verdiği sevinç.",
+    "segments": [
+     {
+      "text": "Yönetmen az önce söyledi. Bütün biletler tükendi!",
+      "volume": "loud",
+      "style": "excited, breathless, bright",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-3.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Tükendi mi? Bütün koltuklar mı?",
+   "notes": [
+    "(yerinden fırlayarak)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Beklenmeyen başarı karşısında şaşırma.",
+    "segments": [
+     {
+      "text": "Tükendi mi? Bütün koltuklar mı?",
+      "volume": "loud",
+      "style": "surprised, jumping up",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-4.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Bütün koltuklar. Balkon bile.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Bilgiyi net ve sakin şekilde onaylama.",
+    "segments": [
+     {
+      "text": "Bütün koltuklar. Balkon bile.",
+      "volume": "normal",
+      "style": "reassuring, smiling",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-5.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "O zaman şapkam nerede? Şapkam olmadan sahneye çıkamam!",
+   "notes": [
+    "(panikle)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Aceleyle ve korkuyla eşyalarını arama.",
+    "segments": [
+     {
+      "text": "O zaman şapkam nerede? Şapkam olmadan sahneye çıkamam!",
+      "volume": "shout",
+      "style": "panicked, frantic, loud",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-6.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Ah, tabii. Bütün oyun senin şapkana bağlı.",
+   "notes": [
+    "(alaycı)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Mert'in telaşıyla dalga geçme.",
+    "segments": [
+     {
+      "text": "Ah, tabii. Bütün oyun senin şapkana bağlı.",
+      "volume": "normal",
+      "style": "mocking, sarcastic, amused",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-7.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Öyle! İkinci perde tamamen şapkayla ilgili!",
+   "notes": [
+    "(bağırarak)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Ciddiye alınmamaktan duyulan hafif kızgınlık.",
+    "segments": [
+     {
+      "text": "Öyle! İkinci perde tamamen şapkayla ilgili!",
+      "volume": "shout",
+      "style": "defensive, dramatic, loud",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-8.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Mert. Nefes al. Şapka başında.",
+   "notes": [
+    "(sakin)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Karşısındakini sakinleştirmeye çalışan anaç tavır.",
+    "segments": [
+     {
+      "text": "Mert. Nefes al. Şapka başında.",
+      "volume": "normal",
+      "style": "calm, soothing, steady",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-9.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "…Ha.",
+   "notes": [
+    "(sessizce, utanarak)",
+    "(Işıklar titrer. İkisi de donup kalır.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "nervous",
+    "pace": "slow",
+    "note": "Hatasını fark edip mahcup olma.",
+    "segments": [
+     {
+      "text": "…Ha.",
+      "volume": "quiet",
+      "style": "embarrassed, quiet, sheepish",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-10.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Duydun mu? Sahnede biri var.",
+   "notes": [
+    "(fısıldayarak)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Beklenmedik bir ses duymanın verdiği korku.",
+    "segments": [
+     {
+      "text": "Duydun mu? Sahnede biri var.",
+      "volume": "whisper",
+      "style": "suspenseful, whispering, alert",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-11.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Herhalde sahne amiridir… değil mi?",
+   "notes": [
+    "(fısıldayarak, korkuyla)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Tedirginlik ve belirsizlik hissi.",
+    "segments": [
+     {
+      "text": "Herhalde sahne amiridir… değil mi?",
+      "volume": "whisper",
+      "style": "fearful, uncertain, hushed",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-12.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Kedi bu. Tiyatronun kedisi yine sahneye çıkmış.",
+   "notes": [
+    "(gülerek)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Gerilimi gülerek hafifletme.",
+    "segments": [
+     {
+      "text": "Kedi bu. Tiyatronun kedisi yine sahneye çıkmış.",
+      "volume": "normal",
+      "style": "amused, laughing, warm",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-13.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Ece… teşekkür ederim. Prömiyerden önce hep böyle heyecanlanıyorum.",
+   "notes": [
+    "(şefkatle)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Dostluğundan dolayı duyulan minnettarlık.",
+    "segments": [
+     {
+      "text": "Ece… teşekkür ederim. Prömiyerden önce hep böyle heyecanlanıyorum.",
+      "volume": "normal",
+      "style": "grateful, soft, affectionate",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-14.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Biliyorum. O yüzden her seferinde gelip seni uyandırıyorum. Hadi git, seni bekliyorlar.",
+   "notes": [
+    "(sıcak bir sesle)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Desteğini ve sevgisini gösteren sıcak yaklaşım.",
+    "segments": [
+     {
+      "text": "Biliyorum. O yüzden her seferinde gelip seni uyandırıyorum. Hadi git, seni bekliyorlar.",
+      "volume": "normal",
+      "style": "warm, encouraging, kind",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "tr-15.m4a"
+  }
+ ]
+}

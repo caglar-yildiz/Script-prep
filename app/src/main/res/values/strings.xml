@@ -107,7 +107,7 @@
     <string name="language_system">Phone language</string>
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
-    <string name="sample_script">ECE: Let’s check the lights once more before rehearsal.\nMERT: I’m ready. Where do I enter?\n(Ece points to the left side of the stage.)\nECE: From the left. Come in when I close the curtain.\nMERT: Who has the first line?\nECE: You do. Stay there until I come over.\nMERT: All right. Let’s take it from the top.</string>
+    <string name="sample_script">ECE: (whispering) Mert! Are you awake? The curtain goes up in ten minutes.\nMERT: (sleepy) Ten minutes? I was just resting my eyes.\nECE: (excited) The director just told me. We’re completely sold out!\nMERT: (jumping up) Sold out? Every single seat?\nECE: Every single seat. Even the balcony.\nMERT: (panicking) Then where’s my hat? I can’t go on without my hat!\nECE: (sarcastic) Oh, of course. The whole play depends on your hat.\nMERT: (shouting) It does! The second act is all about the hat!\nECE: (calmly) Mert. Breathe. It’s on your head.\nMERT: (quietly, embarrassed) …Oh.\n(The lights flicker. They both freeze.)\nECE: (whispering) Did you hear that? Someone’s on the stage.\nMERT: (whispering, scared) It’s probably just the stage manager… right?\nECE: (laughing) It’s the cat. The theatre cat is on the stage again.\nMERT: (tenderly) Ece… thank you. I always get this nervous before opening night.\nECE: (warmly) I know. That’s why I always come to wake you up. Now go, they’re waiting.</string>
     <string name="action_back">Back</string>
     <string name="action_close">Close</string>
     <string name="action_delete">Delete</string>
@@ -535,4 +535,43 @@
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Studio voices</string>
+    <string name="studio_value">An AI director reads the scene and gives each partner line an expressive, acted voice.</string>
+    <string name="studio_prepare">Prepare studio voices</string>
+    <string name="studio_progress">Preparing… %1$d of %2$d lines ready</string>
+    <string name="studio_ready">%1$d of %2$d lines ready</string>
+    <string name="studio_sample">Try the studio voices in this sample scene. Premium prepares them for your own scripts.</string>
+    <string name="voice_engine_title">Reading voice</string>
+    <string name="voice_engine_device">Device voice</string>
+    <string name="voice_engine_device_detail">Your phone’s own voice, free</string>
+    <string name="voice_engine_ai_detail">A natural voice that runs on this phone, offline</string>
+    <string name="voice_engine_studio_detail">Acted, expressive voices prepared by an AI director</string>
+    <string name="studio_allowance">Studio voices can be prepared for 2 scripts a month.</string>
+    <string name="studio_script_limit">You have used this month’s 2 scripts for studio voices. Scripts already prepared keep playing; new ones open next month.</string>
+    <string name="cast_intro_studio">Pick a studio voice for each character. The director sets each line’s pace and mood. Tap play to hear them.</string>
+    <string name="cast_studio_voice_for">Studio voice for %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Firm</item>
+        <item>Breezy</item>
+        <item>Youthful</item>
+        <item>Warm</item>
+        <item>Mature</item>
+        <item>Informative</item>
+        <item>Upbeat</item>
+        <item>Steady</item>
+        <item>Gravelly</item>
+        <item>Clear</item>
+    </string-array>
+    <string name="studio_none">Not prepared · the other voices read until then</string>
+    <string name="studio_on">Partner lines use the studio voices</string>
+    <string name="studio_off">Off · the other voices read the lines</string>
+    <string name="studio_stop">Stop</string>
+    <string name="studio_start">Prepare</string>
+    <string name="studio_privacy">The lines are sent to Google Gemini to prepare the voices. Each line is prepared once and then stays on this phone.</string>
+    <string name="studio_playing">The studio voice is reading the line…</string>
+    <string name="studio_daily_limit">Today’s studio voice limit is reached. The prepared lines are kept; continue tomorrow.</string>
+    <string name="studio_monthly_limit">This month’s studio voice limit is reached.</string>
+    <string name="studio_failed">Couldn’t prepare the studio voices. Check your connection and try again.</string>
 </resources>

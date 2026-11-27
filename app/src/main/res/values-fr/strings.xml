@@ -106,7 +106,7 @@
     <string name="language_system">Langue du téléphone</string>
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
-    <string name="sample_script">CLAIRE : Vérifions encore une fois les lumières avant la répétition.\nHUGO : Je suis prêt. Par où j’entre ?\n(Claire montre le côté gauche de la scène.)\nCLAIRE : Par la gauche. Entre quand je ferme le rideau.\nHUGO : Qui a la première réplique ?\nCLAIRE : Toi. Reste là jusqu’à ce que je te rejoigne.\nHUGO : D’accord. On reprend depuis le début.</string>
+    <string name="sample_script">CLAIRE : (en chuchotant) Hugo ! Tu es réveillé ? Le rideau se lève dans dix minutes.\nHUGO : (endormi) Dix minutes ? Je reposais juste mes yeux.\nCLAIRE : (tout excitée) La metteuse en scène vient de me le dire. Toutes les places sont vendues !\nHUGO : (bondissant) Toutes ? Chaque fauteuil ?\nCLAIRE : Chaque fauteuil. Même le balcon.\nHUGO : (paniqué) Alors où est mon chapeau ? Je ne peux pas entrer en scène sans mon chapeau !\nCLAIRE : (sarcastique) Bien sûr. Toute la pièce repose sur ton chapeau.\nHUGO : (en criant) Exactement ! Le deuxième acte parle du chapeau !\nCLAIRE : (calmement) Hugo. Respire. Il est sur ta tête.\nHUGO : (tout bas, gêné) …Ah.\n(Les lumières vacillent. Ils se figent tous les deux.)\nCLAIRE : (en chuchotant) Tu as entendu ? Il y a quelqu’un sur scène.\nHUGO : (en chuchotant, effrayé) C’est sûrement le régisseur… non ?\nCLAIRE : (en riant) C’est le chat. Le chat du théâtre est encore monté sur scène.\nHUGO : (tendrement) Claire… merci. Je suis toujours aussi nerveux avant une première.\nCLAIRE : (chaleureusement) Je sais. C’est pour ça que je viens toujours te réveiller. Allez, va, on t’attend.</string>
     <string name="action_back">Retour</string>
     <string name="action_close">Fermer</string>
     <string name="action_delete">Supprimer</string>
@@ -541,4 +541,43 @@
         <item quantity="many">%d membres</item>
         <item quantity="other">%d membres</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Voix studio</string>
+    <string name="studio_value">Un metteur en scène IA lit la scène et donne à chaque réplique du partenaire une voix expressive et jouée.</string>
+    <string name="studio_prepare">Préparer les voix studio</string>
+    <string name="studio_progress">Préparation… %1$d répliques prêtes sur %2$d</string>
+    <string name="studio_ready">%1$d répliques prêtes sur %2$d</string>
+    <string name="studio_sample">Écoutez les voix studio dans cette scène d’exemple. Premium les prépare pour vos textes.</string>
+    <string name="voice_engine_title">Voix de lecture</string>
+    <string name="voice_engine_device">Voix de l’appareil</string>
+    <string name="voice_engine_device_detail">La voix de ton téléphone, gratuite</string>
+    <string name="voice_engine_ai_detail">Une voix naturelle qui fonctionne sur ce téléphone, hors ligne</string>
+    <string name="voice_engine_studio_detail">Des voix jouées et expressives préparées par un metteur en scène IA</string>
+    <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
+    <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>
+    <string name="cast_intro_studio">Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.</string>
+    <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Ferme</item>
+        <item>Légère</item>
+        <item>Jeune</item>
+        <item>Chaleureuse</item>
+        <item>Mûre</item>
+        <item>Posée</item>
+        <item>Enjouée</item>
+        <item>Calme</item>
+        <item>Rauque</item>
+        <item>Claire</item>
+    </string-array>
+    <string name="studio_none">Non préparées · les autres voix lisent en attendant</string>
+    <string name="studio_on">Les répliques du partenaire utilisent les voix studio</string>
+    <string name="studio_off">Désactivé · les autres voix lisent les répliques</string>
+    <string name="studio_stop">Arrêter</string>
+    <string name="studio_start">Préparer</string>
+    <string name="studio_privacy">Les répliques sont envoyées à Google Gemini pour préparer les voix. Chaque réplique est préparée une fois puis reste sur ce téléphone.</string>
+    <string name="studio_playing">La voix studio lit la réplique…</string>
+    <string name="studio_daily_limit">La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.</string>
+    <string name="studio_monthly_limit">La limite mensuelle des voix studio est atteinte.</string>
+    <string name="studio_failed">Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.</string>
 </resources>

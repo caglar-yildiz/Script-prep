@@ -330,6 +330,14 @@ final class RulesTests: XCTestCase {
         XCTAssertEqual("v1", cast["B"]?.voice)
         XCTAssertEqual([0, 5, 1], ["A", "B", "C"].map { cast[$0]!.speaker })
     }
+
+    func testGivesCharactersVoicesOfTheirGender() {
+        let roles = ["MERT", "ECE", "ALİ", "X"]
+        let cast = VoiceCast.automatic(roles: roles, voices: [], genders: ["MERT": "male", "ECE": "female", "ALİ": "male"])
+
+        // Two men, one woman: the character of unknown gender gets the next female voice.
+        XCTAssertEqual([5, 0, 6, 1], roles.map { cast[$0]!.speaker })
+    }
 }
 
 /// A repeatable shuffle for the page-order test.

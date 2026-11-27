@@ -50,26 +50,40 @@ public enum VoiceCast {
 
     private static let prefix = "voice_cast_"
     private static let toneCycle: [Tone] = [.normal, .low, .high]
-    /// AI speakers in turns of female (0–4) and male (5–9) so neighbouring characters differ.
-    private static let aiOrder = [0, 5, 1, 6, 2, 7, 3, 8, 4, 9]
+    /// AI speakers 0–4 are female and 5–9 male.
+    private static let half = 5
 
     /// Gives every character a different voice where enough voices are installed and varies the
-    /// tone so that characters sharing a voice still sound apart.
-    public static func automatic(roles: [String], voices: [String]) -> [String: Part] {
+    /// tone so that characters sharing a voice still sound apart. With the characters' likely
+    /// genders ("female" or "male", by role), women take the female speakers 0–4 in turn and men
+    /// the male speakers 5–9; the others whichever gender has fewer so far, so they alternate.
+    public static func automatic(roles: [String], voices: [String], genders: [String: String] = [:]) -> [String: Part] {
         var cast: [String: Part] = [:]
+        var women = 0
+        var men = 0
         for (i, role) in roles.enumerated() {
             let voice = voices.isEmpty || i == 0 ? "" : voices[(i - 1) % voices.count]
             let round = voices.isEmpty ? i : i / (voices.count + 1)
-            cast[role] = Part(voice: voice, speaker: aiOrder[i % aiOrder.count],
-                              tone: toneCycle[round % toneCycle.count], pace: .normal)
+            let gender = genders[role]
+            let female = gender == "female" || (gender != "male" && women <= men)
+            let speaker: Int
+            if female {
+                speaker = women % half
+                women += 1
+            } else {
+                speaker = half + men % half
+                men += 1
+            }
+            cast[role] = Part(voice: voice, speaker: speaker, tone: toneCycle[round % toneCycle.count], pace: .normal)
         }
         return cast
     }
 
     /// The saved cast completed with automatic choices for characters added since.
-    public static func load(_ defaults: UserDefaults, key: String, roles: [String], voices: [String]) -> [String: Part] {
+    public static func load(_ defaults: UserDefaults, key: String, roles: [String], voices: [String],
+                            genders: [String: String] = [:]) -> [String: Part] {
         let saved = fromJson(defaults.string(forKey: prefix + key))
-        let automatic = automatic(roles: roles, voices: voices)
+        let automatic = automatic(roles: roles, voices: voices, genders: genders)
         var cast: [String: Part] = [:]
         for role in roles {
             cast[role] = saved[role] ?? automatic[role]

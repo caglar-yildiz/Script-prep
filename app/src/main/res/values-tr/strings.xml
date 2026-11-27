@@ -106,7 +106,7 @@
     <string name="language_system">Telefon dili</string>
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
-    <string name="sample_script">ECE: Prova başlamadan önce ışığı bir kez daha kontrol edelim.\nMERT: Ben hazırım. Sahneye nereden giriyorum?\n(Ece, sahnenin solunu gösterir.)\nECE: Soldan. Ben perdeyi kapattığımda içeri gir.\nMERT: Peki ilk repliği kim söylüyor?\nECE: Sen. Ben yanına gelene kadar yerinde kal.\nMERT: Tamam. Bu sefer baştan alalım.</string>
+    <string name="sample_script">ECE: (fısıldayarak) Mert! Uyanık mısın? Perdenin açılmasına on dakika var.\nMERT: (uykulu) On dakika mı? Gözlerimi biraz dinlendiriyordum.\nECE: (heyecanla) Yönetmen az önce söyledi. Bütün biletler tükendi!\nMERT: (yerinden fırlayarak) Tükendi mi? Bütün koltuklar mı?\nECE: Bütün koltuklar. Balkon bile.\nMERT: (panikle) O zaman şapkam nerede? Şapkam olmadan sahneye çıkamam!\nECE: (alaycı) Ah, tabii. Bütün oyun senin şapkana bağlı.\nMERT: (bağırarak) Öyle! İkinci perde tamamen şapkayla ilgili!\nECE: (sakin) Mert. Nefes al. Şapka başında.\nMERT: (sessizce, utanarak) …Ha.\n(Işıklar titrer. İkisi de donup kalır.)\nECE: (fısıldayarak) Duydun mu? Sahnede biri var.\nMERT: (fısıldayarak, korkuyla) Herhalde sahne amiridir… değil mi?\nECE: (gülerek) Kedi bu. Tiyatronun kedisi yine sahneye çıkmış.\nMERT: (şefkatle) Ece… teşekkür ederim. Prömiyerden önce hep böyle heyecanlanıyorum.\nECE: (sıcak bir sesle) Biliyorum. O yüzden her seferinde gelip seni uyandırıyorum. Hadi git, seni bekliyorlar.</string>
     <string name="action_back">Geri</string>
     <string name="action_close">Kapat</string>
     <string name="action_delete">Sil</string>
@@ -527,4 +527,43 @@
         <item quantity="one">%d üye</item>
         <item quantity="other">%d üye</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Stüdyo sesleri</string>
+    <string name="studio_value">Yapay zekâ yönetmen sahneyi okur ve her karşı repliğe duygulu, oynanmış bir ses verir.</string>
+    <string name="studio_prepare">Stüdyo seslerini hazırla</string>
+    <string name="studio_progress">Hazırlanıyor… %2$d replikten %1$d tanesi hazır</string>
+    <string name="studio_ready">%2$d replikten %1$d tanesi hazır</string>
+    <string name="studio_sample">Bu örnek sahnede stüdyo seslerini dinleyin. Premium, kendi metinleriniz için de hazırlar.</string>
+    <string name="voice_engine_title">Okuma sesi</string>
+    <string name="voice_engine_device">Cihaz sesi</string>
+    <string name="voice_engine_device_detail">Telefonun kendi sesi, ücretsiz</string>
+    <string name="voice_engine_ai_detail">Bu telefonda çalışan doğal ses, internetsiz</string>
+    <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
+    <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
+    <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>
+    <string name="cast_intro_studio">Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.</string>
+    <string name="cast_studio_voice_for">%1$s için stüdyo sesi</string>
+    <string-array name="studio_voice_traits">
+        <item>Kararlı</item>
+        <item>Ferah</item>
+        <item>Genç</item>
+        <item>Sıcak</item>
+        <item>Olgun</item>
+        <item>Anlatıcı</item>
+        <item>Neşeli</item>
+        <item>Sakin</item>
+        <item>Boğuk</item>
+        <item>Net</item>
+    </string-array>
+    <string name="studio_none">Hazırlanmadı · o zamana kadar diğer sesler okur</string>
+    <string name="studio_on">Karşı replikleri stüdyo sesleri okur</string>
+    <string name="studio_off">Kapalı · replikleri diğer sesler okur</string>
+    <string name="studio_stop">Durdur</string>
+    <string name="studio_start">Hazırla</string>
+    <string name="studio_privacy">Sesleri hazırlamak için replikler Google Gemini’ye gönderilir. Her replik bir kez hazırlanır, sonra bu telefonda kalır.</string>
+    <string name="studio_playing">Stüdyo sesi repliği okuyor…</string>
+    <string name="studio_daily_limit">Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.</string>
+    <string name="studio_monthly_limit">Bu ayın stüdyo sesi sınırına ulaşıldı.</string>
+    <string name="studio_failed">Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.</string>
 </resources>

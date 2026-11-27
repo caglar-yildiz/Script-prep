@@ -106,7 +106,7 @@
     <string name="language_system">Idioma del teléfono</string>
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
-    <string name="sample_script">LUCÍA: Revisemos las luces una vez más antes del ensayo.\nMATEO: Estoy listo. ¿Por dónde entro?\n(Lucía señala el lado izquierdo del escenario.)\nLUCÍA: Por la izquierda. Entra cuando cierre el telón.\nMATEO: ¿Quién tiene la primera réplica?\nLUCÍA: Tú. Quédate ahí hasta que me acerque.\nMATEO: De acuerdo. Empecemos desde el principio.</string>
+    <string name="sample_script">LUCÍA: (susurrando) ¡Mateo! ¿Estás despierto? El telón sube en diez minutos.\nMATEO: (adormilado) ¿Diez minutos? Solo estaba descansando los ojos.\nLUCÍA: (emocionada) Me lo acaba de decir la directora. ¡Se han agotado todas las entradas!\nMATEO: (levantándose de un salto) ¿Agotadas? ¿Todas las butacas?\nLUCÍA: Todas las butacas. Hasta el palco.\nMATEO: (en pánico) ¿Y dónde está mi sombrero? ¡No puedo salir sin mi sombrero!\nLUCÍA: (sarcástica) Ah, claro. Toda la obra depende de tu sombrero.\nMATEO: (gritando) ¡Pues sí! ¡El segundo acto trata del sombrero!\nLUCÍA: (tranquila) Mateo. Respira. Lo llevas puesto.\nMATEO: (en voz baja, avergonzado) …Ah.\n(Las luces parpadean. Los dos se quedan inmóviles.)\nLUCÍA: (susurrando) ¿Has oído eso? Hay alguien en el escenario.\nMATEO: (susurrando, con miedo) Seguro que es el regidor… ¿verdad?\nLUCÍA: (riendo) Es el gato. El gato del teatro ha vuelto a subir al escenario.\nMATEO: (con ternura) Lucía… gracias. Antes de cada estreno me pongo así de nervioso.\nLUCÍA: (con calidez) Lo sé. Por eso siempre vengo a despertarte. Venga, ve, te están esperando.</string>
     <string name="action_back">Atrás</string>
     <string name="action_close">Cerrar</string>
     <string name="action_delete">Eliminar</string>
@@ -541,4 +541,43 @@
         <item quantity="many">%d miembros</item>
         <item quantity="other">%d miembros</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Voces de estudio</string>
+    <string name="studio_value">Un director con IA lee la escena y da a cada frase del compañero una voz expresiva e interpretada.</string>
+    <string name="studio_prepare">Preparar voces de estudio</string>
+    <string name="studio_progress">Preparando… %1$d de %2$d frases listas</string>
+    <string name="studio_ready">%1$d de %2$d frases listas</string>
+    <string name="studio_sample">Escucha las voces de estudio en esta escena de ejemplo. Premium las prepara para tus textos.</string>
+    <string name="voice_engine_title">Voz de lectura</string>
+    <string name="voice_engine_device">Voz del dispositivo</string>
+    <string name="voice_engine_device_detail">La voz de tu teléfono, gratis</string>
+    <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
+    <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
+    <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <string name="studio_script_limit">Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.</string>
+    <string name="cast_intro_studio">Elige una voz de estudio para cada personaje. El director marca el ritmo y el tono de cada frase. Toca reproducir para oírlas.</string>
+    <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Firme</item>
+        <item>Ligera</item>
+        <item>Juvenil</item>
+        <item>Cálida</item>
+        <item>Madura</item>
+        <item>Informativa</item>
+        <item>Alegre</item>
+        <item>Serena</item>
+        <item>Rasposa</item>
+        <item>Clara</item>
+    </string-array>
+    <string name="studio_none">Sin preparar · mientras tanto leen las otras voces</string>
+    <string name="studio_on">Las frases del compañero usan las voces de estudio</string>
+    <string name="studio_off">Desactivado · las otras voces leen las frases</string>
+    <string name="studio_stop">Detener</string>
+    <string name="studio_start">Preparar</string>
+    <string name="studio_privacy">Las frases se envían a Google Gemini para preparar las voces. Cada frase se prepara una vez y después se queda en este teléfono.</string>
+    <string name="studio_playing">La voz de estudio está leyendo la frase…</string>
+    <string name="studio_daily_limit">Se alcanzó el límite diario de voces de estudio. Las frases preparadas se guardan; continúa mañana.</string>
+    <string name="studio_monthly_limit">Se alcanzó el límite mensual de voces de estudio.</string>
+    <string name="studio_failed">No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.</string>
 </resources>

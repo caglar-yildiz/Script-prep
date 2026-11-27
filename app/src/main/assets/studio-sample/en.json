@@ -1,0 +1,468 @@
+{
+ "version": 1,
+ "language": "en",
+ "cast": {
+  "ECE": "female",
+  "MERT": "male"
+ },
+ "lines": [
+  {
+   "role": "ECE",
+   "text": "Mert! Are you awake? The curtain goes up in ten minutes.",
+   "notes": [
+    "(whispering)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "nervous",
+    "pace": "normal",
+    "note": "Ece tries to wake Mert quietly behind the curtain.",
+    "segments": [
+     {
+      "text": "Mert!",
+      "volume": "whisper",
+      "style": "urgent, quiet whisper",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "Are you awake?",
+      "volume": "whisper",
+      "style": "urgent, quiet whisper",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "The curtain goes up in ten minutes.",
+      "volume": "whisper",
+      "style": "urgent, quiet whisper",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-1.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Ten minutes? I was just resting my eyes.",
+   "notes": [
+    "(sleepy)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Mert wakes up groggily and confused.",
+    "segments": [
+     {
+      "text": "Ten minutes?",
+      "volume": "normal",
+      "style": "sleepy, confused tone",
+      "pauseAfterMs": 400
+     },
+     {
+      "text": "I was just resting my eyes.",
+      "volume": "normal",
+      "style": "drowsy and defensive",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-2.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "The director just told me. We’re completely sold out!",
+   "notes": [
+    "(excited)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Ece shares thrilling news with high energy.",
+    "segments": [
+     {
+      "text": "The director just told me.",
+      "volume": "loud",
+      "style": "excited and energetic",
+      "pauseAfterMs": 200
+     },
+     {
+      "text": "We’re completely sold out!",
+      "volume": "loud",
+      "style": "thrilled, booming voice",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-3.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Sold out? Every single seat?",
+   "notes": [
+    "(jumping up)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Mert reacts with sudden shock to the news.",
+    "segments": [
+     {
+      "text": "Sold out?",
+      "volume": "loud",
+      "style": "shocked and abrupt",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "Every single seat?",
+      "volume": "loud",
+      "style": "disbelieving, rising pitch",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-4.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Every single seat. Even the balcony.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Ece confirms the wonderful news with a smile.",
+    "segments": [
+     {
+      "text": "Every single seat.",
+      "volume": "normal",
+      "style": "bright and reassuring",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "Even the balcony.",
+      "volume": "normal",
+      "style": "playful and amazed",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-5.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Then where’s my hat? I can’t go on without my hat!",
+   "notes": [
+    "(panicking)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Mert spirals into sudden panic about his missing prop.",
+    "segments": [
+     {
+      "text": "Then where’s my hat?",
+      "volume": "loud",
+      "style": "frantic, high-pitched panic",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "I can’t go on without my hat!",
+      "volume": "loud",
+      "style": "desperate and terrified",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-6.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Oh, of course. The whole play depends on your hat.",
+   "notes": [
+    "(sarcastic)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Ece mocks Mert's dramatic overreaction.",
+    "segments": [
+     {
+      "text": "Oh, of course.",
+      "volume": "normal",
+      "style": "dry and mocking",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "The whole play depends on your hat.",
+      "volume": "normal",
+      "style": "dripping with sarcasm",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-7.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "It does! The second act is all about the hat!",
+   "notes": [
+    "(shouting)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Mert insists defensively, shouting his reply.",
+    "segments": [
+     {
+      "text": "It does!",
+      "volume": "shout",
+      "style": "defensive and loud",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "The second act is all about the hat!",
+      "volume": "shout",
+      "style": "angry, projecting voice",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-8.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Mert. Breathe. It’s on your head.",
+   "notes": [
+    "(calmly)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Ece tries to ground Mert and calm his nerves.",
+    "segments": [
+     {
+      "text": "Mert.",
+      "volume": "normal",
+      "style": "firm and steady",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "Breathe.",
+      "volume": "normal",
+      "style": "soothing instruction",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "It’s on your head.",
+      "volume": "normal",
+      "style": "gently amused",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-9.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "…Oh.",
+   "notes": [
+    "(quietly, embarrassed)",
+    "(The lights flicker. They both freeze.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "hurt",
+    "pace": "slow",
+    "note": "Mert realizes his mistake and feels foolish.",
+    "segments": [
+     {
+      "text": "…Oh.",
+      "volume": "quiet",
+      "style": "embarrassed, sheepish murmur",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-10.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Did you hear that? Someone’s on the stage.",
+   "notes": [
+    "(whispering)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Ece picks up on a mysterious sound.",
+    "segments": [
+     {
+      "text": "Did you hear that?",
+      "volume": "whisper",
+      "style": "tense, hushed voice",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "Someone’s on the stage.",
+      "volume": "whisper",
+      "style": "suspicious and cautious",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-11.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "It’s probably just the stage manager… right?",
+   "notes": [
+    "(whispering, scared)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Mert looks for reassurance in the dark.",
+    "segments": [
+     {
+      "text": "It’s probably just the stage manager…",
+      "volume": "whisper",
+      "style": "fearful and shaky",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "right?",
+      "volume": "whisper",
+      "style": "pleading for reassurance",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-12.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "It’s the cat. The theatre cat is on the stage again.",
+   "notes": [
+    "(laughing)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Ece breaks the tension with a lighthearted laugh.",
+    "segments": [
+     {
+      "text": "It’s the cat.",
+      "volume": "normal",
+      "style": "amused, smiling voice",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "The theatre cat is on the stage again.",
+      "volume": "normal",
+      "style": "laughing lightly",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-13.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Ece… thank you. I always get this nervous before opening night.",
+   "notes": [
+    "(tenderly)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Mert expresses heartfelt gratitude to his friend.",
+    "segments": [
+     {
+      "text": "Ece…",
+      "volume": "normal",
+      "style": "soft and grateful",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "thank you.",
+      "volume": "normal",
+      "style": "warm and sincere",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "I always get this nervous before opening night.",
+      "volume": "normal",
+      "style": "vulnerable and open",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-14.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "I know. That’s why I always come to wake you up. Now go, they’re waiting.",
+   "notes": [
+    "(warmly)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Ece reassures Mert affectionately and pushes him to go on.",
+    "segments": [
+     {
+      "text": "I know.",
+      "volume": "normal",
+      "style": "gentle and understanding",
+      "pauseAfterMs": 300
+     },
+     {
+      "text": "That’s why I always come to wake you up.",
+      "volume": "normal",
+      "style": "affectionate smile",
+      "pauseAfterMs": 400
+     },
+     {
+      "text": "Now go,",
+      "volume": "normal",
+      "style": "encouraging push",
+      "pauseAfterMs": 200
+     },
+     {
+      "text": "they’re waiting.",
+      "volume": "normal",
+      "style": "warm and cheering",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "en-15.m4a"
+  }
+ ]
+}

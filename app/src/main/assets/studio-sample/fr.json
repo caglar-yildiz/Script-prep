@@ -1,0 +1,354 @@
+{
+ "version": 1,
+ "language": "fr",
+ "cast": {
+  "CLAIRE": "female",
+  "HUGO": "male"
+ },
+ "lines": [
+  {
+   "role": "CLAIRE",
+   "text": "Hugo ! Tu es réveillé ? Le rideau se lève dans dix minutes.",
+   "notes": [
+    "(en chuchotant)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "nervous",
+    "pace": "fast",
+    "note": "Claire essaie de réveiller Hugo dans l'urgence sans faire de bruit excessif.",
+    "segments": [
+     {
+      "text": "Hugo ! Tu es réveillé ? Le rideau se lève dans dix minutes.",
+      "volume": "quiet",
+      "style": "urgent, whispering backstage",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-1.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Dix minutes ? Je reposais juste mes yeux.",
+   "notes": [
+    "(endormi)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Hugo émerge péniblement du sommeil.",
+    "segments": [
+     {
+      "text": "Dix minutes ? Je reposais juste mes yeux.",
+      "volume": "normal",
+      "style": "drowsy, sluggish voice",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-2.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "La metteuse en scène vient de me le dire. Toutes les places sont vendues !",
+   "notes": [
+    "(tout excitée)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Claire partage une excellente nouvelle pleine d'enthousiasme.",
+    "segments": [
+     {
+      "text": "La metteuse en scène vient de me le dire. Toutes les places sont vendues !",
+      "volume": "loud",
+      "style": "thrilled, highly energetic",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-3.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Toutes ? Chaque fauteuil ?",
+   "notes": [
+    "(bondissant)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Hugo est surpris et bondit d'un coup.",
+    "segments": [
+     {
+      "text": "Toutes ? Chaque fauteuil ?",
+      "volume": "loud",
+      "style": "surprised, sudden movement",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-4.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Chaque fauteuil. Même le balcon.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Claire confirme la bonne nouvelle avec assurance.",
+    "segments": [
+     {
+      "text": "Chaque fauteuil. Même le balcon.",
+      "volume": "normal",
+      "style": "smiles, reassuring tone",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-5.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Alors où est mon chapeau ? Je ne peux pas entrer en scène sans mon chapeau !",
+   "notes": [
+    "(paniqué)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Hugo perd complètement ses moyens à l'idée d'oublier un accessoire.",
+    "segments": [
+     {
+      "text": "Alors où est mon chapeau ? Je ne peux pas entrer en scène sans mon chapeau !",
+      "volume": "loud",
+      "style": "panicked, breathless",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-6.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Bien sûr. Toute la pièce repose sur ton chapeau.",
+   "notes": [
+    "(sarcastique)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Claire se moque gentiment de la dramatisation excessive d'Hugo.",
+    "segments": [
+     {
+      "text": "Bien sûr. Toute la pièce repose sur ton chapeau.",
+      "volume": "normal",
+      "style": "mocking, dry humor",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-7.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Exactement ! Le deuxième acte parle du chapeau !",
+   "notes": [
+    "(en criant)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Hugo prend la remarque au premier degré et s'emporte.",
+    "segments": [
+     {
+      "text": "Exactement ! Le deuxième acte parle du chapeau !",
+      "volume": "shout",
+      "style": "defensive, dramatic outburst",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-8.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Hugo. Respire. Il est sur ta tête.",
+   "notes": [
+    "(calmement)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Claire essaie de ramener le calme et la raison.",
+    "segments": [
+     {
+      "text": "Hugo. Respire. Il est sur ta tête.",
+      "volume": "normal",
+      "style": "soothing, grounding tone",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-9.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "…Ah.",
+   "notes": [
+    "(tout bas, gêné)",
+    "(Les lumières vacillent. Ils se figent tous les deux.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Hugo réalise son étourderie et se sent ridicule.",
+    "segments": [
+     {
+      "text": "…Ah.",
+      "volume": "quiet",
+      "style": "embarrassed, sheepish murmur",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-10.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Tu as entendu ? Il y a quelqu’un sur scène.",
+   "notes": [
+    "(en chuchotant)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Claire est soudainement interpellée par un bruit étrange.",
+    "segments": [
+     {
+      "text": "Tu as entendu ? Il y a quelqu’un sur scène.",
+      "volume": "whisper",
+      "style": "suspenseful, hushed whisper",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-11.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "C’est sûrement le régisseur… non ?",
+   "notes": [
+    "(en chuchotant, effrayé)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Hugo exprime une peur irrationnelle avant d'entrer en scène.",
+    "segments": [
+     {
+      "text": "C’est sûrement le régisseur… non ?",
+      "volume": "quiet",
+      "style": "fearful, trembling voice",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-12.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "C’est le chat. Le chat du théâtre est encore monté sur scène.",
+   "notes": [
+    "(en riant)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Claire est soulagée et s'amuse de la fausse alerte.",
+    "segments": [
+     {
+      "text": "C’est le chat. Le chat du théâtre est encore monté sur scène.",
+      "volume": "normal",
+      "style": "lighthearted, amused chuckle",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-13.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Claire… merci. Je suis toujours aussi nerveux avant une première.",
+   "notes": [
+    "(tendrement)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Hugo exprime sa gratitude envers sa partenaire qui le rassure.",
+    "segments": [
+     {
+      "text": "Claire… merci. Je suis toujours aussi nerveux avant une première.",
+      "volume": "normal",
+      "style": "vulnerable, warm tone",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-14.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Je sais. C’est pour ça que je viens toujours te réveiller. Allez, va, on t’attend.",
+   "notes": [
+    "(chaleureusement)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Claire encourage affectueusement Hugo pour son entrée en scène.",
+    "segments": [
+     {
+      "text": "Je sais. C’est pour ça que je viens toujours te réveiller. Allez, va, on t’attend.",
+      "volume": "normal",
+      "style": "affectionate, encouraging tone",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "fr-15.m4a"
+  }
+ ]
+}

@@ -106,7 +106,7 @@
     <string name="language_system">Idioma do celular</string>
     <string name="language_turkish">Türkçe</string>
     <string name="language_english">English</string>
-    <string name="sample_script">ANA: Vamos conferir as luzes mais uma vez antes do ensaio.\nRAFAEL: Estou pronto. Por onde eu entro?\n(Ana aponta para o lado esquerdo do palco.)\nANA: Pela esquerda. Entre quando eu fechar a cortina.\nRAFAEL: Quem tem a primeira fala?\nANA: Você. Fique aí até eu chegar perto.\nRAFAEL: Combinado. Vamos começar do início.</string>
+    <string name="sample_script">ANA: (sussurrando) Rafael! Você está acordado? A cortina abre em dez minutos.\nRAFAEL: (sonolento) Dez minutos? Eu só estava descansando os olhos.\nANA: (empolgada) A diretora acabou de me contar. Os ingressos esgotaram!\nRAFAEL: (levantando num pulo) Esgotaram? Todos os lugares?\nANA: Todos os lugares. Até o balcão.\nRAFAEL: (em pânico) Então cadê o meu chapéu? Eu não posso entrar em cena sem o meu chapéu!\nANA: (sarcástica) Ah, claro. A peça inteira depende do seu chapéu.\nRAFAEL: (gritando) Depende, sim! O segundo ato é todo sobre o chapéu!\nANA: (calma) Rafael. Respira. Ele está na sua cabeça.\nRAFAEL: (baixinho, envergonhado) …Ah.\n(As luzes piscam. Os dois ficam paralisados.)\nANA: (sussurrando) Você ouviu isso? Tem alguém no palco.\nRAFAEL: (sussurrando, com medo) Deve ser o contrarregra… né?\nANA: (rindo) É o gato. O gato do teatro subiu no palco de novo.\nRAFAEL: (com carinho) Ana… obrigado. Antes de toda estreia eu fico nervoso assim.\nANA: (com ternura) Eu sei. Por isso eu sempre venho te acordar. Agora vai, estão te esperando.</string>
     <string name="action_back">Voltar</string>
     <string name="action_close">Fechar</string>
     <string name="action_delete">Excluir</string>
@@ -541,4 +541,43 @@
         <item quantity="many">%d membros</item>
         <item quantity="other">%d membros</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Vozes de estúdio</string>
+    <string name="studio_value">Um diretor com IA lê a cena e dá a cada fala do parceiro uma voz expressiva e interpretada.</string>
+    <string name="studio_prepare">Preparar vozes de estúdio</string>
+    <string name="studio_progress">Preparando… %1$d de %2$d falas prontas</string>
+    <string name="studio_ready">%1$d de %2$d falas prontas</string>
+    <string name="studio_sample">Ouça as vozes de estúdio nesta cena de exemplo. O Premium as prepara para seus textos.</string>
+    <string name="voice_engine_title">Voz de leitura</string>
+    <string name="voice_engine_device">Voz do aparelho</string>
+    <string name="voice_engine_device_detail">A voz do seu celular, grátis</string>
+    <string name="voice_engine_ai_detail">Uma voz natural que funciona neste celular, offline</string>
+    <string name="voice_engine_studio_detail">Vozes interpretadas e expressivas preparadas por um diretor com IA</string>
+    <string name="studio_allowance">Dá para preparar vozes de estúdio para 2 roteiros por mês.</string>
+    <string name="studio_script_limit">Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.</string>
+    <string name="cast_intro_studio">Escolha uma voz de estúdio para cada personagem. O diretor define o ritmo e o tom de cada fala. Toque em reproduzir para ouvir.</string>
+    <string name="cast_studio_voice_for">Voz de estúdio para %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Firme</item>
+        <item>Leve</item>
+        <item>Jovem</item>
+        <item>Calorosa</item>
+        <item>Madura</item>
+        <item>Informativa</item>
+        <item>Animada</item>
+        <item>Serena</item>
+        <item>Rouca</item>
+        <item>Clara</item>
+    </string-array>
+    <string name="studio_none">Não preparado · até lá as outras vozes leem</string>
+    <string name="studio_on">As falas do parceiro usam as vozes de estúdio</string>
+    <string name="studio_off">Desativado · as outras vozes leem as falas</string>
+    <string name="studio_stop">Parar</string>
+    <string name="studio_start">Preparar</string>
+    <string name="studio_privacy">As falas são enviadas ao Google Gemini para preparar as vozes. Cada fala é preparada uma vez e depois fica neste telefone.</string>
+    <string name="studio_playing">A voz de estúdio está lendo a fala…</string>
+    <string name="studio_daily_limit">O limite diário de vozes de estúdio foi atingido. As falas preparadas ficam guardadas; continue amanhã.</string>
+    <string name="studio_monthly_limit">O limite mensal de vozes de estúdio foi atingido.</string>
+    <string name="studio_failed">Não foi possível preparar as vozes de estúdio. Verifique sua conexão e tente de novo.</string>
 </resources>

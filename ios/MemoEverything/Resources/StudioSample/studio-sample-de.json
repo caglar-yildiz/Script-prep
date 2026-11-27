@@ -1,0 +1,354 @@
+{
+ "version": 1,
+ "language": "de",
+ "cast": {
+  "LENA": "female",
+  "JONAS": "male"
+ },
+ "lines": [
+  {
+   "role": "LENA",
+   "text": "Jonas! Bist du wach? In zehn Minuten geht der Vorhang auf.",
+   "notes": [
+    "(flüsternd)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Lena weckt Jonas kurz vor der Premiere in dringender Eile.",
+    "segments": [
+     {
+      "text": "Jonas! Bist du wach? In zehn Minuten geht der Vorhang auf.",
+      "volume": "whisper",
+      "style": "urgent, whispering backstage",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-1.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Zehn Minuten? Ich habe nur kurz die Augen ausgeruht.",
+   "notes": [
+    "(verschlafen)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Jonas erwacht plötzlich aus dem Schlaf und ist verwirrt.",
+    "segments": [
+     {
+      "text": "Zehn Minuten? Ich habe nur kurz die Augen ausgeruht.",
+      "volume": "normal",
+      "style": "sleepy, waking up",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-2.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Die Regisseurin hat es mir gerade gesagt. Wir sind komplett ausverkauft!",
+   "notes": [
+    "(aufgeregt)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Lena teilt die tolle Nachricht voller Begeisterung mit.",
+    "segments": [
+     {
+      "text": "Die Regisseurin hat es mir gerade gesagt. Wir sind komplett ausverkauft!",
+      "volume": "loud",
+      "style": "excited, breathless",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-3.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Ausverkauft? Jeder einzelne Platz?",
+   "notes": [
+    "(springt auf)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Jonas kann es vor Aufregung kaum glauben.",
+    "segments": [
+     {
+      "text": "Ausverkauft? Jeder einzelne Platz?",
+      "volume": "loud",
+      "style": "surprised, jumping up",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-4.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Jeder einzelne Platz. Sogar der Balkon.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Lena bestätigt die großartige Neuigkeit mit einem Lächeln.",
+    "segments": [
+     {
+      "text": "Jeder einzelne Platz. Sogar der Balkon.",
+      "volume": "normal",
+      "style": "reassuring, happy",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-5.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Und wo ist mein Hut? Ohne meinen Hut kann ich nicht auftreten!",
+   "notes": [
+    "(panisch)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Jonas gerät in panische Suche.",
+    "segments": [
+     {
+      "text": "Und wo ist mein Hut? Ohne meinen Hut kann ich nicht auftreten!",
+      "volume": "shout",
+      "style": "panicked, frantic",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-6.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Natürlich. Das ganze Stück hängt an deinem Hut.",
+   "notes": [
+    "(spöttisch)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Lena macht sich humorvoll über seine Panik lustig.",
+    "segments": [
+     {
+      "text": "Natürlich. Das ganze Stück hängt an deinem Hut.",
+      "volume": "normal",
+      "style": "sarcastic, mocking",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-7.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Genau! Im zweiten Akt geht es nur um den Hut!",
+   "notes": [
+    "(schreiend)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Jonas verteidigt sich vollkommen übertrieben.",
+    "segments": [
+     {
+      "text": "Genau! Im zweiten Akt geht es nur um den Hut!",
+      "volume": "shout",
+      "style": "dramatic, shouting",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-8.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Jonas. Atme. Er ist auf deinem Kopf.",
+   "notes": [
+    "(ruhig)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Lena bringt ihn sanft wieder auf den Boden der Tatsachen zurück.",
+    "segments": [
+     {
+      "text": "Jonas. Atme. Er ist auf deinem Kopf.",
+      "volume": "normal",
+      "style": "calm, soothing",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-9.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "…Oh.",
+   "notes": [
+    "(leise, verlegen)",
+    "(Das Licht flackert. Beide erstarren.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "nervous",
+    "pace": "slow",
+    "note": "Jonas realisiert seinen Irrtum und ist peinlich berührt.",
+    "segments": [
+     {
+      "text": "…Oh.",
+      "volume": "quiet",
+      "style": "embarrassed, realization",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-10.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Hast du das gehört? Da ist jemand auf der Bühne.",
+   "notes": [
+    "(flüsternd)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Lena wird plötzlich misstrauisch und warnt ihn.",
+    "segments": [
+     {
+      "text": "Hast du das gehört? Da ist jemand auf der Bühne.",
+      "volume": "whisper",
+      "style": "tense, whispering",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-11.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Das ist bestimmt nur der Inspizient … oder?",
+   "notes": [
+    "(flüsternd, ängstlich)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Jonas vermutet das Schlimmste und fürchtet sich.",
+    "segments": [
+     {
+      "text": "Das ist bestimmt nur der Inspizient … oder?",
+      "volume": "whisper",
+      "style": "fearful, whispering",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-12.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Das ist die Katze. Die Theaterkatze ist schon wieder auf der Bühne.",
+   "notes": [
+    "(lachend)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Lena lacht über die harmlose Erklärung.",
+    "segments": [
+     {
+      "text": "Das ist die Katze. Die Theaterkatze ist schon wieder auf der Bühne.",
+      "volume": "normal",
+      "style": "laughing, amused",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-13.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Lena … danke. Vor jeder Premiere bin ich so nervös.",
+   "notes": [
+    "(zärtlich)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Jonas zeigt seine verletzliche Seite und ist dankbar.",
+    "segments": [
+     {
+      "text": "Lena … danke. Vor jeder Premiere bin ich so nervös.",
+      "volume": "normal",
+      "style": "tender, vulnerable",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-14.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Ich weiß. Deshalb komme ich jedes Mal und wecke dich. Jetzt geh, sie warten auf dich.",
+   "notes": [
+    "(warm)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Lena muntert ihn liebevoll auf und schickt ihn auf die Bühne.",
+    "segments": [
+     {
+      "text": "Ich weiß. Deshalb komme ich jedes Mal und wecke dich. Jetzt geh, sie warten auf dich.",
+      "volume": "normal",
+      "style": "warm, encouraging",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-15.m4a"
+  }
+ ]
+}

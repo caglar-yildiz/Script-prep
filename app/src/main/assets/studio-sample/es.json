@@ -1,0 +1,354 @@
+{
+ "version": 1,
+ "language": "es",
+ "cast": {
+  "LUCÍA": "female",
+  "MATEO": "male"
+ },
+ "lines": [
+  {
+   "role": "LUCÍA",
+   "text": "¡Mateo! ¿Estás despierto? El telón sube en diez minutos.",
+   "notes": [
+    "(susurrando)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lucía intenta despertar a Mateo con urgencia antes del estreno.",
+    "segments": [
+     {
+      "text": "¡Mateo! ¿Estás despierto? El telón sube en diez minutos.",
+      "volume": "whisper",
+      "style": "urgent, whispering",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-1.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "¿Diez minutos? Solo estaba descansando los ojos.",
+   "notes": [
+    "(adormilado)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Mateo despierta desorientado y perezoso.",
+    "segments": [
+     {
+      "text": "¿Diez minutos? Solo estaba descansando los ojos.",
+      "volume": "normal",
+      "style": "sleepy, groggy",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-2.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Me lo acaba de decir la directora. ¡Se han agotado todas las entradas!",
+   "notes": [
+    "(emocionada)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Lucía comparte la gran noticia llena de alegría.",
+    "segments": [
+     {
+      "text": "Me lo acaba de decir la directora. ¡Se han agotado todas las entradas!",
+      "volume": "loud",
+      "style": "excited, joyful",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-3.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "¿Agotadas? ¿Todas las butacas?",
+   "notes": [
+    "(levantándose de un salto)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Mateo reacciona con sorpresa tras levantarse de golpe.",
+    "segments": [
+     {
+      "text": "¿Agotadas? ¿Todas las butacas?",
+      "volume": "loud",
+      "style": "surprised, sudden movement",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-4.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Todas las butacas. Hasta el palco.",
+   "notes": [],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lucía confirma el éxito rotundo con seguridad.",
+    "segments": [
+     {
+      "text": "Todas las butacas. Hasta el palco.",
+      "volume": "normal",
+      "style": "reassuring, smiling",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-5.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "¿Y dónde está mi sombrero? ¡No puedo salir sin mi sombrero!",
+   "notes": [
+    "(en pánico)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "fast",
+    "note": "Mateo entra en pánico al no encontrar su accesorio clave.",
+    "segments": [
+     {
+      "text": "¿Y dónde está mi sombrero? ¡No puedo salir sin mi sombrero!",
+      "volume": "shout",
+      "style": "panicked, frantic",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-6.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Ah, claro. Toda la obra depende de tu sombrero.",
+   "notes": [
+    "(sarcástica)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Lucía se burla del dramatismo exagerado de Mateo.",
+    "segments": [
+     {
+      "text": "Ah, claro. Toda la obra depende de tu sombrero.",
+      "volume": "normal",
+      "style": "sarcastic, mocking",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-7.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "¡Pues sí! ¡El segundo acto trata del sombrero!",
+   "notes": [
+    "(gritando)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Mateo defiende su postura gritando con intensidad.",
+    "segments": [
+     {
+      "text": "¡Pues sí! ¡El segundo acto trata del sombrero!",
+      "volume": "shout",
+      "style": "defensive, outraged",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-8.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Mateo. Respira. Lo llevas puesto.",
+   "notes": [
+    "(tranquila)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Lucía busca calmarle con paciencia y afecto.",
+    "segments": [
+     {
+      "text": "Mateo. Respira. Lo llevas puesto.",
+      "volume": "normal",
+      "style": "calm, soothing",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-9.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "…Ah.",
+   "notes": [
+    "(en voz baja, avergonzado)",
+    "(Las luces parpadean. Los dos se quedan inmóviles.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "nervous",
+    "pace": "slow",
+    "note": "Mateo se da cuenta de su despiste y se avergüenza.",
+    "segments": [
+     {
+      "text": "…Ah.",
+      "volume": "quiet",
+      "style": "ashamed, quiet",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-10.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "¿Has oído eso? Hay alguien en el escenario.",
+   "notes": [
+    "(susurrando)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Lucía se sobresalta e intenta averiguar el origen del ruido.",
+    "segments": [
+     {
+      "text": "¿Has oído eso? Hay alguien en el escenario.",
+      "volume": "whisper",
+      "style": "suspenseful, whispering",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-11.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "Seguro que es el regidor… ¿verdad?",
+   "notes": [
+    "(susurrando, con miedo)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Mateo responde con miedo temiendo que sea un intruso.",
+    "segments": [
+     {
+      "text": "Seguro que es el regidor… ¿verdad?",
+      "volume": "whisper",
+      "style": "fearful, trembling",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-12.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Es el gato. El gato del teatro ha vuelto a subir al escenario.",
+   "notes": [
+    "(riendo)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Lucía descubre aliviada que solo es una falsa alarma.",
+    "segments": [
+     {
+      "text": "Es el gato. El gato del teatro ha vuelto a subir al escenario.",
+      "volume": "normal",
+      "style": "relieved, chuckling",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-13.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "Lucía… gracias. Antes de cada estreno me pongo así de nervioso.",
+   "notes": [
+    "(con ternura)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Mateo agradece el apoyo incondicional de su compañera.",
+    "segments": [
+     {
+      "text": "Lucía… gracias. Antes de cada estreno me pongo así de nervioso.",
+      "volume": "normal",
+      "style": "tender, vulnerable",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-14.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Lo sé. Por eso siempre vengo a despertarte. Venga, ve, te están esperando.",
+   "notes": [
+    "(con calidez)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Lucía le despide con cariño y ánimo para salir a escena.",
+    "segments": [
+     {
+      "text": "Lo sé. Por eso siempre vengo a despertarte. Venga, ve, te están esperando.",
+      "volume": "normal",
+      "style": "warm, encouraging",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-15.m4a"
+  }
+ ]
+}

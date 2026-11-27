@@ -129,6 +129,13 @@ public final class MainActivity extends Activity {
     private HandsFree handsFree;
     private ToneGenerator turnCue;
     private NeuralVoice neural;
+    private StudioVoices studio;
+    /** Studio voice preparation of the open scene: lines ready and partner lines in all; -1 until counted. */
+    private int studioDone = -1;
+    /** Which voice reads the lines: one choice for device, on-device AI and studio voices. */
+    private static final String VOICE_ENGINE_PREFERENCE = "voice_engine";
+
+    private enum Engine { DEVICE, AI, STUDIO }
     private Billing billing;
     private boolean listening;
     private boolean listeningPaused;
@@ -209,6 +216,10 @@ public final class MainActivity extends Activity {
     private boolean aiSpeaking;
     /** Whether the line being read now is a cast member's recording. */
     private boolean recordingSpeaking;
+    /** Whether the line being read now is a studio voice recording. */
+    private boolean studioSpeaking;
+    /** Plays a studio voice sample on the character voices screen. */
+    private android.media.MediaPlayer previewPlayer;
     private android.media.MediaPlayer recordingPlayer;
     /** Cast recordings of the open shared text, loaded once per text. */
     private EnsembleRecordings.Voices castRecordings;
@@ -234,6 +245,7 @@ public final class MainActivity extends Activity {
         preferences = getSharedPreferences("script_prep", MODE_PRIVATE);
         library = new ScriptLibrary(preferences);
         neural = NeuralVoice.get(this);
+        studio = StudioVoices.get(this);
         neural.setListener(this::onNeuralVoiceChanged);
         neural.setProgressListener(this::updateDownloadProgress);
         billing = new Billing(this, preferences);
@@ -382,6 +394,7 @@ public final class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         cancelSpeech();
+        releasePreviewPlayer();
         neural.setListener(null);
         neural.setProgressListener(null);
         billing.end();
@@ -818,7 +831,11 @@ public final class MainActivity extends Activity {
             return;
         }
         java.io.File recorded = castRecording(line);
-        if (recorded != null && playRecording(recorded)) {
+        if (recorded != null && playRecording(recorded, false)) {
+            return;
+        }
+        java.io.File directed = studioAudio(line);
+        if (directed != null && playRecording(directed, true)) {
             return;
         }
         if (useAiVoice() && neural.state() != NeuralVoice.State.FAILED) {
@@ -833,6 +850,7 @@ public final class MainActivity extends Activity {
             playbackFailed = false;
             aiSpeaking = false;
             recordingSpeaking = false;
+            studioSpeaking = false;
             VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
             VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
             speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
@@ -881,8 +899,11 @@ public final class MainActivity extends Activity {
         return castRecordings.find(line);
     }
 
-    /** Plays a recorded line; returns false when it cannot, so a voice reads it instead. */
-    private boolean playRecording(java.io.File file) {
+    /**
+     * Plays a recorded line, a cast member's or a studio voice's; returns false when it cannot, so a
+     * voice reads it instead.
+     */
+    private boolean playRecording(java.io.File file, boolean studioLine) {
         cancelSpeech();
         stopListening();
         playbackFailed = false;
@@ -914,7 +935,8 @@ public final class MainActivity extends Activity {
         });
         recordingPlayer = player;
         activeUtterance = id;
-        recordingSpeaking = true;
+        recordingSpeaking = !studioLine;
+        studioSpeaking = studioLine;
         player.start();
         render();
         return true;
@@ -1304,6 +1326,10 @@ public final class MainActivity extends Activity {
         category = TextCategory.ROLE_REHEARSAL;
         openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title),
             getString(R.string.sample_script), TextCategory.ROLE_REHEARSAL, interfaceLanguage()));
+        if (fullScene != null) {
+            studio.installSample(fullScene, language);
+            render();
+        }
     }
 
     private void renderEmptyLibrary() {
@@ -2792,8 +2818,7 @@ public final class MainActivity extends Activity {
         LinearLayout extras = ui.card(SURFACE, null);
         extras.setPadding(0, ui.dp(4), 0, ui.dp(4));
         boolean unlocked = premium();
-        extras.addView(aiVoiceRow(), Ui.matchWidth());
-        extras.addView(ui.divider(70));
+        addVoiceRows(extras);
         if (category.hasRoles()) {
             extras.addView(premiumRow(R.drawable.ic_volume, R.string.cast_title, getString(R.string.cast_value),
                 null, () -> show(Screen.VOICES)), Ui.matchWidth());
@@ -3679,7 +3704,8 @@ public final class MainActivity extends Activity {
         previous.setAlpha(position > 0 ? 1f : 0.5f);
         row.addView(previous);
         if (!myTurn && (speechState == SpeechState.READY || useAiVoice()
-            || (position < scene.lines.size() && castRecording(scene.lines.get(position)) != null))) {
+            || (position < scene.lines.size() && (castRecording(scene.lines.get(position)) != null
+                || studioAudio(scene.lines.get(position)) != null)))) {
             boolean playing = activeUtterance != null;
             FrameLayout play = ui.iconButton(playing ? R.drawable.ic_stop : R.drawable.ic_play,
                 getString(playing ? R.string.stop_line : R.string.play_line), ACCENT, ACCENT_CONTAINER, 56, view -> {
@@ -4072,7 +4098,7 @@ public final class MainActivity extends Activity {
 
     private Map<String, VoiceCast.Part> currentCast() {
         List<String> roles = fullScene == null ? Collections.emptyList() : fullScene.roles;
-        return VoiceCast.load(preferences, castKey(), roles, castVoiceNames());
+        return VoiceCast.load(preferences, castKey(), roles, castVoiceNames(), studio.genders(roles));
     }
 
     private Voice defaultVoice(ScriptLanguage target) {
@@ -4105,10 +4131,12 @@ public final class MainActivity extends Activity {
             VoiceCast.reset(preferences, castKey());
             render();
         });
-        boolean ai = useAiVoice();
-        content.addView(ui.text(getString(ai ? R.string.cast_intro_ai : R.string.cast_intro), Type.BODY,
-            TEXT_SECONDARY), ui.spaced(8));
-        if (!ai && speechState != SpeechState.READY) {
+        // One voice reads the lines, so only its choices are shown: studio, AI or device voices.
+        boolean studioCast = studioCastShown();
+        boolean ai = !studioCast && useAiVoice();
+        content.addView(ui.text(getString(studioCast ? R.string.cast_intro_studio : ai ? R.string.cast_intro_ai
+            : R.string.cast_intro), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        if (!studioCast && !ai && speechState != SpeechState.READY) {
             content.addView(ui.text(getString(speechState == SpeechState.LOADING ? R.string.speech_loading
                 : R.string.speech_unavailable), Type.BODY_LARGE, TEXT), ui.spaced(20));
             return;
@@ -4134,9 +4162,16 @@ public final class MainActivity extends Activity {
             voiceRow.setPadding(0, ui.dp(4), ui.dp(8), 0);
             voiceRow.addView(ui.text(getString(R.string.cast_voice), Type.LABEL, TEXT_SECONDARY),
                 new LinearLayout.LayoutParams(ui.dp(56), -2));
-            LinearLayout picker = ui.button(ai ? aiVoiceName(part.speaker) + " · " + aiVoiceGender(part.speaker)
-                : voiceLabel(part.voice), ai ? 0 : R.drawable.ic_volume, Kind.TONAL,
-                view -> chooseCharacterVoice(character));
+            LinearLayout picker = ui.button(studioCast ? studioVoiceLabel(part.speaker)
+                : ai ? aiVoiceName(part.speaker) + " · " + aiVoiceGender(part.speaker)
+                : voiceLabel(part.voice), ai || studioCast ? 0 : R.drawable.ic_volume, Kind.TONAL,
+                view -> {
+                    if (studioCast) {
+                        chooseStudioVoice(character);
+                    } else {
+                        chooseCharacterVoice(character);
+                    }
+                });
             picker.setMinimumHeight(ui.dp(44));
             voiceRow.addView(picker, new LinearLayout.LayoutParams(0, -2, 1));
             card.addView(voiceRow, ui.spaced(4));
@@ -4145,7 +4180,11 @@ public final class MainActivity extends Activity {
                 trait.setPadding(ui.dp(56), ui.dp(4), 0, 0);
                 card.addView(trait, Ui.matchWidth());
             }
-
+            if (studioCast) {
+                // The director sets each line's pace, so studio voices have no tone or pace to choose.
+                content.addView(card, ui.spaced(12));
+                continue;
+            }
             if (!ai) {
                 VoiceCast.Tone[] tones = VoiceCast.Tone.values();
                 card.addView(optionRow(R.string.cast_tone, new int[] {R.string.tone_low, R.string.tone_normal,
@@ -4198,6 +4237,68 @@ public final class MainActivity extends Activity {
         render();
     }
 
+    /** "Kore · Female · Firm": a studio voice with its gender and character. */
+    private String studioVoiceLabel(int speaker) {
+        String[] traits = getResources().getStringArray(R.array.studio_voice_traits);
+        int index = Math.max(0, Math.min(StudioVoices.CAST_VOICES.length - 1, speaker));
+        return StudioVoices.CAST_VOICES[index] + " · " + aiVoiceGender(index) + " · " + traits[index];
+    }
+
+    /**
+     * Plays how a character sounds with a studio voice: their own prepared line when there is one,
+     * otherwise the voice's sample that comes with the app.
+     */
+    private void previewStudioVoice(String character, String voice) {
+        cancelSpeech();
+        releasePreviewPlayer();
+        android.media.MediaPlayer player = new android.media.MediaPlayer();
+        try {
+            java.io.File prepared = null;
+            for (Scene.Line line : fullScene.lines) {
+                if (line.role.equals(character) && (prepared = studio.audio(line, language, voice)) != null) {
+                    break;
+                }
+            }
+            if (prepared != null) {
+                player.setDataSource(prepared.getPath());
+            } else {
+                try (android.content.res.AssetFileDescriptor clip = getAssets().openFd(
+                    StudioVoices.previewAsset(language, voice))) {
+                    player.setDataSource(clip.getFileDescriptor(), clip.getStartOffset(), clip.getLength());
+                }
+            }
+            player.prepare();
+        } catch (java.io.IOException | RuntimeException error) {
+            player.release();
+            notifyUser(R.string.speech_failed);
+            return;
+        }
+        player.setOnCompletionListener(done -> releasePreviewPlayer());
+        previewPlayer = player;
+        player.start();
+    }
+
+    private void releasePreviewPlayer() {
+        if (previewPlayer != null) {
+            previewPlayer.release();
+            previewPlayer = null;
+        }
+    }
+
+    private void chooseStudioVoice(String character) {
+        CharSequence[] voices = new CharSequence[StudioVoices.CAST_VOICES.length];
+        for (int i = 0; i < voices.length; i++) {
+            voices[i] = studioVoiceLabel(i);
+        }
+        new AlertDialog.Builder(this).setTitle(getString(R.string.cast_studio_voice_for, character))
+            .setSingleChoiceItems(voices, currentCast().get(character).speaker, (dialog, index) -> {
+                dialog.dismiss();
+                updateCast(character, currentCast().get(character).withSpeaker(index));
+                previewStudioVoice(character, StudioVoices.CAST_VOICES[index]);
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
+    }
+
     private void chooseCharacterVoice(String character) {
         if (useAiVoice()) {
             CharSequence[] speakers = new CharSequence[NeuralVoice.SPEAKERS];
@@ -4241,6 +4342,10 @@ public final class MainActivity extends Activity {
     }
 
     private void previewCharacter(String character) {
+        if (studioCastShown()) {
+            previewStudioVoice(character, StudioVoices.voiceOf(currentCast().get(character)));
+            return;
+        }
         if (speechState != SpeechState.READY && !useAiVoice()) {
             return;
         }
@@ -4265,11 +4370,192 @@ public final class MainActivity extends Activity {
         }
     }
 
+    // ---------------------------------------------------------------- Studio voices
+
+    /**
+     * The studio voice audio of a line, when studio voices are chosen and the line is prepared. The
+     * sample scene's come with the app and play for everyone, so they can be heard before buying.
+     */
+    private java.io.File studioAudio(Scene.Line line) {
+        if ((!premium() && scriptId != null) || fullScene == null || voiceEngine() != Engine.STUDIO) {
+            return null;
+        }
+        return studio.audio(line, language, studioCasting().voice(line.role));
+    }
+
+    /**
+     * Each character's studio voice follows their voice in the cast (female or male). Read from
+     * the saved cast only, so it can be asked from the preparing thread.
+     */
+    private StudioVoices.Casting studioCasting() {
+        List<String> roles = fullScene == null ? Collections.emptyList() : new ArrayList<>(fullScene.roles);
+        String key = castKey();
+        return character -> StudioVoices.voiceOf(VoiceCast.load(preferences, key, roles, Collections.emptyList(),
+            studio.genders(roles)).get(character));
+    }
+
+    private Engine voiceEngine() {
+        String saved = preferences.getString(VOICE_ENGINE_PREFERENCE, null);
+        if (saved != null) {
+            try {
+                return Engine.valueOf(saved);
+            } catch (IllegalArgumentException ignored) {
+                // A value from a later version.
+            }
+        }
+        // Studio voices are the default; until a scene is prepared the AI or device voice reads.
+        return Engine.STUDIO;
+    }
+
+    /** Whether the studio voice choices apply here: on Premium, or in the sample scene for everyone. */
+    private boolean studioCastShown() {
+        return voiceEngine() == Engine.STUDIO && (premium() || scriptId == null);
+    }
+
+    /** Practice options: the one choice of voice, then what that voice needs (download, preparing). */
+    private void addVoiceRows(LinearLayout extras) {
+        Engine engine = voiceEngine();
+        int total = scene == null ? 0 : scene.lines.size();
+        int done = engine != Engine.STUDIO || fullScene == null ? 0
+            : studio.isRunning() && studioDone >= 0 ? studioDone : studio.readyCount(scene, language, studioCasting());
+        String value = switch (engine) {
+            case DEVICE -> getString(R.string.voice_engine_device) + "\n" + getString(R.string.voice_engine_device_detail);
+            case AI -> getString(R.string.ai_voice_title) + "\n" + getString(R.string.voice_engine_ai_detail);
+            case STUDIO -> getString(R.string.studio_title) + "\n" + (premium() && category.hasRoles()
+                ? getString(R.string.studio_ready, done, total)
+                : scriptId == null && done > 0 ? getString(R.string.studio_sample)
+                : getString(R.string.voice_engine_studio_detail));
+        };
+        extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.voice_engine_title), value,
+            view -> chooseVoiceEngine()), Ui.matchWidth());
+        extras.addView(ui.divider(70));
+        if (engine == Engine.AI && premium() && NeuralVoice.isSupported()
+            && neural.state() != NeuralVoice.State.INSTALLED && neural.state() != NeuralVoice.State.LOADING
+            && neural.state() != NeuralVoice.State.READY) {
+            extras.addView(aiVoiceRow(), Ui.matchWidth());
+            extras.addView(ui.divider(70));
+        }
+        if (engine != Engine.STUDIO || !category.hasRoles()) {
+            return;
+        }
+        if (!premium()) {
+            if (scriptId != null) {
+                extras.addView(premiumRow(R.drawable.ic_star, R.string.studio_title, getString(R.string.studio_value),
+                    null, () -> { }), Ui.matchWidth());
+                extras.addView(ui.divider(70));
+            }
+            return;
+        }
+        if (studio.isRunning()) {
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+                getString(R.string.studio_progress, done, total),
+                ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null), Ui.matchWidth());
+            extras.addView(ui.divider(70));
+        } else if (done < total) {
+            String detail = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare),
+                detail + "\n" + getString(R.string.studio_allowance), view -> confirmStudio()), Ui.matchWidth());
+            extras.addView(ui.divider(70));
+        }
+    }
+
+    private void chooseVoiceEngine() {
+        int[] titles = {R.string.voice_engine_device, R.string.ai_voice_title, R.string.studio_title};
+        int[] details = {R.string.voice_engine_device_detail, R.string.voice_engine_ai_detail,
+            R.string.voice_engine_studio_detail};
+        CharSequence[] items = new CharSequence[titles.length];
+        for (int i = 0; i < items.length; i++) {
+            SpannableStringBuilder item = new SpannableStringBuilder(getString(titles[i])).append('\n');
+            int start = item.length();
+            item.append(getString(details[i]));
+            if (i > 0 && !premium() && !(i == 2 && scriptId == null)) {
+                item.append(" · ").append(getString(R.string.premium_tab));
+            }
+            item.setSpan(new RelativeSizeSpan(0.82f), start, item.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            item.setSpan(new ForegroundColorSpan(TEXT_SECONDARY), start, item.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            items[i] = item;
+        }
+        new AlertDialog.Builder(this).setTitle(R.string.voice_engine_title)
+            .setSingleChoiceItems(items, voiceEngine().ordinal(), (dialog, index) -> {
+                dialog.dismiss();
+                pickVoiceEngine(Engine.values()[index]);
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
+    }
+
+    private void pickVoiceEngine(Engine engine) {
+        if (engine == Engine.AI) {
+            if (!premium()) {
+                showPaywall(R.string.ai_voice_title);
+                return;
+            }
+            if (!NeuralVoice.isSupported()) {
+                notifyUser(R.string.ai_voice_unsupported);
+                return;
+            }
+            preferences.edit().putBoolean(AI_VOICE_PREFERENCE, true).apply();
+            if (neural.state() == NeuralVoice.State.NOT_INSTALLED) {
+                confirmAiDownload();
+            } else {
+                neural.load();
+            }
+        }
+        if (engine == Engine.STUDIO && !premium() && scriptId != null) {
+            showPaywall(R.string.studio_title);
+            return;
+        }
+        preferences.edit().putString(VOICE_ENGINE_PREFERENCE, engine.name()).apply();
+        render();
+    }
+
+    private void confirmStudio() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.studio_prepare)
+            .setMessage(getString(R.string.studio_value) + "\n\n" + getString(R.string.studio_privacy))
+            .setPositiveButton(R.string.studio_start, (dialog, which) -> prepareStudio())
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    private void prepareStudio() {
+        if (fullScene == null || studio.isRunning()) {
+            return;
+        }
+        studioDone = -1;
+        studio.prepare(scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
+            @Override
+            public void progress(int done, int total) {
+                studioDone = done;
+                if (screen == Screen.SETUP && !isDestroyed()) {
+                    render();
+                }
+            }
+
+            @Override
+            public void finished(StudioVoices.Stop reason) {
+                studioDone = -1;
+                switch (reason) {
+                    case DAILY_LIMIT -> notifyUser(R.string.studio_daily_limit);
+                    case MONTHLY_LIMIT -> notifyUser(R.string.studio_monthly_limit);
+                    case SCRIPT_LIMIT -> notifyUser(R.string.studio_script_limit);
+                    case FAILED -> notifyUser(R.string.studio_failed);
+                    default -> { }
+                }
+                if (screen == Screen.SETUP && !isDestroyed()) {
+                    render();
+                }
+            }
+        });
+        render();
+    }
+
     // ---------------------------------------------------------------- AI voice
 
     /** Whether lines are read by the on-device AI voice instead of the Android voice. */
     private boolean useAiVoice() {
-        if (!premium() || !NeuralVoice.isSupported() || !preferences.getBoolean(AI_VOICE_PREFERENCE, false)) {
+        // With studio voices chosen, the AI voice (when the user has it) reads lines not yet prepared.
+        if (!premium() || !NeuralVoice.isSupported() || !preferences.getBoolean(AI_VOICE_PREFERENCE, false)
+            || voiceEngine() == Engine.DEVICE) {
             return false;
         }
         NeuralVoice.State state = neural.state();
@@ -4311,6 +4597,7 @@ public final class MainActivity extends Activity {
         activeUtterance = id;
         aiSpeaking = true;
         recordingSpeaking = false;
+        studioSpeaking = false;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
             (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
@@ -4372,15 +4659,11 @@ public final class MainActivity extends Activity {
                         }), Ui.matchWidth());
                 }
                 default -> {
-                    boolean on = preferences.getBoolean(AI_VOICE_PREFERENCE, false);
-                    card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.ai_voice_use),
-                        getString(on ? R.string.ai_voice_on : R.string.ai_voice_off), ui.toggle(on), view -> {
-                            preferences.edit().putBoolean(AI_VOICE_PREFERENCE, !on).apply();
-                            if (!on) {
-                                neural.load();
-                            }
-                            render();
-                        }), Ui.matchWidth());
+                    Engine engine = voiceEngine();
+                    card.addView(ui.listRow(R.drawable.ic_star, getString(R.string.voice_engine_title),
+                        getString(engine == Engine.DEVICE ? R.string.voice_engine_device
+                            : engine == Engine.AI ? R.string.ai_voice_title : R.string.studio_title),
+                        view -> chooseVoiceEngine()), Ui.matchWidth());
                     card.addView(ui.divider(70));
                     String status = neural.isReady() ? getString(R.string.ai_voice_preview_detail, aiVoiceName(0))
                         : getString(R.string.ai_voice_loading);
@@ -4482,7 +4765,8 @@ public final class MainActivity extends Activity {
             .setMessage(getString(R.string.ai_voice_download_message,
                 Math.round(NeuralVoice.downloadBytes() / 1_000_000.0)))
             .setPositiveButton(R.string.ai_voice_download_confirm, (dialog, which) -> {
-                preferences.edit().putBoolean(AI_VOICE_PREFERENCE, true).apply();
+                preferences.edit().putBoolean(AI_VOICE_PREFERENCE, true)
+                    .putString(VOICE_ENGINE_PREFERENCE, Engine.AI.name()).apply();
                 neural.download();
             })
             .setNegativeButton(android.R.string.cancel, null)
@@ -4494,7 +4778,11 @@ public final class MainActivity extends Activity {
             .setTitle(R.string.ai_voice_delete)
             .setMessage(R.string.ai_voice_delete_message)
             .setPositiveButton(R.string.action_delete, (dialog, which) -> {
-                preferences.edit().putBoolean(AI_VOICE_PREFERENCE, false).apply();
+                SharedPreferences.Editor edit = preferences.edit().putBoolean(AI_VOICE_PREFERENCE, false);
+                if (voiceEngine() == Engine.AI) {
+                    edit.putString(VOICE_ENGINE_PREFERENCE, Engine.DEVICE.name());
+                }
+                edit.apply();
                 neural.delete();
             })
             .setNegativeButton(android.R.string.cancel, null)
@@ -4787,6 +5075,9 @@ public final class MainActivity extends Activity {
         if (activeUtterance != null) {
             if (recordingSpeaking) {
                 return R.string.ensemble_recording_playing;
+            }
+            if (studioSpeaking) {
+                return R.string.studio_playing;
             }
             if (aiSpeaking) {
                 return R.string.ai_voice_playing;

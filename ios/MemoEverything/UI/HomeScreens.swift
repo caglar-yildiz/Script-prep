@@ -341,9 +341,10 @@ struct AiVoiceSettings: View {
                             value: L("ai_voice_failed_detail", neural.lastError) + "\n" + L("ai_voice_retry"),
                             action: neural.retry)
                 default:
-                    ListRow(icon: "ic_star", title: L("ai_voice_use"),
-                            value: L(model.aiVoiceOn ? "ai_voice_on" : "ai_voice_off"),
-                            action: model.toggleAiVoice) { ToggleKnob(on: model.aiVoiceOn) }
+                    ListRow(icon: "ic_star", title: L("voice_engine_title"),
+                            value: L(model.voiceEngine == .device ? "voice_engine_device"
+                                     : model.voiceEngine == .ai ? "ai_voice_title" : "studio_title"),
+                            action: model.chooseVoiceEngine)
                     RowDivider()
                     ListRow(icon: "ic_play", title: L("voice_preview"),
                             value: neural.isReady ? L("ai_voice_preview_detail", model.aiVoiceName(0)) : L("ai_voice_loading"),

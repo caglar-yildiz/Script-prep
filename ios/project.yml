@@ -59,6 +59,8 @@ targets:
         CFBundleLocalizations: [en, tr, es, de, fr, pt-BR, it]
         CFBundleAllowMixedLocalizations: true
         ITSAppUsesNonExemptEncryption: false
+        # Studio voices sign in to Firebase (project memo-70a45) through its public web API key.
+        MemoFirebaseApiKey: AIzaSyDC-kyKN691FfPJZJKs452cbogFvBM_g6M
         LSRequiresIPhoneOS: true
         UILaunchScreen:
           UIColorName: LaunchBackground

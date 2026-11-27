@@ -1,0 +1,57 @@
+name: Studio voice worker
+
+# Tests the Cloudflare Worker that holds the Gemini key and deploys it.
+# Secrets (Settings > Secrets and variables > Actions):
+#   CLOUDFLARE_API_TOKEN   token with the "Edit Cloudflare Workers" template
+#   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account
+#   GEMINI_API_KEY         stored in the Worker as a secret, never in the apps
+#   GCP_SERVICE_ACCOUNT_JSON  JSON key of a Google Cloud service account with the Vertex AI User
+#                          role; the Worker voices lines through Google Cloud with it
+
+on:
+  push:
+    branches: [main, feature/gemini-studio-voices]
+    paths:
+      - '.github/workflows/worker.yml'
+      - 'worker/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - name: Deploy
+        uses: cloudflare/wrangler-action@v3
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          wranglerVersion: '4.168.0'
+          secrets: |
+            GEMINI_API_KEY
+            GCP_SERVICE_ACCOUNT_JSON

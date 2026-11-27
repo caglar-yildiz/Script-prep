@@ -13,3 +13,8 @@ ios/*.ipa
 ios/*.log
 ios/MemoCore/.build/
 .DS_Store
+
+# Studio voice worker
+worker/node_modules/
+worker/.wrangler/
+worker/listen/

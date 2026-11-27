@@ -16,6 +16,18 @@ public class SceneTest {
     }
 
     @Test
+    public void takesTheSampleSceneDirectionsAsNotes() {
+        Scene scene = Scene.parse("ECE: (fısıldayarak) Mert! Uyanık mısın?\nMERT: (sessizce, utanarak) …Ha.\n"
+            + "(Işıklar titrer. İkisi de donup kalır.)\nECE: Duydun mu?");
+
+        assertEquals("Mert! Uyanık mısın?", scene.lines.get(0).text);
+        assertEquals(Arrays.asList("(fısıldayarak)"), scene.lines.get(0).notes);
+        assertEquals("…Ha.", scene.lines.get(1).text);
+        assertEquals(Arrays.asList("(sessizce, utanarak)", "(Işıklar titrer. İkisi de donup kalır.)"),
+            scene.lines.get(1).notes);
+    }
+
+    @Test
     public void readsANamePrintedWithAPeriodBeforeTheDash() {
         Scene scene = Scene.parse("ORGON. — Sormayın.\nM. LOYAL. — Günaydın.");
 

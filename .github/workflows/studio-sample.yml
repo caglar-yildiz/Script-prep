@@ -1,0 +1,94 @@
+name: Studio sample voices
+
+# Makes the studio voice pack of the sample scene with the Gemini key (secret GEMINI_API_KEY) and
+# commits it to the branch. A run stopped by a Gemini limit keeps what it made; run it again later.
+
+on:
+  # Only by hand: every run uses the Gemini speech quota the app's users share.
+  workflow_dispatch:
+    inputs:
+      task:
+        description: 'pack: sample voices and voice samples; models: list the speech models the key can use; fallbacks: test the older speech models; vertex: test Google Cloud speech with the service account; vertex-load: 120 requests through Google Cloud'
+        required: false
+        default: 'pack'
+      languages:
+        description: 'Languages, comma separated (empty for all)'
+        required: false
+      script:
+        description: 'Optional: a script to voice instead (ROLE: text per line, \n for new lines); only a listening file is made'
+        required: false
+      script_language:
+        description: 'Language of that script (tr, en, de, es, fr, it, pt)'
+        required: false
+        default: 'tr'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: studio-sample
+  cancel-in-progress: false
+
+jobs:
+  pack:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Install ffmpeg
+        # A broken third-party apt source on the runner must not stop the install.
+        run: command -v ffmpeg || { sudo apt-get update || true; sudo apt-get install -y --no-install-recommends ffmpeg; }
+      - name: List speech models
+        if: github.event.inputs.task == 'models'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node worker/scripts/models.mjs
+      - name: Test the older speech models
+        if: github.event.inputs.task == 'fallbacks'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node worker/scripts/probe-fallbacks.mjs
+      - name: Test Google Cloud speech
+        if: github.event.inputs.task == 'vertex'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        run: node worker/scripts/probe-vertex.mjs
+      - name: Load Google Cloud speech
+        if: github.event.inputs.task == 'vertex-load'
+        env:
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        run: node worker/scripts/load-vertex.mjs
+      - name: Make the voice pack
+        if: github.event.inputs.task == '' || github.event.inputs.task == 'pack'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+          LANGUAGES: ${{ github.event.inputs.languages }}
+          CUSTOM_SCRIPT_INPUT: ${{ github.event.inputs.script }}
+          CUSTOM_LANGUAGE: ${{ github.event.inputs.script_language }}
+        run: |
+          # A script typed into the form arrives on one line; \n marks its line breaks.
+          export CUSTOM_SCRIPT="$(printf '%s' "$CUSTOM_SCRIPT_INPUT" | sed 's/\\n/\n/g')"
+          npx -y tsx worker/scripts/sample-pack.ts $LANGUAGES || echo "stopped=1" >> "$GITHUB_ENV"
+      - name: Keep the listening files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-voices-to-listen
+          path: worker/listen/*.m4a
+          if-no-files-found: ignore
+      - name: Commit the pack
+        run: |
+          git add app/src/main/assets/studio-sample app/src/main/assets/studio-voices ios/MemoEverything/Resources/StudioSample ios/MemoEverything/Resources/StudioVoices
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Add studio voices of the sample scene"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - name: Report a stopped run
+        if: env.stopped == '1'
+        run: echo "::warning::The pack is not complete yet (a Gemini limit or error); run this workflow again later."
