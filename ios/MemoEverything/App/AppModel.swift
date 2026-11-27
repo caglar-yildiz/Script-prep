@@ -1777,7 +1777,7 @@ final class AppModel: ObservableObject {
         guard fullScene != nil else {
             return 0
         }
-        return studio.running ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
+        return studio.currentKey == studioJobKey ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
     }
 
     // MARK: - Director's notes
@@ -1891,7 +1891,8 @@ final class AppModel: ObservableObject {
 
     private func resumeStudioIfInterrupted() {
         studioLeftWhileRunning = false
-        guard let script = studioResumeScript, script == castKey, !studio.running, fullScene != nil else {
+        guard let script = studioResumeScript, script == castKey, studio.currentKey != studioJobKey,
+              !studio.waitingKeys.contains(studioJobKey), fullScene != nil else {
             return
         }
         prepareStudio()
@@ -1912,8 +1913,21 @@ final class AppModel: ObservableObject {
         ])
     }
 
+    /// The scene on screen as studio voices see it: script, section and language.
+    var studioJobKey: String {
+        "\(castKey)#\(sectionIndex)#\(language.code)"
+    }
+
+    var studioPreparingHere: Bool {
+        studio.currentKey == studioJobKey
+    }
+
+    var studioWaitingHere: Bool {
+        studio.waitingKeys.contains(studioJobKey)
+    }
+
     func prepareStudio() {
-        guard let fullScene, !studio.running else {
+        guard let fullScene, !studioPreparingHere, !studioWaitingHere else {
             return
         }
         studioResumeScript = nil
@@ -1921,7 +1935,7 @@ final class AppModel: ObservableObject {
         studioBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "studio-voices") { [weak self] in
             self?.endStudioBackgroundTask()
         }
-        studio.prepare(fullScene, scene, language: language, title: scriptTitle, script: castKey,
+        studio.prepare(key: studioJobKey, fullScene, scene, language: language, title: scriptTitle, script: castKey,
                        casting: studioCasting()) { reason in
             self.endStudioBackgroundTask()
             if reason == .failed && (self.studioLeftWhileRunning || UIApplication.shared.applicationState != .active) {

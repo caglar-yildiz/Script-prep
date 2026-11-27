@@ -465,6 +465,7 @@
 "studio_voice_traits_7" = "Ruhig";
 "studio_voice_traits_8" = "Rau";
 "studio_voice_traits_9" = "Klar";
+"studio_waiting" = "Wartet: zuerst wird eine andere Szene vorbereitet";
 "text_actions" = "Weitere Optionen für %1$@";
 "text_cleared" = "Text geleert";
 "text_deleted" = "„%1$@“ gelöscht";

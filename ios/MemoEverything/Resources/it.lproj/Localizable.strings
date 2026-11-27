@@ -465,6 +465,7 @@
 "studio_voice_traits_7" = "Calma";
 "studio_voice_traits_8" = "Roca";
 "studio_voice_traits_9" = "Chiara";
+"studio_waiting" = "In attesa: prima si prepara un’altra scena";
 "text_actions" = "Altre opzioni per %1$@";
 "text_cleared" = "Testo cancellato";
 "text_deleted" = "“%1$@” eliminato";

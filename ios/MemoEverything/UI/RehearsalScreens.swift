@@ -263,17 +263,22 @@ struct VoiceRows: View {
                             action: { model.showPaywall("studio_title") }) { PremiumBadge() }
                     RowDivider()
                 }
-            } else if studio.running {
+            } else if model.studioPreparingHere {
+                // Only this scene's own preparation shows here; another scene's may run, or this one may wait.
                 ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
                     MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
                 }
                 RowDivider()
+            } else if model.studioWaitingHere {
+                ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_waiting"), action: nil)
+                RowDivider()
             }
-            if model.premium && !studio.running && done > 0 {
+            let idle = !model.studioPreparingHere && !model.studioWaitingHere
+            if model.premium && idle && done > 0 {
                 ListRow(icon: "ic_list", title: L("notes_title"), value: L("notes_value"), action: { model.show(.notes) })
                 RowDivider()
             }
-            if model.premium && !studio.running && done < total {
+            if model.premium && idle && done < total {
                 ListRow(icon: "ic_star", title: L("studio_prepare"),
                         value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
                         action: model.startStudio)
@@ -792,7 +797,7 @@ struct NotesScreen: View {
                 .padding(.top, 10)
             }
         }, footer: {
-            if !StudioVoices.shared.running {
+            if !model.studioPreparingHere && !model.studioWaitingHere {
                 FooterBar {
                     MemoButton(L("notes_redirect"), icon: "ic_replay", kind: .tonal, fill: true, height: 56,
                                action: model.confirmRedirect)

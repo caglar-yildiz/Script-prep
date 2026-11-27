@@ -465,6 +465,7 @@
 "studio_voice_traits_7" = "Steady";
 "studio_voice_traits_8" = "Gravelly";
 "studio_voice_traits_9" = "Clear";
+"studio_waiting" = "Waiting: another scene is being prepared first";
 "text_actions" = "More options for %1$@";
 "text_cleared" = "Text cleared";
 "text_deleted" = "“%1$@” deleted";

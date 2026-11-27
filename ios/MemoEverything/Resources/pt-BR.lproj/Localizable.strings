@@ -465,6 +465,7 @@
 "studio_voice_traits_7" = "Serena";
 "studio_voice_traits_8" = "Rouca";
 "studio_voice_traits_9" = "Clara";
+"studio_waiting" = "Na fila: outra cena está sendo preparada primeiro";
 "text_actions" = "Mais opções para %1$@";
 "text_cleared" = "Texto apagado";
 "text_deleted" = "“%1$@” excluído";

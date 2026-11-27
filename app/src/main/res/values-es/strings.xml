@@ -555,6 +555,7 @@
     <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
     <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
     <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <string name="studio_waiting">En espera: primero se prepara otra escena</string>
     <string name="studio_notification_title">Preparando voces de estudio</string>
     <string name="studio_notification_done">Las voces de estudio están listas. Abre la app para ensayar.</string>
     <string name="studio_script_limit">Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.</string>

@@ -465,6 +465,7 @@
 "studio_voice_traits_7" = "Sakin";
 "studio_voice_traits_8" = "Boğuk";
 "studio_voice_traits_9" = "Net";
+"studio_waiting" = "Sırada: önce başka bir sahne hazırlanıyor";
 "text_actions" = "%1$@ için diğer seçenekler";
 "text_cleared" = "Metin temizlendi";
 "text_deleted" = "“%1$@” silindi";

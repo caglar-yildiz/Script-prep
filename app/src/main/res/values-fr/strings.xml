@@ -555,6 +555,7 @@
     <string name="voice_engine_ai_detail">Une voix naturelle qui fonctionne sur ce téléphone, hors ligne</string>
     <string name="voice_engine_studio_detail">Des voix jouées et expressives préparées par un metteur en scène IA</string>
     <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
+    <string name="studio_waiting">En attente : une autre scène est préparée d’abord</string>
     <string name="studio_notification_title">Préparation des voix studio</string>
     <string name="studio_notification_done">Les voix studio sont prêtes. Ouvre l’app pour répéter.</string>
     <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>

@@ -549,6 +549,7 @@
     <string name="voice_engine_ai_detail">A natural voice that runs on this phone, offline</string>
     <string name="voice_engine_studio_detail">Acted, expressive voices prepared by an AI director</string>
     <string name="studio_allowance">Studio voices can be prepared for 2 scripts a month.</string>
+    <string name="studio_waiting">Waiting: another scene is being prepared first</string>
     <string name="studio_notification_title">Preparing studio voices</string>
     <string name="studio_notification_done">Studio voices are ready. Open the app to rehearse.</string>
     <string name="studio_script_limit">You have used this month’s 2 scripts for studio voices. Scripts already prepared keep playing; new ones open next month.</string>

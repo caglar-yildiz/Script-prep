@@ -131,7 +131,6 @@ public final class MainActivity extends Activity {
     private NeuralVoice neural;
     private StudioVoices studio;
     /** Studio voice preparation of the open scene: lines ready and partner lines in all; -1 until counted. */
-    private int studioDone = -1;
     /** Which voice reads the lines: one choice for device, on-device AI and studio voices. */
     private static final String VOICE_ENGINE_PREFERENCE = "voice_engine";
 
@@ -4447,7 +4446,7 @@ public final class MainActivity extends Activity {
         Engine engine = voiceEngine();
         int total = scene == null ? 0 : scene.lines.size();
         int done = engine != Engine.STUDIO || fullScene == null ? 0
-            : studio.isRunning() && studioDone >= 0 ? studioDone : studio.readyCount(scene, language, studioCasting());
+            : studio.isPreparing(studioJobKey()) ? studio.currentDone() : studio.readyCount(scene, language, studioCasting());
         String value = switch (engine) {
             case DEVICE -> getString(R.string.voice_engine_device) + "\n" + getString(R.string.voice_engine_device_detail);
             case AI -> getString(R.string.ai_voice_title) + "\n" + getString(R.string.voice_engine_ai_detail);
@@ -4480,20 +4479,28 @@ public final class MainActivity extends Activity {
             }
             return;
         }
-        if (studio.isRunning()) {
+        // Only this scene's own preparation shows here; another scene's may run, or this one may wait.
+        boolean preparing = studio.isPreparing(studioJobKey());
+        boolean waiting = studio.isQueued(studioJobKey());
+        if (preparing) {
             LinearLayout progressRow = ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
                 getString(R.string.studio_progress, done, total),
                 ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null);
             studioProgressLabels.add(rowDetail(progressRow));
             extras.addView(progressRow, Ui.matchWidth());
             extras.addView(ui.divider(70));
+        } else if (waiting) {
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+                getString(R.string.studio_waiting), null), Ui.matchWidth());
+            extras.addView(ui.divider(70));
         }
-        if (!studio.isRunning() && done > 0) {
+        boolean idle = !preparing && !waiting;
+        if (idle && done > 0) {
             extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title),
                 getString(R.string.notes_value), view -> show(Screen.NOTES)), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
-        if (!studio.isRunning() && done < total) {
+        if (idle && done < total) {
             String detail = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
             extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare),
                 detail + "\n" + getString(R.string.studio_allowance), view -> startStudio()), Ui.matchWidth());
@@ -4513,7 +4520,7 @@ public final class MainActivity extends Activity {
         reading.addView(ui.text(getString(R.string.notes_reading), Type.SUBTITLE, ON_ACCENT_CONTAINER));
         reading.addView(ui.text(readingText(), Type.CAPTION, ON_ACCENT_CONTAINER), ui.spaced(6));
         content.addView(reading, ui.spaced(10));
-        if (!studio.isRunning()) {
+        if (!studio.isPreparing(studioJobKey()) && !studio.isQueued(studioJobKey())) {
             LinearLayout actions = footerBar();
             actions.addView(ui.button(getString(R.string.notes_redirect), R.drawable.ic_replay, Kind.TONAL,
                 view -> confirmRedirect()), Ui.matchWidth());
@@ -4638,6 +4645,11 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /** The scene on screen as studio voices see it: script, section and language. */
+    private String studioJobKey() {
+        return castKey() + "#" + sectionIndex + "#" + language.code;
+    }
+
     private String castConfirmedKey() {
         return "studio_cast_confirmed_" + castKey();
     }
@@ -4736,22 +4748,22 @@ public final class MainActivity extends Activity {
     }
 
     private void prepareStudio() {
-        if (fullScene == null || studio.isRunning()) {
+        String key = studioJobKey();
+        if (fullScene == null || studio.isPreparing(key) || studio.isQueued(key)) {
             return;
         }
-        studioDone = -1;
-        studio.prepare(fullScene, scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
+        studio.prepare(key, fullScene, scene, language, scriptTitle, castKey(), studioCasting(),
+            new StudioVoices.Progress() {
             @Override
             public void progress(int done, int total) {
-                studioDone = done;
-                if (screen == Screen.SETUP && !isDestroyed()) {
+                // Only the screen of the scene being prepared shows its progress.
+                if (screen == Screen.SETUP && !isDestroyed() && key.equals(studioJobKey())) {
                     updateStudioProgress(done, total);
                 }
             }
 
             @Override
             public void finished(StudioVoices.Stop reason) {
-                studioDone = -1;
                 switch (reason) {
                     case DAILY_LIMIT -> notifyUser(R.string.studio_daily_limit);
                     case MONTHLY_LIMIT -> notifyUser(R.string.studio_monthly_limit);

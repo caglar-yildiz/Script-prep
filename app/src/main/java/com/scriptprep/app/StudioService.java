@@ -49,11 +49,11 @@ public final class StudioService extends Service implements StudioVoices.Progres
             studio.cancel();
             return START_NOT_STICKY;
         }
-        if (intent != null && intent.getStringExtra(TITLE) != null) {
-            title = intent.getStringExtra(TITLE);
-        }
+        // The scene being prepared now: one started later may only be waiting its turn.
+        title = studio.currentTitle().isEmpty() && intent != null && intent.getStringExtra(TITLE) != null
+            ? intent.getStringExtra(TITLE) : studio.currentTitle();
         createChannel();
-        ServiceCompat.startForeground(this, PROGRESS_ID, progressNotification(0, 0),
+        ServiceCompat.startForeground(this, PROGRESS_ID, progressNotification(studio.currentDone(), studio.currentTotal()),
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ? ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC : 0);
         if (!studio.isRunning()) {
             stop();
@@ -65,6 +65,7 @@ public final class StudioService extends Service implements StudioVoices.Progres
 
     @Override
     public void progress(int done, int total) {
+        title = StudioVoices.get(this).currentTitle();
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager != null) {
             manager.notify(PROGRESS_ID, progressNotification(done, total));
@@ -73,13 +74,20 @@ public final class StudioService extends Service implements StudioVoices.Progres
 
     @Override
     public void finished(StudioVoices.Stop reason) {
-        StudioVoices.get(this).setObserver(null);
+        StudioVoices studio = StudioVoices.get(this);
         if (reason != StudioVoices.Stop.CANCELLED) {
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.notify(RESULT_ID, resultNotification(reason));
             }
         }
+        // Another scene waiting its turn has already started: keep going with it.
+        if (studio.isRunning()) {
+            title = studio.currentTitle();
+            progress(studio.currentDone(), studio.currentTotal());
+            return;
+        }
+        studio.setObserver(null);
         stop();
     }
 
@@ -145,7 +153,7 @@ public final class StudioService extends Service implements StudioVoices.Progres
         });
         return new NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_star)
-            .setContentTitle(title.isEmpty() ? getString(R.string.studio_title) : title)
+            .setContentTitle(getString(R.string.studio_title))
             .setContentText(message)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true)
