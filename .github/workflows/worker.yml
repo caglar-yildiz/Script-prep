@@ -10,7 +10,7 @@ name: Studio voice worker
 
 on:
   push:
-    branches: [main, fix/studio-cast-check-and-progress]
+    branches: [main]
     paths:
       - '.github/workflows/worker.yml'
       - 'worker/**'
