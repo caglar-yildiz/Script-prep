@@ -541,4 +541,21 @@
         <item quantity="many">%d membres</item>
         <item quantity="other">%d membres</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Voix studio</string>
+    <string name="studio_value">Un metteur en scène IA lit la scène et donne à chaque réplique du partenaire une voix expressive et jouée.</string>
+    <string name="studio_prepare">Préparer les voix studio</string>
+    <string name="studio_progress">Préparation… %1$d répliques prêtes sur %2$d</string>
+    <string name="studio_ready">%1$d répliques prêtes sur %2$d</string>
+    <string name="studio_none">Non préparées · les autres voix lisent en attendant</string>
+    <string name="studio_on">Les répliques du partenaire utilisent les voix studio</string>
+    <string name="studio_off">Désactivé · les autres voix lisent les répliques</string>
+    <string name="studio_stop">Arrêter</string>
+    <string name="studio_start">Préparer</string>
+    <string name="studio_privacy">Les répliques sont envoyées à Google Gemini pour préparer les voix. Chaque réplique est préparée une fois puis reste sur ce téléphone.</string>
+    <string name="studio_playing">La voix studio lit la réplique…</string>
+    <string name="studio_daily_limit">La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.</string>
+    <string name="studio_monthly_limit">La limite mensuelle des voix studio est atteinte.</string>
+    <string name="studio_failed">Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.</string>
 </resources>

@@ -535,4 +535,21 @@
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Studio voices</string>
+    <string name="studio_value">An AI director reads the scene and gives each partner line an expressive, acted voice.</string>
+    <string name="studio_prepare">Prepare studio voices</string>
+    <string name="studio_progress">Preparing… %1$d of %2$d lines ready</string>
+    <string name="studio_ready">%1$d of %2$d lines ready</string>
+    <string name="studio_none">Not prepared · the other voices read until then</string>
+    <string name="studio_on">Partner lines use the studio voices</string>
+    <string name="studio_off">Off · the other voices read the lines</string>
+    <string name="studio_stop">Stop</string>
+    <string name="studio_start">Prepare</string>
+    <string name="studio_privacy">The lines are sent to Google Gemini to prepare the voices. Each line is prepared once and then stays on this phone.</string>
+    <string name="studio_playing">The studio voice is reading the line…</string>
+    <string name="studio_daily_limit">Today’s studio voice limit is reached. The prepared lines are kept; continue tomorrow.</string>
+    <string name="studio_monthly_limit">This month’s studio voice limit is reached.</string>
+    <string name="studio_failed">Couldn’t prepare the studio voices. Check your connection and try again.</string>
 </resources>

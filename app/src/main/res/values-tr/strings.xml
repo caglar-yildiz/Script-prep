@@ -527,4 +527,21 @@
         <item quantity="one">%d üye</item>
         <item quantity="other">%d üye</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Stüdyo sesleri</string>
+    <string name="studio_value">Yapay zekâ yönetmen sahneyi okur ve her karşı repliğe duygulu, oynanmış bir ses verir.</string>
+    <string name="studio_prepare">Stüdyo seslerini hazırla</string>
+    <string name="studio_progress">Hazırlanıyor… %2$d replikten %1$d tanesi hazır</string>
+    <string name="studio_ready">%2$d replikten %1$d tanesi hazır</string>
+    <string name="studio_none">Hazırlanmadı · o zamana kadar diğer sesler okur</string>
+    <string name="studio_on">Karşı replikleri stüdyo sesleri okur</string>
+    <string name="studio_off">Kapalı · replikleri diğer sesler okur</string>
+    <string name="studio_stop">Durdur</string>
+    <string name="studio_start">Hazırla</string>
+    <string name="studio_privacy">Sesleri hazırlamak için replikler Google Gemini’ye gönderilir. Her replik bir kez hazırlanır, sonra bu telefonda kalır.</string>
+    <string name="studio_playing">Stüdyo sesi repliği okuyor…</string>
+    <string name="studio_daily_limit">Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.</string>
+    <string name="studio_monthly_limit">Bu ayın stüdyo sesi sınırına ulaşıldı.</string>
+    <string name="studio_failed">Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.</string>
 </resources>

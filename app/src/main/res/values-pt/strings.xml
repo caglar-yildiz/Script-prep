@@ -541,4 +541,21 @@
         <item quantity="many">%d membros</item>
         <item quantity="other">%d membros</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Vozes de estúdio</string>
+    <string name="studio_value">Um diretor com IA lê a cena e dá a cada fala do parceiro uma voz expressiva e interpretada.</string>
+    <string name="studio_prepare">Preparar vozes de estúdio</string>
+    <string name="studio_progress">Preparando… %1$d de %2$d falas prontas</string>
+    <string name="studio_ready">%1$d de %2$d falas prontas</string>
+    <string name="studio_none">Não preparado · até lá as outras vozes leem</string>
+    <string name="studio_on">As falas do parceiro usam as vozes de estúdio</string>
+    <string name="studio_off">Desativado · as outras vozes leem as falas</string>
+    <string name="studio_stop">Parar</string>
+    <string name="studio_start">Preparar</string>
+    <string name="studio_privacy">As falas são enviadas ao Google Gemini para preparar as vozes. Cada fala é preparada uma vez e depois fica neste telefone.</string>
+    <string name="studio_playing">A voz de estúdio está lendo a fala…</string>
+    <string name="studio_daily_limit">O limite diário de vozes de estúdio foi atingido. As falas preparadas ficam guardadas; continue amanhã.</string>
+    <string name="studio_monthly_limit">O limite mensal de vozes de estúdio foi atingido.</string>
+    <string name="studio_failed">Não foi possível preparar as vozes de estúdio. Verifique sua conexão e tente de novo.</string>
 </resources>

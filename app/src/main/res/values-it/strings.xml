@@ -541,4 +541,21 @@
         <item quantity="many">%d membri</item>
         <item quantity="other">%d membri</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Voci da studio</string>
+    <string name="studio_value">Un regista IA legge la scena e dà a ogni battuta del partner una voce espressiva e recitata.</string>
+    <string name="studio_prepare">Prepara le voci da studio</string>
+    <string name="studio_progress">Preparazione… %1$d battute pronte su %2$d</string>
+    <string name="studio_ready">%1$d battute pronte su %2$d</string>
+    <string name="studio_none">Non preparate · nel frattempo leggono le altre voci</string>
+    <string name="studio_on">Le battute del partner usano le voci da studio</string>
+    <string name="studio_off">Disattivato · le altre voci leggono le battute</string>
+    <string name="studio_stop">Interrompi</string>
+    <string name="studio_start">Prepara</string>
+    <string name="studio_privacy">Le battute vengono inviate a Google Gemini per preparare le voci. Ogni battuta viene preparata una volta e poi resta su questo telefono.</string>
+    <string name="studio_playing">La voce da studio sta leggendo la battuta…</string>
+    <string name="studio_daily_limit">Il limite giornaliero delle voci da studio è stato raggiunto. Le battute preparate restano salvate; continua domani.</string>
+    <string name="studio_monthly_limit">Il limite mensile delle voci da studio è stato raggiunto.</string>
+    <string name="studio_failed">Impossibile preparare le voci da studio. Controlla la connessione e riprova.</string>
 </resources>

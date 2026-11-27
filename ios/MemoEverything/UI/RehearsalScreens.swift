@@ -168,6 +168,10 @@ struct SetupScreen: View {
                     }
                     RowDivider()
                 }
+                if hasRoles {
+                    StudioRow()
+                    RowDivider()
+                }
                 premiumRow("ic_video", "selftape_title", L("video_value"), open: model.openVideo)
             }
             .padding(.top, 10)
@@ -237,6 +241,32 @@ struct AiVoiceRow: View {
                         value: L(model.aiVoiceOn ? "ai_voice_on" : "ai_voice_off"),
                         action: model.toggleAiVoice) { ToggleKnob(on: model.aiVoiceOn) }
             }
+        }
+    }
+}
+
+/// Practice options row: prepare the scene's studio voices, and use them once they are ready.
+struct StudioRow: View {
+    @EnvironmentObject var model: AppModel
+    @ObservedObject var studio = StudioVoices.shared
+
+    var body: some View {
+        let total = model.studioTotal
+        let done = model.studioReady
+        if !model.premium {
+            ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_value"),
+                    action: { model.showPaywall("studio_title") }) { PremiumBadge() }
+        } else if studio.running {
+            ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
+                MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+            }
+        } else if total > 0 && done >= total {
+            ListRow(icon: "ic_star", title: L("studio_title"),
+                    value: L(model.studioOn ? "studio_on" : "studio_off") + "\n" + L("studio_ready", done, total),
+                    action: model.toggleStudio) { ToggleKnob(on: model.studioOn) }
+        } else {
+            ListRow(icon: "ic_star", title: L("studio_prepare"),
+                    value: done == 0 ? L("studio_none") : L("studio_ready", done, total), action: model.confirmStudio)
         }
     }
 }

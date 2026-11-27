@@ -129,6 +129,10 @@ public final class MainActivity extends Activity {
     private HandsFree handsFree;
     private ToneGenerator turnCue;
     private NeuralVoice neural;
+    private StudioVoices studio;
+    /** Studio voice preparation of the open scene: lines ready and partner lines in all; -1 until counted. */
+    private int studioDone = -1;
+    private static final String STUDIO_PREFERENCE = "studio_voice";
     private Billing billing;
     private boolean listening;
     private boolean listeningPaused;
@@ -209,6 +213,8 @@ public final class MainActivity extends Activity {
     private boolean aiSpeaking;
     /** Whether the line being read now is a cast member's recording. */
     private boolean recordingSpeaking;
+    /** Whether the line being read now is a studio voice recording. */
+    private boolean studioSpeaking;
     private android.media.MediaPlayer recordingPlayer;
     /** Cast recordings of the open shared text, loaded once per text. */
     private EnsembleRecordings.Voices castRecordings;
@@ -234,6 +240,7 @@ public final class MainActivity extends Activity {
         preferences = getSharedPreferences("script_prep", MODE_PRIVATE);
         library = new ScriptLibrary(preferences);
         neural = NeuralVoice.get(this);
+        studio = StudioVoices.get(this);
         neural.setListener(this::onNeuralVoiceChanged);
         neural.setProgressListener(this::updateDownloadProgress);
         billing = new Billing(this, preferences);
@@ -818,7 +825,11 @@ public final class MainActivity extends Activity {
             return;
         }
         java.io.File recorded = castRecording(line);
-        if (recorded != null && playRecording(recorded)) {
+        if (recorded != null && playRecording(recorded, false)) {
+            return;
+        }
+        java.io.File directed = studioAudio(line);
+        if (directed != null && playRecording(directed, true)) {
             return;
         }
         if (useAiVoice() && neural.state() != NeuralVoice.State.FAILED) {
@@ -833,6 +844,7 @@ public final class MainActivity extends Activity {
             playbackFailed = false;
             aiSpeaking = false;
             recordingSpeaking = false;
+            studioSpeaking = false;
             VoiceCast.Part part = premium() ? currentCast().get(line.role) : null;
             VoiceCast.apply(speech, part, castVoices(), defaultVoice(), language.locale);
             speech.setSpeechRate((part == null ? 1f : part.pace.rate) * readingSpeed());
@@ -881,8 +893,11 @@ public final class MainActivity extends Activity {
         return castRecordings.find(line);
     }
 
-    /** Plays a recorded line; returns false when it cannot, so a voice reads it instead. */
-    private boolean playRecording(java.io.File file) {
+    /**
+     * Plays a recorded line, a cast member's or a studio voice's; returns false when it cannot, so a
+     * voice reads it instead.
+     */
+    private boolean playRecording(java.io.File file, boolean studioLine) {
         cancelSpeech();
         stopListening();
         playbackFailed = false;
@@ -914,7 +929,8 @@ public final class MainActivity extends Activity {
         });
         recordingPlayer = player;
         activeUtterance = id;
-        recordingSpeaking = true;
+        recordingSpeaking = !studioLine;
+        studioSpeaking = studioLine;
         player.start();
         render();
         return true;
@@ -2806,6 +2822,9 @@ public final class MainActivity extends Activity {
                 unlocked ? ui.toggle(on) : null, this::toggleHandsFree), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
+        if (category.hasRoles()) {
+            addStudioRows(extras);
+        }
         extras.addView(premiumRow(R.drawable.ic_video, R.string.selftape_title, getString(R.string.video_value),
             null, this::openVideo), Ui.matchWidth());
         content.addView(extras, ui.spaced(10));
@@ -3679,7 +3698,8 @@ public final class MainActivity extends Activity {
         previous.setAlpha(position > 0 ? 1f : 0.5f);
         row.addView(previous);
         if (!myTurn && (speechState == SpeechState.READY || useAiVoice()
-            || (position < scene.lines.size() && castRecording(scene.lines.get(position)) != null))) {
+            || (position < scene.lines.size() && (castRecording(scene.lines.get(position)) != null
+                || studioAudio(scene.lines.get(position)) != null)))) {
             boolean playing = activeUtterance != null;
             FrameLayout play = ui.iconButton(playing ? R.drawable.ic_stop : R.drawable.ic_play,
                 getString(playing ? R.string.stop_line : R.string.play_line), ACCENT, ACCENT_CONTAINER, 56, view -> {
@@ -4265,6 +4285,86 @@ public final class MainActivity extends Activity {
         }
     }
 
+    // ---------------------------------------------------------------- Studio voices
+
+    /** The studio voice audio of a line, when it is prepared and switched on. */
+    private java.io.File studioAudio(Scene.Line line) {
+        if (!premium() || fullScene == null || !preferences.getBoolean(STUDIO_PREFERENCE, true)) {
+            return null;
+        }
+        return studio.audio(fullScene, line, language);
+    }
+
+    /** Practice options rows: prepare the scene's studio voices, and use them once there are some. */
+    private void addStudioRows(LinearLayout extras) {
+        if (!premium()) {
+            extras.addView(premiumRow(R.drawable.ic_star, R.string.studio_title, getString(R.string.studio_value),
+                null, () -> { }), Ui.matchWidth());
+            extras.addView(ui.divider(70));
+            return;
+        }
+        int total = StudioVoices.partnerLines(scene, role).size();
+        int done = studio.isRunning() && studioDone >= 0 ? studioDone : studio.readyCount(fullScene, scene, role, language);
+        if (studio.isRunning()) {
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+                getString(R.string.studio_progress, done, total),
+                ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null), Ui.matchWidth());
+        } else if (total > 0 && done >= total) {
+            boolean on = preferences.getBoolean(STUDIO_PREFERENCE, true);
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+                getString(on ? R.string.studio_on : R.string.studio_off) + "\n" + getString(R.string.studio_ready, done, total),
+                ui.toggle(on), view -> {
+                    preferences.edit().putBoolean(STUDIO_PREFERENCE, !on).apply();
+                    render();
+                }), Ui.matchWidth());
+        } else {
+            String value = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
+            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare), value,
+                view -> confirmStudio()), Ui.matchWidth());
+        }
+        extras.addView(ui.divider(70));
+    }
+
+    private void confirmStudio() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.studio_prepare)
+            .setMessage(getString(R.string.studio_value) + "\n\n" + getString(R.string.studio_privacy))
+            .setPositiveButton(R.string.studio_start, (dialog, which) -> prepareStudio())
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    private void prepareStudio() {
+        if (fullScene == null || studio.isRunning()) {
+            return;
+        }
+        studioDone = -1;
+        studio.prepare(fullScene, scene, role, language, scriptTitle, new StudioVoices.Progress() {
+            @Override
+            public void progress(int done, int total) {
+                studioDone = done;
+                if (screen == Screen.SETUP && !isDestroyed()) {
+                    render();
+                }
+            }
+
+            @Override
+            public void finished(StudioVoices.Stop reason) {
+                studioDone = -1;
+                switch (reason) {
+                    case DAILY_LIMIT -> notifyUser(R.string.studio_daily_limit);
+                    case MONTHLY_LIMIT -> notifyUser(R.string.studio_monthly_limit);
+                    case FAILED -> notifyUser(R.string.studio_failed);
+                    default -> { }
+                }
+                if (screen == Screen.SETUP && !isDestroyed()) {
+                    render();
+                }
+            }
+        });
+        render();
+    }
+
     // ---------------------------------------------------------------- AI voice
 
     /** Whether lines are read by the on-device AI voice instead of the Android voice. */
@@ -4311,6 +4411,7 @@ public final class MainActivity extends Activity {
         activeUtterance = id;
         aiSpeaking = true;
         recordingSpeaking = false;
+        studioSpeaking = false;
         VoiceCast.Part part = currentCast().get(line.role);
         neural.speak(line.text, language.code, part == null ? 0 : part.speaker,
             (part == null ? 1f : part.pace.rate) * readingSpeed(), 1f,
@@ -4787,6 +4888,9 @@ public final class MainActivity extends Activity {
         if (activeUtterance != null) {
             if (recordingSpeaking) {
                 return R.string.ensemble_recording_playing;
+            }
+            if (studioSpeaking) {
+                return R.string.studio_playing;
             }
             if (aiSpeaking) {
                 return R.string.ai_voice_playing;

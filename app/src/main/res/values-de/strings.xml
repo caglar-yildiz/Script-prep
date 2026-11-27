@@ -527,4 +527,21 @@
         <item quantity="one">%d Mitglied</item>
         <item quantity="other">%d Mitglieder</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Studiostimmen</string>
+    <string name="studio_value">Ein KI-Regisseur liest die Szene und gibt jedem Partnersatz eine ausdrucksstarke, gespielte Stimme.</string>
+    <string name="studio_prepare">Studiostimmen vorbereiten</string>
+    <string name="studio_progress">Wird vorbereitet… %1$d von %2$d Sätzen fertig</string>
+    <string name="studio_ready">%1$d von %2$d Sätzen fertig</string>
+    <string name="studio_none">Nicht vorbereitet · bis dahin lesen die anderen Stimmen</string>
+    <string name="studio_on">Partnersätze nutzen die Studiostimmen</string>
+    <string name="studio_off">Aus · die anderen Stimmen lesen die Sätze</string>
+    <string name="studio_stop">Stoppen</string>
+    <string name="studio_start">Vorbereiten</string>
+    <string name="studio_privacy">Die Sätze werden an Google Gemini gesendet, um die Stimmen vorzubereiten. Jeder Satz wird einmal vorbereitet und bleibt dann auf diesem Telefon.</string>
+    <string name="studio_playing">Die Studiostimme liest den Satz…</string>
+    <string name="studio_daily_limit">Das heutige Limit für Studiostimmen ist erreicht. Die vorbereiteten Sätze bleiben; mach morgen weiter.</string>
+    <string name="studio_monthly_limit">Das Monatslimit für Studiostimmen ist erreicht.</string>
+    <string name="studio_failed">Die Studiostimmen konnten nicht vorbereitet werden. Prüfe deine Verbindung und versuche es erneut.</string>
 </resources>

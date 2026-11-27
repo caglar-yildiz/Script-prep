@@ -73,6 +73,8 @@ final class AppModel: ObservableObject {
     let defaults = UserDefaults.standard
     let library: ScriptLibrary
     let neural = NeuralVoice.shared
+    let studio = StudioVoices.shared
+    private static let studioKey = "studio_voice"
     let billing = Billing()
     private let deviceVoice = DeviceVoice()
     private let handsFree = HandsFree()
@@ -153,6 +155,8 @@ final class AppModel: ObservableObject {
     @Published var playbackFailed = false
     @Published var aiSpeaking = false
     @Published var recordingSpeaking = false
+    /// Whether the line being read now is a studio voice recording.
+    @Published var studioSpeaking = false
     private var recordingPlayer: AVAudioPlayer?
     private var recordingDelegate: PlayerDone?
     private var castRecordings: EnsembleRules.Voices?
@@ -198,6 +202,9 @@ final class AppModel: ObservableObject {
         billing.onChange = { [weak self] _ in
             self?.onBillingChanged()
         }
+        studio.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }.store(in: &cancellables)
         billing.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] _ in
             self?.objectWillChange.send()
         }.store(in: &cancellables)
@@ -1610,6 +1617,58 @@ final class AppModel: ObservableObject {
         }
     }
 
+    // MARK: - Studio voices
+
+    var studioOn: Bool {
+        defaults.object(forKey: Self.studioKey) == nil ? true : defaults.bool(forKey: Self.studioKey)
+    }
+
+    func toggleStudio() {
+        defaults.set(!studioOn, forKey: Self.studioKey)
+        objectWillChange.send()
+    }
+
+    /// The studio voice audio of a line, when it is prepared and switched on.
+    func studioAudio(_ line: ScriptScene.Line) -> URL? {
+        guard premium, studioOn, let fullScene else {
+            return nil
+        }
+        return studio.audio(fullScene, line, language)
+    }
+
+    var studioTotal: Int {
+        StudioVoices.partnerLines(scene, role: role).count
+    }
+
+    var studioReady: Int {
+        guard let fullScene else {
+            return 0
+        }
+        return studio.running ? studio.done : studio.readyCount(fullScene, scene, role: role, language)
+    }
+
+    func confirmStudio() {
+        alert(L("studio_prepare"), L("studio_value") + "\n\n" + L("studio_privacy"), [
+            DialogButton(label: L("studio_start")) { self.prepareStudio() },
+            DialogButton(label: L("cancel"), role: .cancel),
+        ])
+    }
+
+    func prepareStudio() {
+        guard let fullScene, !studio.running else {
+            return
+        }
+        studio.prepare(fullScene, scene, role: role, language: language, title: scriptTitle) { reason in
+            switch reason {
+            case .dailyLimit: self.notifyKey("studio_daily_limit")
+            case .monthlyLimit: self.notifyKey("studio_monthly_limit")
+            case .failed: self.notifyKey("studio_failed")
+            default: break
+            }
+            self.objectWillChange.send()
+        }
+    }
+
     // MARK: - AI voice
 
     /// Whether lines are read by the on-device AI voice instead of the device voice.
@@ -1727,7 +1786,10 @@ final class AppModel: ObservableObject {
         guard RehearsalOptions.shouldSpeak(mode: mode, selectedRole: role, lineRole: line.role) else {
             return
         }
-        if let recorded = castRecording(line), playRecording(recorded) {
+        if let recorded = castRecording(line), playRecording(recorded, studioLine: false) {
+            return
+        }
+        if let directed = studioAudio(line), playRecording(directed, studioLine: true) {
             return
         }
         if useAiVoice && neural.state != .failed {
@@ -1740,6 +1802,7 @@ final class AppModel: ObservableObject {
             playbackFailed = false
             aiSpeaking = false
             recordingSpeaking = false
+            studioSpeaking = false
             let part = premium ? currentCast()[line.role] : nil
             let id = "line-\(nextUtterance())"
             activeUtterance = id
@@ -1840,8 +1903,9 @@ final class AppModel: ObservableObject {
         return castRecordings?.find(line)
     }
 
-    /// Plays a recorded line; returns false when it cannot, so a voice reads it instead.
-    private func playRecording(_ file: URL) -> Bool {
+    /// Plays a recorded line, a cast member's or a studio voice's; returns false when it cannot, so a
+    /// voice reads it instead.
+    private func playRecording(_ file: URL, studioLine: Bool) -> Bool {
         cancelSpeech()
         stopListening()
         playbackFailed = false
@@ -1861,7 +1925,8 @@ final class AppModel: ObservableObject {
         recordingDelegate = delegate
         recordingPlayer = player
         activeUtterance = id
-        recordingSpeaking = true
+        recordingSpeaking = !studioLine
+        studioSpeaking = studioLine
         player.play()
         return true
     }
@@ -1894,6 +1959,7 @@ final class AppModel: ObservableObject {
         activeUtterance = id
         aiSpeaking = true
         recordingSpeaking = false
+        studioSpeaking = false
         let part = currentCast()[line.role]
         neural.speak(line.text, language: language.code, speaker: part?.speaker ?? 0,
                      speed: (part?.pace.rate ?? 1) * readingSpeed) { ok in
@@ -1930,6 +1996,9 @@ final class AppModel: ObservableObject {
             if recordingSpeaking {
                 return L("ensemble_recording_playing")
             }
+            if studioSpeaking {
+                return L("studio_playing")
+            }
             if aiSpeaking {
                 return L("ai_voice_playing")
             }
@@ -1946,7 +2015,8 @@ final class AppModel: ObservableObject {
 
     var canPlay: Bool {
         deviceVoiceAvailable(language) || useAiVoice
-            || (position < scene.lines.count && castRecording(scene.lines[position]) != nil)
+            || (position < scene.lines.count && (castRecording(scene.lines[position]) != nil
+                || studioAudio(scene.lines[position]) != nil))
     }
 
     // MARK: - Practice report

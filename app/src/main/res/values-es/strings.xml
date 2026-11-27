@@ -541,4 +541,21 @@
         <item quantity="many">%d miembros</item>
         <item quantity="other">%d miembros</item>
     </plurals>
+
+    <!-- Studio voices -->
+    <string name="studio_title">Voces de estudio</string>
+    <string name="studio_value">Un director con IA lee la escena y da a cada frase del compañero una voz expresiva e interpretada.</string>
+    <string name="studio_prepare">Preparar voces de estudio</string>
+    <string name="studio_progress">Preparando… %1$d de %2$d frases listas</string>
+    <string name="studio_ready">%1$d de %2$d frases listas</string>
+    <string name="studio_none">Sin preparar · mientras tanto leen las otras voces</string>
+    <string name="studio_on">Las frases del compañero usan las voces de estudio</string>
+    <string name="studio_off">Desactivado · las otras voces leen las frases</string>
+    <string name="studio_stop">Detener</string>
+    <string name="studio_start">Preparar</string>
+    <string name="studio_privacy">Las frases se envían a Google Gemini para preparar las voces. Cada frase se prepara una vez y después se queda en este teléfono.</string>
+    <string name="studio_playing">La voz de estudio está leyendo la frase…</string>
+    <string name="studio_daily_limit">Se alcanzó el límite diario de voces de estudio. Las frases preparadas se guardan; continúa mañana.</string>
+    <string name="studio_monthly_limit">Se alcanzó el límite mensual de voces de estudio.</string>
+    <string name="studio_failed">No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.</string>
 </resources>
