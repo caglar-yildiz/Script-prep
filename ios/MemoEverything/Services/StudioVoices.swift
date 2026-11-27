@@ -368,25 +368,37 @@ final class StudioVoices: ObservableObject {
         if let summary = reading["summary"] as? String, !summary.isEmpty {
             context += "Story: " + summary + "\n"
         }
+        // Built line by line with plain types: one long expression is too slow for the type checker.
         let characters = reading["characters"] as? [[String: Any]] ?? []
         if !characters.isEmpty {
-            context += "Characters:\n" + characters.map {
-                "- \($0["role"] as? String ?? "") (\($0["gender"] as? String ?? ""), \($0["age"] as? String ?? "")): "
-                    + ($0["description"] as? String ?? "") + "\n"
-            }.joined()
+            context += "Characters:\n"
+            for character in characters {
+                let role = character["role"] as? String ?? ""
+                let gender = character["gender"] as? String ?? ""
+                let age = character["age"] as? String ?? ""
+                let description = character["description"] as? String ?? ""
+                context += "- \(role) (\(gender), \(age)): \(description)\n"
+            }
         }
         let relationships = reading["relationships"] as? [String] ?? []
         if !relationships.isEmpty {
-            context += "Relationships:\n" + relationships.map { "- " + $0 + "\n" }.joined()
+            context += "Relationships:\n"
+            for relationship in relationships {
+                context += "- \(relationship)\n"
+            }
         }
         if let scene = sceneOf(reading, section: section) {
-            context += "This scene" + (section.isEmpty ? "" : " (" + section + ")") + ": "
-                + (scene["summary"] as? String ?? "") + "\n"
+            let name = section.isEmpty ? "" : " (\(section))"
+            let summary = scene["summary"] as? String ?? ""
+            context += "This scene\(name): \(summary)\n"
             let moods = scene["moods"] as? [[String: Any]] ?? []
             if !moods.isEmpty {
-                context += "State of mind in this scene:\n" + moods.map {
-                    "- " + ($0["role"] as? String ?? "") + ": " + ($0["mood"] as? String ?? "") + "\n"
-                }.joined()
+                context += "State of mind in this scene:\n"
+                for mood in moods {
+                    let role = mood["role"] as? String ?? ""
+                    let feeling = mood["mood"] as? String ?? ""
+                    context += "- \(role): \(feeling)\n"
+                }
             }
         }
         return String(context.prefix(15_000))

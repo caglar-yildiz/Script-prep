@@ -8,10 +8,12 @@ workers_dev = true
 [vars]
 FIREBASE_PROJECT_ID = "memo-70a45"
 # Each calendar month (UTC) a user may prepare studio voices for this many scripts...
-MONTHLY_SCRIPTS = "2"
+# While testing there is no practical limit; the planned allowance is "2".
+MONTHLY_SCRIPTS = "1000"
 # ...and, as a cost guard, direct and voice at most this many lines in all.
-MONTHLY_DIRECTED_LINES = "3000"
-MONTHLY_SPOKEN_LINES = "2000"
+# Raised while testing; planned: 3000 directed and 2000 spoken.
+MONTHLY_DIRECTED_LINES = "50000"
+MONTHLY_SPOKEN_LINES = "30000"
 
 # One small SQLite-backed Durable Object per user keeps the monthly counts (free plan).
 [[durable_objects.bindings]]

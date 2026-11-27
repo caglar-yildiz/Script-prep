@@ -1782,11 +1782,13 @@ final class AppModel: ObservableObject {
             text += L("notes_subtext", subtext) + "\n"
         }
         for segment in note["segments"] as? [[String: Any]] ?? [] {
+            let volume = segment["volume"] as? String ?? ""
             let style = segment["style"] as? String ?? ""
-            text += "• [" + (segment["volume"] as? String ?? "") + (style.isEmpty ? "" : ", " + style) + "] "
-                + (segment["text"] as? String ?? "")
+            let words = segment["text"] as? String ?? ""
             let pause = (segment["pauseAfterMs"] as? NSNumber)?.intValue ?? 0
-            text += (pause > 0 ? " (\(pause) ms)" : "") + "\n"
+            let delivery = style.isEmpty ? volume : "\(volume), \(style)"
+            let rest = pause > 0 ? " (\(pause) ms)" : ""
+            text += "• [\(delivery)] \(words)\(rest)\n"
         }
         for saying in note["pronunciations"] as? [[String: Any]] ?? [] {
             text += L("notes_pronounce", saying["word"] as? String ?? "", saying["say"] as? String ?? "") + "\n"
@@ -1834,9 +1836,9 @@ final class AppModel: ObservableObject {
 
     /// Every line's note, to share.
     var notesText: String {
-        L("notes_title") + " · " + scriptTitle + " · " + language.code + "\n\n"
-            + L("notes_reading") + ":\n" + readingText + "\n\n"
-            + scene.lines.map { $0.role + ": " + $0.text + "\n" + noteText($0) }.joined(separator: "\n\n")
+        let head = "\(L("notes_title")) · \(scriptTitle) · \(language.code)\n\n\(L("notes_reading")):\n\(readingText)\n\n"
+        let lines: [String] = scene.lines.map { line in "\(line.role): \(line.text)\n\(noteText(line))" }
+        return head + lines.joined(separator: "\n\n")
     }
 
     private var castConfirmedKey: String {
