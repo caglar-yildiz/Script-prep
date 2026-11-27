@@ -365,7 +365,7 @@
 "role_renamed" = "%1$@ → %2$@";
 "roles_edit" = "Modifica personaggi";
 "sample_button" = "Apri la scena di esempio";
-"sample_script" = "GIULIA: Controlliamo ancora una volta le luci prima della prova.\nMARCO: Sono pronto. Da dove entro?\n(Giulia indica il lato sinistro del palco.)\nGIULIA: Da sinistra. Entra quando chiudo il sipario.\nMARCO: Chi ha la prima battuta?\nGIULIA: Tu. Resta lì finché non ti raggiungo.\nMARCO: D’accordo. Ripartiamo dall’inizio.";
+"sample_script" = "GIULIA: (sussurrando) Marco! Sei sveglio? Il sipario si apre tra dieci minuti.\nMARCO: (assonnato) Dieci minuti? Stavo solo riposando gli occhi.\nGIULIA: (emozionata) La regista me l’ha appena detto. È tutto esaurito!\nMARCO: (balzando in piedi) Esaurito? Tutti i posti?\nGIULIA: Tutti i posti. Persino la galleria.\nMARCO: (in preda al panico) E allora dov’è il mio cappello? Non posso entrare in scena senza il mio cappello!\nGIULIA: (sarcastica) Ah, certo. Tutto lo spettacolo dipende dal tuo cappello.\nMARCO: (gridando) Proprio così! Il secondo atto parla del cappello!\nGIULIA: (calma) Marco. Respira. Ce l’hai in testa.\nMARCO: (sottovoce, imbarazzato) …Ah.\n(Le luci tremolano. Entrambi si immobilizzano.)\nGIULIA: (sussurrando) Hai sentito? C’è qualcuno sul palco.\nMARCO: (sussurrando, spaventato) Sarà il direttore di scena… vero?\nGIULIA: (ridendo) È il gatto. Il gatto del teatro è di nuovo sul palco.\nMARCO: (con tenerezza) Giulia… grazie. Prima di ogni debutto sono sempre così nervoso.\nGIULIA: (con calore) Lo so. Per questo vengo sempre a svegliarti. Dai, vai, ti stanno aspettando.";
 "sample_title" = "Scena di esempio";
 "saved" = "Salvato";
 "scene_title" = "Scena";

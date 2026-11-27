@@ -14,6 +14,13 @@ on:
       languages:
         description: 'Languages, comma separated (empty for all)'
         required: false
+      script:
+        description: 'Optional: a script to voice instead (ROLE: text per line, \n for new lines); only a listening file is made'
+        required: false
+      script_language:
+        description: 'Language of that script (tr, en, de, es, fr, it, pt)'
+        required: false
+        default: 'tr'
 
 permissions:
   contents: write
@@ -38,7 +45,19 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LANGUAGES: ${{ github.event.inputs.languages }}
-        run: npx -y tsx worker/scripts/sample-pack.ts $LANGUAGES || echo "stopped=1" >> "$GITHUB_ENV"
+          CUSTOM_SCRIPT_INPUT: ${{ github.event.inputs.script }}
+          CUSTOM_LANGUAGE: ${{ github.event.inputs.script_language }}
+        run: |
+          # A script typed into the form arrives on one line; \n marks its line breaks.
+          export CUSTOM_SCRIPT="$(printf '%s' "$CUSTOM_SCRIPT_INPUT" | sed 's/\\n/\n/g')"
+          npx -y tsx worker/scripts/sample-pack.ts $LANGUAGES || echo "stopped=1" >> "$GITHUB_ENV"
+      - name: Keep the listening files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: studio-voices-to-listen
+          path: worker/listen/*.m4a
+          if-no-files-found: ignore
       - name: Commit the pack
         run: |
           git add app/src/main/assets/studio-sample ios/MemoEverything/Resources/StudioSample

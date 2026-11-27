@@ -17,3 +17,4 @@ ios/MemoCore/.build/
 # Studio voice worker
 worker/node_modules/
 worker/.wrangler/
+worker/listen/

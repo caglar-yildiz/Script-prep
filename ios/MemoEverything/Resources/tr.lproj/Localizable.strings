@@ -365,7 +365,7 @@
 "role_renamed" = "%1$@ → %2$@";
 "roles_edit" = "Karakterleri düzenle";
 "sample_button" = "Örnek sahneyi aç";
-"sample_script" = "ECE: Prova başlamadan önce ışığı bir kez daha kontrol edelim.\nMERT: Ben hazırım. Sahneye nereden giriyorum?\n(Ece, sahnenin solunu gösterir.)\nECE: Soldan. Ben perdeyi kapattığımda içeri gir.\nMERT: Peki ilk repliği kim söylüyor?\nECE: Sen. Ben yanına gelene kadar yerinde kal.\nMERT: Tamam. Bu sefer baştan alalım.";
+"sample_script" = "ECE: (fısıldayarak) Mert! Uyanık mısın? Perdenin açılmasına on dakika var.\nMERT: (uykulu) On dakika mı? Gözlerimi biraz dinlendiriyordum.\nECE: (heyecanla) Yönetmen az önce söyledi. Bütün biletler tükendi!\nMERT: (yerinden fırlayarak) Tükendi mi? Bütün koltuklar mı?\nECE: Bütün koltuklar. Balkon bile.\nMERT: (panikle) O zaman şapkam nerede? Şapkam olmadan sahneye çıkamam!\nECE: (alaycı) Ah, tabii. Bütün oyun senin şapkana bağlı.\nMERT: (bağırarak) Öyle! İkinci perde tamamen şapkayla ilgili!\nECE: (sakin) Mert. Nefes al. Şapka başında.\nMERT: (sessizce, utanarak) …Ha.\n(Işıklar titrer. İkisi de donup kalır.)\nECE: (fısıldayarak) Duydun mu? Sahnede biri var.\nMERT: (fısıldayarak, korkuyla) Herhalde sahne amiridir… değil mi?\nECE: (gülerek) Kedi bu. Tiyatronun kedisi yine sahneye çıkmış.\nMERT: (şefkatle) Ece… teşekkür ederim. Prömiyerden önce hep böyle heyecanlanıyorum.\nECE: (sıcak bir sesle) Biliyorum. O yüzden her seferinde gelip seni uyandırıyorum. Hadi git, seni bekliyorlar.";
 "sample_title" = "Örnek sahne";
 "saved" = "Kaydedildi";
 "scene_title" = "Sahne";

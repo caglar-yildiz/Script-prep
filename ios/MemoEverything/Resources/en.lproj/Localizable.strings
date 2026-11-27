@@ -365,7 +365,7 @@
 "role_renamed" = "%1$@ → %2$@";
 "roles_edit" = "Edit characters";
 "sample_button" = "Open sample scene";
-"sample_script" = "ECE: Let’s check the lights once more before rehearsal.\nMERT: I’m ready. Where do I enter?\n(Ece points to the left side of the stage.)\nECE: From the left. Come in when I close the curtain.\nMERT: Who has the first line?\nECE: You do. Stay there until I come over.\nMERT: All right. Let’s take it from the top.";
+"sample_script" = "ECE: (whispering) Mert! Are you awake? The curtain goes up in ten minutes.\nMERT: (sleepy) Ten minutes? I was just resting my eyes.\nECE: (excited) The director just told me. We’re completely sold out!\nMERT: (jumping up) Sold out? Every single seat?\nECE: Every single seat. Even the balcony.\nMERT: (panicking) Then where’s my hat? I can’t go on without my hat!\nECE: (sarcastic) Oh, of course. The whole play depends on your hat.\nMERT: (shouting) It does! The second act is all about the hat!\nECE: (calmly) Mert. Breathe. It’s on your head.\nMERT: (quietly, embarrassed) …Oh.\n(The lights flicker. They both freeze.)\nECE: (whispering) Did you hear that? Someone’s on the stage.\nMERT: (whispering, scared) It’s probably just the stage manager… right?\nECE: (laughing) It’s the cat. The theatre cat is on the stage again.\nMERT: (tenderly) Ece… thank you. I always get this nervous before opening night.\nECE: (warmly) I know. That’s why I always come to wake you up. Now go, they’re waiting.";
 "sample_title" = "Sample scene";
 "saved" = "Saved";
 "scene_title" = "Scene";
