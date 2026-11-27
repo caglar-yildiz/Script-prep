@@ -569,6 +569,7 @@
     <string name="notes_not_directed">Ainda sem direção.</string>
     <string name="notes_delivery">Clima: %1$s · ritmo: %2$s</string>
     <string name="notes_subtext">Diretor: %1$s</string>
+    <string name="notes_undertone">Por baixo: %1$s</string>
     <string name="notes_pronounce">Dizer “%1$s” como “%2$s”</string>
     <string name="notes_not_voiced">Voz %1$s: ainda não preparada.</string>
     <string name="notes_voiced_unknown">Voz %1$s: preparada antes de os detalhes serem guardados.</string>

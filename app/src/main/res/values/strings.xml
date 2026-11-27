@@ -563,6 +563,7 @@
     <string name="notes_not_directed">Not directed yet.</string>
     <string name="notes_delivery">Mood: %1$s · pace: %2$s</string>
     <string name="notes_subtext">Director: %1$s</string>
+    <string name="notes_undertone">Underneath: %1$s</string>
     <string name="notes_pronounce">Say “%1$s” as “%2$s”</string>
     <string name="notes_not_voiced">Voice %1$s: not prepared yet.</string>
     <string name="notes_voiced_unknown">Voice %1$s: prepared before details were kept.</string>

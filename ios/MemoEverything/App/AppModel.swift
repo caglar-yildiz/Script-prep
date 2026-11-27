@@ -1778,6 +1778,10 @@ final class AppModel: ObservableObject {
             return text + L("notes_not_directed")
         }
         text += L("notes_delivery", note["emotion"] as? String ?? "", note["pace"] as? String ?? "") + "\n"
+        let undertone = note["undertone"] as? String ?? ""
+        if !undertone.isEmpty {
+            text += L("notes_undertone", undertone) + "\n"
+        }
         if let subtext = note["note"] as? String, !subtext.isEmpty {
             text += L("notes_subtext", subtext) + "\n"
         }

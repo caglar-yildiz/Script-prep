@@ -569,6 +569,7 @@
     <string name="notes_not_directed">Pas encore mise en scène.</string>
     <string name="notes_delivery">Humeur : %1$s · rythme : %2$s</string>
     <string name="notes_subtext">Mise en scène : %1$s</string>
+    <string name="notes_undertone">En dessous : %1$s</string>
     <string name="notes_pronounce">Dire « %1$s » comme « %2$s »</string>
     <string name="notes_not_voiced">Voix %1$s : pas encore préparée.</string>
     <string name="notes_voiced_unknown">Voix %1$s : préparée avant que les détails soient gardés.</string>

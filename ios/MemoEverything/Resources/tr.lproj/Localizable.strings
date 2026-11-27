@@ -259,6 +259,7 @@
 "notes_style" = "Verilen tarz: %1$@";
 "notes_subtext" = "Yönetmen: %1$@";
 "notes_title" = "Yönetmen notları";
+"notes_undertone" = "Alt ton: %1$@";
 "notes_value" = "Her repliğin nasıl oynandığı ve sesinin nasıl üretildiği";
 "notes_voiced" = "Ses %1$@ · %2$@ (%3$@)";
 "notes_voiced_unknown" = "%1$@ sesi: ayrıntılar saklanmadan önce hazırlandı.";

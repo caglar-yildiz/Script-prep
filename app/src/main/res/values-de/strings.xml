@@ -555,6 +555,7 @@
     <string name="notes_not_directed">Noch nicht inszeniert.</string>
     <string name="notes_delivery">Stimmung: %1$s · Tempo: %2$s</string>
     <string name="notes_subtext">Regie: %1$s</string>
+    <string name="notes_undertone">Darunter: %1$s</string>
     <string name="notes_pronounce">„%1$s“ wie „%2$s“ sprechen</string>
     <string name="notes_not_voiced">Stimme %1$s: noch nicht vorbereitet.</string>
     <string name="notes_voiced_unknown">Stimme %1$s: vorbereitet, bevor Details gespeichert wurden.</string>

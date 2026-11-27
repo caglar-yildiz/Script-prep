@@ -259,6 +259,7 @@
 "notes_style" = "Vorgabe: %1$@";
 "notes_subtext" = "Regie: %1$@";
 "notes_title" = "Regienotizen";
+"notes_undertone" = "Darunter: %1$@";
 "notes_value" = "Wie jede Replik gespielt und ihre Stimme gemacht wurde";
 "notes_voiced" = "Stimme %1$@ · %2$@ (%3$@)";
 "notes_voiced_unknown" = "Stimme %1$@: vorbereitet, bevor Details gespeichert wurden.";

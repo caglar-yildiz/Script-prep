@@ -555,6 +555,7 @@
     <string name="notes_not_directed">Henüz yönetilmedi.</string>
     <string name="notes_delivery">Duygu: %1$s · hız: %2$s</string>
     <string name="notes_subtext">Yönetmen: %1$s</string>
+    <string name="notes_undertone">Alt ton: %1$s</string>
     <string name="notes_pronounce">“%1$s” → “%2$s” diye söylenir</string>
     <string name="notes_not_voiced">%1$s sesi: henüz hazırlanmadı.</string>
     <string name="notes_voiced_unknown">%1$s sesi: ayrıntılar saklanmadan önce hazırlandı.</string>

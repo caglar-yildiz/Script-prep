@@ -39,7 +39,12 @@ Read the play below and write down, in ${name}:
 - summary: what the play is about and how it develops, in 3-6 sentences.
 - characters: every character who speaks, with gender (female, male or unknown), age (child, young, adult, old or unknown) and a short description of who they are and their usual manner.
 - relationships: the important ties between characters (love, rivalry, fear, debt, secrets...), each in one sentence.
-- scenes: for every "## SCENE:" heading, in order, the exact heading text as scene, what happens in it (2-4 sentences), and the state of mind of each character who speaks in it, especially pressure, fear, anger, guilt or lies the lines themselves do not state. If the play has no headings, return one scene with an empty scene name.
+- scenes: for every "## SCENE:" heading, in order:
+  - scene: the exact heading text;
+  - summary: what happens in it (2-4 sentences);
+  - atmosphere: what everyone in it shares and carries into every line, whether or not anyone says so: the hour, tiredness, fear, grief, suspicion, what has just happened (1-2 sentences);
+  - moods: the state of mind of each character who speaks in it under that atmosphere, especially pressure, fear, exhaustion, anger, guilt or lies the lines themselves do not state. A character who stays composed still feels the atmosphere: say what it costs them.
+  If the play has no headings, return one scene with an empty scene name.
 ${request.title ? `Play: ${request.title}\n` : ""}
 PLAY:
 ${request.play}`;
@@ -72,12 +77,13 @@ export const ANALYSIS_SCHEMA = {
         properties: {
           scene: text,
           summary: text,
+          atmosphere: text,
           moods: {
             type: "array",
             items: { type: "object", properties: { role: text, mood: text }, required: ["role", "mood"] },
           },
         },
-        required: ["scene", "summary", "moods"],
+        required: ["scene", "summary", "atmosphere", "moods"],
       },
     },
   },
@@ -88,7 +94,7 @@ export interface Analysis {
   summary: string;
   characters: { role: string; gender: string; age: string; description: string }[];
   relationships: string[];
-  scenes: { scene: string; summary: string; moods: { role: string; mood: string }[] }[];
+  scenes: { scene: string; summary: string; atmosphere: string; moods: { role: string; mood: string }[] }[];
 }
 
 function clean(value: unknown, max: number): string {
@@ -115,6 +121,7 @@ export function normalizeAnalysis(answer: unknown): Analysis {
     scenes: list(input.scenes, 300).map((s) => ({
       scene: clean(s.scene, 200),
       summary: clean(s.summary, 800),
+      atmosphere: clean(s.atmosphere, 500),
       moods: list(s.moods, 30).map((m) => ({ role: clean(m.role, 60), mood: clean(m.mood, 300) }))
         .filter((m) => m.role && m.mood),
     })),
