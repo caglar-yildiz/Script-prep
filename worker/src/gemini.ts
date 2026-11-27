@@ -56,10 +56,13 @@ async function send(models: string[], request: (model: string) => { path: string
       const text = await response.text();
       if (response.status === 429 && isDailyLimit(text)) {
         // This model is done for the day; the next one has its own quota.
-        last = new UpstreamError("Daily limit reached", 429, 3600);
+        // Google's message names the quota; it is logged so a limit can be told from another.
+        console.error(`${model}: ${text.slice(0, 600)}`);
+        last = new UpstreamError(`Daily limit reached: ${quotaName(text)}`, 429, 3600);
         break;
       }
       if (response.status === 429 || response.status >= 500) {
+        console.error(`${model} busy: ${response.status} ${text.slice(0, 300)}`);
         last = new UpstreamError(`Model busy (${response.status})`, 503, 30);
         await sleep(500 * 3 ** attempt);
         continue;
@@ -82,4 +85,11 @@ export async function answerText(response: Response): Promise<string> {
     throw new UpstreamError("Empty answer", 502);
   }
   return text;
+}
+
+/** The quota a 429 answer names, such as "generate_requests_per_model_per_day, limit: 100". */
+function quotaName(body: string): string {
+  const metric = /metric: ([\w./-]+)/.exec(body)?.[1] ?? "";
+  const limit = /limit: (\d+)/.exec(body)?.[1] ?? "";
+  return [metric.split("/").pop(), limit && `limit ${limit}`].filter(Boolean).join(", ") || body.slice(0, 160);
 }
