@@ -1,9 +1,15 @@
 /** Calls Gemini with retries on overload and a fallback model when one stays busy. */
 
 const BASE = "https://generativelanguage.googleapis.com/v1beta/";
+const VERTEX = "https://aiplatform.googleapis.com/v1/projects/";
 
 export const DIRECTOR_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
 export const VOICE_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
+/**
+ * The same voices through Google Cloud (Vertex AI), billed to the Cloud account. They have no daily
+ * request cap like the Gemini API's (120 requests in a row passed on CI), so they come first.
+ */
+export const VERTEX_VOICE_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
 /**
  * Older speech models, each with a daily quota of its own, used when the ones above are used up
  * for the day. They take no speech_metadata, so the delivery is written before the line.
@@ -33,7 +39,22 @@ function isDailyLimit(body: string): boolean {
  */
 export async function generate(models: string[], body: unknown, apiKey: string, fetcher: Fetcher = fetch,
   sleep: Sleeper = wait): Promise<Response> {
-  return send(models, (model) => ({ path: `models/${model}:generateContent`, body }), apiKey, fetcher, sleep);
+  return send(models, (model) => ({ url: `${BASE}models/${model}:generateContent`, headers: keyHeader(apiKey), body }),
+    fetcher, sleep);
+}
+
+/** generateContent through Google Cloud (Vertex AI) in the global location, with an OAuth token. */
+export async function vertexGenerate(models: string[], body: unknown, project: string, token: string,
+  fetcher: Fetcher = fetch, sleep: Sleeper = wait): Promise<Response> {
+  return send(models, (model) => ({
+    url: `${VERTEX}${project}/locations/global/publishers/google/models/${model}:generateContent`,
+    headers: { Authorization: `Bearer ${token}` },
+    body,
+  }), fetcher, sleep);
+}
+
+function keyHeader(apiKey: string): Record<string, string> {
+  return { "X-goog-api-key": apiKey };
 }
 
 /**
@@ -42,18 +63,25 @@ export async function generate(models: string[], body: unknown, apiKey: string, 
  */
 export async function interact(models: string[], body: (model: string) => unknown, apiKey: string,
   fetcher: Fetcher = fetch, sleep: Sleeper = wait): Promise<Response> {
-  return send(models, (model) => ({ path: "interactions", body: body(model) }), apiKey, fetcher, sleep);
+  return send(models, (model) => ({ url: `${BASE}interactions`, headers: keyHeader(apiKey), body: body(model) }),
+    fetcher, sleep);
 }
 
-async function send(models: string[], request: (model: string) => { path: string; body: unknown }, apiKey: string,
-  fetcher: Fetcher, sleep: Sleeper): Promise<Response> {
+interface Call {
+  url: string;
+  headers: Record<string, string>;
+  body: unknown;
+}
+
+async function send(models: string[], request: (model: string) => Call, fetcher: Fetcher,
+  sleep: Sleeper): Promise<Response> {
   let last: UpstreamError = new UpstreamError("No model answered", 503);
   for (const model of models) {
     for (let attempt = 0; attempt < 3; attempt++) {
-      const { path, body } = request(model);
-      const response = await fetcher(BASE + path, {
+      const { url, headers, body } = request(model);
+      const response = await fetcher(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
+        headers: { "Content-Type": "application/json", ...headers },
         body: JSON.stringify(body),
       });
       if (response.ok) {

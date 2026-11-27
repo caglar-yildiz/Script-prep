@@ -3,6 +3,7 @@ import { AuthError, verifyIdToken } from "../src/auth";
 import { directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { generate, UpstreamError } from "../src/gemini";
 import { legacyPrompt, parseSpeakRequest, voiceInput } from "../src/speak";
+import { accessToken, forgetToken, parseServiceAccount, signedAssertion } from "../src/vertex";
 
 const PROJECT = "memo-70a45";
 
@@ -159,5 +160,50 @@ describe("Gemini calls", () => {
     };
     await expect(generate(["a"], {}, "key", fetcher, noWait)).rejects.toBeInstanceOf(UpstreamError);
     expect(count).toBe(1);
+  });
+});
+
+describe("Google Cloud service account", () => {
+  async function account() {
+    const pair = (await crypto.subtle.generateKey(
+      { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+      true, ["sign", "verify"])) as CryptoKeyPair;
+    const der = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey) as ArrayBuffer);
+    let binary = "";
+    der.forEach((b) => (binary += String.fromCharCode(b)));
+    const pem = `-----BEGIN PRIVATE KEY-----\n${btoa(binary).replace(/(.{64})/g, "$1\n")}\n-----END PRIVATE KEY-----\n`;
+    const json = JSON.stringify({ client_email: "studio@p.iam.gserviceaccount.com", private_key: pem, project_id: "p" });
+    return { json, publicKey: pair.publicKey };
+  }
+
+  it("reads the key file and refuses anything else", async () => {
+    expect(parseServiceAccount((await account()).json)?.project_id).toBe("p");
+    expect(parseServiceAccount(undefined)).toBeNull();
+    expect(parseServiceAccount("{not json")).toBeNull();
+    expect(parseServiceAccount(JSON.stringify({ client_email: "a" }))).toBeNull();
+  });
+
+  it("signs a token request Google can check", async () => {
+    const { json, publicKey } = await account();
+    const jwt = await signedAssertion(parseServiceAccount(json)!, now);
+    const [head, claims, signature] = jwt.split(".");
+    const decode = (part: string) => Uint8Array.from(atob(part.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+    expect(await crypto.subtle.verify("RSASSA-PKCS1-v1_5", publicKey, decode(signature),
+      new TextEncoder().encode(`${head}.${claims}`))).toBe(true);
+    expect(JSON.parse(new TextDecoder().decode(decode(claims)))).toMatchObject({
+      iss: "studio@p.iam.gserviceaccount.com", aud: "https://oauth2.googleapis.com/token", exp: now + 3600 });
+  });
+
+  it("keeps the access token until it nearly expires", async () => {
+    forgetToken();
+    const service = parseServiceAccount((await account()).json)!;
+    let calls = 0;
+    const fetcher = async () => {
+      calls++;
+      return new Response(JSON.stringify({ access_token: `t${calls}`, expires_in: 3600 }), { status: 200 });
+    };
+    expect(await accessToken(service, fetcher, now)).toBe("t1");
+    expect(await accessToken(service, fetcher, now + 3000)).toBe("t1");
+    expect(await accessToken(service, fetcher, now + 3500)).toBe("t2");
   });
 });

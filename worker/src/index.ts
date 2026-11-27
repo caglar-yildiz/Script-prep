@@ -3,20 +3,24 @@
  * token; this Worker checks the user and their monthly allowance, asks Gemini and answers.
  *
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
- *   POST /v1/speak   one noted line -> Gemini's interaction, whose steps hold the line as base64 WAV
- *                                      (or, from an older model, candidates with base64 PCM)
+ *   POST /v1/speak   one noted line -> Gemini's answer: candidates with base64 WAV (Google Cloud) or
+ *                                      PCM (older voices), or an interaction whose steps hold WAV
  *   GET  /v1/usage                  -> this month's counts and limits
  */
 import { AuthError, verifyIdToken } from "./auth";
 import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
-import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VOICE_MODELS } from "./gemini";
+import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
+  vertexGenerate, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
-import { legacyPrompt, parseSpeakRequest, voiceInput } from "./speak";
+import { legacyPrompt, parseSpeakRequest, SpeakRequest, VoiceInput, voiceInput } from "./speak";
+import { accessToken, parseServiceAccount } from "./vertex";
 
 export { Quota };
 
 export interface Env {
   GEMINI_API_KEY: string;
+  /** A Google Cloud service account's JSON key (role Vertex AI User); optional. */
+  GCP_SERVICE_ACCOUNT_JSON?: string;
   FIREBASE_PROJECT_ID: string;
   MONTHLY_DIRECTED_LINES: string;
   MONTHLY_SPOKEN_LINES: string;
@@ -106,10 +110,31 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
   if (!allowance.allowed) {
     return problem(429, "monthly_limit", "Monthly limit for studio voices reached", 86_400);
   }
-  const input = voiceInput(line);
-  let response: Response;
+  const response = await voice(line, voiceInput(line), env);
+  await quota.add("spoken", 1);
+  // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
+  return new Response(response.body, { headers: { "Content-Type": "application/json; charset=utf-8" } });
+}
+
+/**
+ * The line's audio: first through Google Cloud, which has no daily request cap; then the Gemini
+ * API's 3.8 voices; then, when those are used up for the day, its older voices.
+ */
+async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<Response> {
+  const speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } };
+  const account = parseServiceAccount(env.GCP_SERVICE_ACCOUNT_JSON);
+  if (account) {
+    try {
+      return await vertexGenerate(VERTEX_VOICE_MODELS, {
+        contents: [{ role: "user", parts: [{ text: input.text, speechMetadata: { style: input.style } }] }],
+        generationConfig: { responseModalities: ["AUDIO"], speechConfig },
+      }, account.project_id, await accessToken(account));
+    } catch (error) {
+      console.error("Google Cloud voice failed, using the Gemini API", error);
+    }
+  }
   try {
-    response = await interact(VOICE_MODELS, (model) => ({
+    return await interact(VOICE_MODELS, (model) => ({
       model,
       input: [{ type: "user_input", content: [{ type: "text", text: input.text,
         annotations: [{ type: "speech_metadata", style: input.style }] }] }],
@@ -122,15 +147,11 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
     }
     // The newer voices are used up for today: older ones answer in generateContent's form
     // (candidates with raw PCM), which the apps read as well.
-    response = await generate(LEGACY_VOICE_MODELS, {
+    return generate(LEGACY_VOICE_MODELS, {
       contents: [{ parts: [{ text: legacyPrompt(input) }] }],
-      generationConfig: { responseModalities: ["AUDIO"],
-        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } } },
+      generationConfig: { responseModalities: ["AUDIO"], speechConfig },
     }, env.GEMINI_API_KEY);
   }
-  await quota.add("spoken", 1);
-  // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
-  return new Response(response.body, { headers: { "Content-Type": "application/json; charset=utf-8" } });
 }
 
 export default {

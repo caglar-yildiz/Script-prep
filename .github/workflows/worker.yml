@@ -5,6 +5,8 @@ name: Studio voice worker
 #   CLOUDFLARE_API_TOKEN   token with the "Edit Cloudflare Workers" template
 #   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account
 #   GEMINI_API_KEY         stored in the Worker as a secret, never in the apps
+#   GCP_SERVICE_ACCOUNT_JSON  JSON key of a Google Cloud service account with the Vertex AI User
+#                          role; the Worker voices lines through Google Cloud with it
 
 on:
   push:
@@ -44,6 +46,7 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -51,3 +54,4 @@ jobs:
           wranglerVersion: '4.168.0'
           secrets: |
             GEMINI_API_KEY
+            GCP_SERVICE_ACCOUNT_JSON
