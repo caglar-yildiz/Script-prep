@@ -8,7 +8,7 @@ name: Studio voice worker
 
 on:
   push:
-    branches: [main, ccr-5eb10d38-qkeayr]
+    branches: [main, feature/gemini-studio-voices]
     paths:
       - '.github/workflows/worker.yml'
       - 'worker/**'

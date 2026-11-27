@@ -5,7 +5,7 @@ name: Studio sample voices
 
 on:
   push:
-    branches: [ccr-5eb10d38-qkeayr]
+    branches: [feature/gemini-studio-voices]
     paths:
       - '.github/workflows/studio-sample.yml'
       - 'worker/scripts/**'
