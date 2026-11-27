@@ -251,3 +251,21 @@ export function normalizeDirections(request: DirectRequest, answer: unknown): Di
     };
   });
 }
+
+/** A short question for the characters' genders alone, asked before the cast is chosen. */
+export function castPrompt(request: DirectRequest): string {
+  const scene = request.lines.map((line) => {
+    const directions = line.notes.map((n) => (/^[([]/.test(n) ? ` ${n}` : ` (${n})`)).join("");
+    return `${line.role}: ${line.text}${directions}`;
+  }).join("\n");
+  return `For every character who speaks in this scene of a ${LANGUAGE_NAMES[request.language]} play, give their likely gender from the name, the lines, how others address them and the stage directions: female, male, or unknown when it cannot be told.
+${request.title ? `Play: ${request.title}\n` : ""}
+SCENE:
+${scene}`;
+}
+
+export const CAST_SCHEMA = {
+  type: "object",
+  properties: { cast: DIRECTION_SCHEMA.properties.cast },
+  required: ["cast"],
+};

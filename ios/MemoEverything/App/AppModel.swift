@@ -160,6 +160,9 @@ final class AppModel: ObservableObject {
     @Published var playbackFailed = false
     @Published var aiSpeaking = false
     @Published var recordingSpeaking = false
+    /// The character voices screen was opened to check the cast before studio voices are prepared.
+    @Published var castCheck = false
+    @Published var guessingCast = false
     /// Whether the line being read now is a studio voice recording.
     @Published var studioSpeaking = false
     private var recordingPlayer: AVAudioPlayer?
@@ -297,6 +300,9 @@ final class AppModel: ObservableObject {
     // MARK: - Navigation
 
     func show(_ target: Screen) {
+        if target != .voices {
+            castCheck = false
+        }
         if target == .home || target == .categories {
             // Leaving the text creation screens: a text made later is not for the cast.
             shareAfterSave = false
@@ -1761,6 +1767,40 @@ final class AppModel: ObservableObject {
             return 0
         }
         return studio.running ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
+    }
+
+    private var castConfirmedKey: String {
+        "studio_cast_confirmed_" + castKey
+    }
+
+    /// Preparing studio voices starts on the character voices screen: each voice is fixed once
+    /// prepared, so the user first checks that women and men have voices of their gender. The
+    /// director's gender guesses fill in the cast while the screen opens.
+    func startStudio() {
+        guard let fullScene else {
+            return
+        }
+        if defaults.bool(forKey: castConfirmedKey) {
+            confirmStudio()
+            return
+        }
+        if !studio.knowsGenders(fullScene.roles) && !guessingCast {
+            guessingCast = true
+            studio.guessGenders(fullScene, language, title: scriptTitle) {
+                self.guessingCast = false
+                self.objectWillChange.send()
+            }
+        }
+        show(.voices)
+        castCheck = true
+    }
+
+    /// Keeps the checked cast, so later guesses cannot change a voice, and goes on to prepare.
+    func confirmCastAndPrepare() {
+        saveCast(currentCast())
+        defaults.set(true, forKey: castConfirmedKey)
+        show(.setup)
+        confirmStudio()
     }
 
     func confirmStudio() {

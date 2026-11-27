@@ -557,6 +557,10 @@
     <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
     <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>
     <string name="cast_intro_studio">Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.</string>
+    <string name="cast_check_title">Vérifie d’abord les voix</string>
+    <string name="cast_check_body">Les voix studio gardent la voix que chaque personnage a maintenant. Vérifie que les femmes et les hommes ont des voix de leur genre, puis prépare-les.</string>
+    <string name="cast_check_guessing">Le metteur en scène lit la scène pour savoir le genre des personnages…</string>
+    <string name="cast_check_confirm">Confirmer et préparer</string>
     <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Ferme</item>

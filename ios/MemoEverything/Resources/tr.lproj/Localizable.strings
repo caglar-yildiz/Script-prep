@@ -66,6 +66,10 @@
 "billing_unavailable" = "Planlar yüklenemedi. App Store’da oturum açtığından ve internete bağlı olduğundan emin ol.";
 "cancel" = "İptal";
 "cast_auto" = "Otomatik dağıt";
+"cast_check_body" = "Stüdyo sesleri her karakterin şu anki sesiyle hazırlanır. Kadın ve erkek karakterlerin kendi cinsiyetlerine uygun sesleri olduğundan emin ol, sonra hazırla.";
+"cast_check_confirm" = "Onayla ve hazırla";
+"cast_check_guessing" = "Yönetmen karakterlerin cinsiyetini anlamak için sahneyi okuyor…";
+"cast_check_title" = "Önce sesleri kontrol et";
 "cast_intro" = "Her karakter için ses, ton ve hız seç. Yüklü sesler çevrimdışı çalışır; çevrimiçi sesler internet bağlantısı ister.";
 "cast_intro_ai" = "Her karakter için 10 yapay zekâ sesinden birini ve hızını seç. Dinlemek için oynat düğmesine dokun.";
 "cast_intro_studio" = "Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.";

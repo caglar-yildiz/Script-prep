@@ -66,6 +66,10 @@
 "billing_unavailable" = "Impossible de charger les offres. Vérifie que tu es connecté à l’App Store et à Internet.";
 "cancel" = "Annuler";
 "cast_auto" = "Attribuer automatiquement";
+"cast_check_body" = "Les voix studio gardent la voix que chaque personnage a maintenant. Vérifie que les femmes et les hommes ont des voix de leur genre, puis prépare-les.";
+"cast_check_confirm" = "Confirmer et préparer";
+"cast_check_guessing" = "Le metteur en scène lit la scène pour savoir le genre des personnages…";
+"cast_check_title" = "Vérifie d’abord les voix";
 "cast_intro" = "Choisis une voix, un ton et un débit pour chaque personnage. Les voix installées fonctionnent hors ligne ; les voix en ligne ont besoin d’Internet.";
 "cast_intro_ai" = "Choisis l’une des 10 voix IA et un débit pour chaque personnage. Touche lire pour les écouter.";
 "cast_intro_studio" = "Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.";

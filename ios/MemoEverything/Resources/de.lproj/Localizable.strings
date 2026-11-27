@@ -66,6 +66,10 @@
 "billing_unavailable" = "Die Tarife konnten nicht geladen werden. Prüfe, ob du im App Store angemeldet und online bist.";
 "cancel" = "Abbrechen";
 "cast_auto" = "Automatisch verteilen";
+"cast_check_body" = "Die Studiostimmen behalten die Stimme, die jede Figur jetzt hat. Achte darauf, dass Frauen und Männer passende Stimmen haben, dann bereite sie vor.";
+"cast_check_confirm" = "Bestätigen und vorbereiten";
+"cast_check_guessing" = "Die Regie liest die Szene, um das Geschlecht der Figuren zu erkennen …";
+"cast_check_title" = "Prüfe zuerst die Stimmen";
 "cast_intro" = "Wähle für jede Figur Stimme, Tonlage und Tempo. Installierte Stimmen funktionieren offline, Online-Stimmen brauchen eine Internetverbindung.";
 "cast_intro_ai" = "Wähle für jede Figur eine der 10 KI-Stimmen und ein Tempo. Tippe auf Abspielen, um sie zu hören.";
 "cast_intro_studio" = "Wähle für jede Figur eine Studiostimme. Tempo und Stimmung jeder Replik bestimmt die Regie. Tippe auf Abspielen, um sie zu hören.";

@@ -66,6 +66,10 @@
 "billing_unavailable" = "Impossibile caricare i piani. Controlla di aver effettuato l’accesso all’App Store e di essere online.";
 "cancel" = "Annulla";
 "cast_auto" = "Assegna automaticamente";
+"cast_check_body" = "Le voci da studio mantengono la voce che ogni personaggio ha ora. Assicurati che donne e uomini abbiano voci del loro genere, poi preparale.";
+"cast_check_confirm" = "Conferma e prepara";
+"cast_check_guessing" = "Il regista sta leggendo la scena per capire il genere dei personaggi…";
+"cast_check_title" = "Controlla prima le voci";
 "cast_intro" = "Scegli voce, tono e ritmo per ogni personaggio. Le voci installate funzionano offline; quelle online richiedono una connessione a internet.";
 "cast_intro_ai" = "Scegli una delle 10 voci IA e un ritmo per ogni personaggio. Tocca riproduci per ascoltarle.";
 "cast_intro_studio" = "Scegli una voce da studio per ogni personaggio. Il regista decide ritmo e tono di ogni battuta. Tocca riproduci per ascoltarle.";

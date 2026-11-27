@@ -271,7 +271,7 @@ struct VoiceRows: View {
             } else if done < total {
                 ListRow(icon: "ic_star", title: L("studio_prepare"),
                         value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
-                        action: model.confirmStudio)
+                        action: model.startStudio)
                 RowDivider()
             }
         }
@@ -646,6 +646,14 @@ struct VoicesScreen: View {
                 BarAction(icon: "ic_replay", label: "cast_auto", action: model.resetCast)
             }
         }, content: {
+            if model.castCheck && studioCast {
+                Card(color: Palette.accentContainer, stroke: Palette.accent.opacity(0.25)) {
+                    Styled(L("cast_check_title"), .subtitle, Palette.onAccentContainer)
+                    Styled(L(model.guessingCast ? "cast_check_guessing" : "cast_check_body"), .body,
+                           Palette.onAccentContainer).padding(.top, 4)
+                }
+                .padding(.top, 8)
+            }
             Styled(L(studioCast ? "cast_intro_studio" : ai ? "cast_intro_ai" : "cast_intro"), .body, Palette.textSecondary)
                 .padding(.top, 8)
             if !studioCast && !ai && !model.deviceVoiceAvailable(model.language) {
@@ -656,6 +664,15 @@ struct VoicesScreen: View {
                     if let part = cast[character] {
                         characterCard(character, part, ai: ai, studio: studioCast).padding(.top, 12)
                     }
+                }
+            }
+        }, footer: {
+            if model.castCheck && studioCast {
+                FooterBar {
+                    MemoButton(L("cast_check_confirm"), icon: "ic_check", kind: .primary, fill: true, height: 56,
+                               action: model.confirmCastAndPrepare)
+                        .disabled(model.guessingCast)
+                        .opacity(model.guessingCast ? 0.5 : 1)
                 }
             }
         })

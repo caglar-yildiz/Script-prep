@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AuthError, verifyIdToken } from "../src/auth";
-import { directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
+import { castPrompt, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { generate, UpstreamError } from "../src/gemini";
 import { legacyPrompt, parseSpeakRequest, voiceInput } from "../src/speak";
 import { accessToken, forgetToken, parseServiceAccount, signedAssertion } from "../src/vertex";
@@ -88,6 +88,11 @@ describe("director", () => {
       { role: "AYŞE", gender: "male" },
     ] })).toEqual([{ role: "AYŞE", gender: "female" }, { role: "MEHMET", gender: "unknown" }]);
     expect(normalizeCast(scene, {})).toEqual([]);
+  });
+
+  it("asks for the genders with the lines and their directions", () => {
+    expect(castPrompt(scene)).toContain("AYŞE: Sen yorgunsun! Ben üç saattir bekliyorum! (bağırarak)");
+    expect(castPrompt(scene)).toContain("female, male, or unknown");
   });
 
   it("takes a short script id, or one shared bucket without one", () => {

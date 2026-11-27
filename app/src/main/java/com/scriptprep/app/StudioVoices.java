@@ -271,6 +271,54 @@ final class StudioVoices {
         return genders;
     }
 
+    /** Whether the director has given a gender for every character. */
+    synchronized boolean knowsGenders(List<String> roles) {
+        return genders(roles).size() >= roles.size();
+    }
+
+    /**
+     * Asks the director for the characters' likely genders before the cast is chosen, so women and
+     * men start with voices of their gender. Quiet on failure: the cast screen works without it.
+     */
+    void guessGenders(Scene scene, ScriptLanguage language, String title, Runnable done) {
+        if (!running) {
+            cancelled = false;
+        }
+        worker.execute(() -> {
+            try {
+                // The opening of the scene, within the Worker's size limits, is enough to tell.
+                JSONArray lines = new JSONArray();
+                int count = 0;
+                int characters = 0;
+                for (Scene.Line line : scene.lines) {
+                    if (count++ >= 80 || characters > 12_000) {
+                        break;
+                    }
+                    characters += Math.min(line.text.length(), 400);
+                    JSONArray notes = new JSONArray();
+                    for (String note : line.notes) {
+                        notes.put(note.length() > 300 ? note.substring(0, 300) : note);
+                    }
+                    String text = line.text.length() > 400 ? line.text.substring(0, 400) : line.text;
+                    lines.put(new JSONObject().put("role", line.role).put("text", text).put("notes", notes));
+                }
+                JSONObject body = new JSONObject().put("language", language.code).put("title", title).put("lines", lines);
+                JSONObject answer = new JSONObject(new String(post("/v1/cast", body), StandardCharsets.UTF_8));
+                JSONArray cast = answer.optJSONArray("cast");
+                synchronized (this) {
+                    for (int i = 0; cast != null && i < cast.length(); i++) {
+                        JSONObject member = cast.getJSONObject(i);
+                        putGender(member.optString("role"), member.optString("gender"));
+                    }
+                    saveNotes();
+                }
+            } catch (IOException | JSONException | RuntimeException error) {
+                Log.w(TAG, "Genders could not be guessed", error);
+            }
+            main.post(done);
+        });
+    }
+
     private static String genderKey(String role) {
         return "gender:" + role.trim().toLowerCase(Locale.ROOT);
     }

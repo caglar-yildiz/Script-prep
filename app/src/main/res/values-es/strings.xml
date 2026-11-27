@@ -557,6 +557,10 @@
     <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
     <string name="studio_script_limit">Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.</string>
     <string name="cast_intro_studio">Elige una voz de estudio para cada personaje. El director marca el ritmo y el tono de cada frase. Toca reproducir para oírlas.</string>
+    <string name="cast_check_title">Revisa primero las voces</string>
+    <string name="cast_check_body">Las voces de estudio mantienen la voz que tiene ahora cada personaje. Asegúrate de que mujeres y hombres tengan voces de su género y luego prepáralas.</string>
+    <string name="cast_check_guessing">El director está leyendo la escena para saber el género de los personajes…</string>
+    <string name="cast_check_confirm">Confirmar y preparar</string>
     <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>

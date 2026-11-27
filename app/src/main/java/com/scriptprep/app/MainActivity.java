@@ -158,6 +158,12 @@ public final class MainActivity extends Activity {
     private String scrollViewKey;
     /** Download progress labels and bars, updated in place so the screen is not redrawn. */
     private final List<TextView> downloadLabels = new ArrayList<>();
+    /** Studio progress texts on the setup screen, updated in place while lines are prepared. */
+    private final List<TextView> studioEngineLabels = new ArrayList<>();
+    private final List<TextView> studioProgressLabels = new ArrayList<>();
+    /** The character voices screen was opened to check the cast before studio voices are prepared. */
+    private boolean castCheck;
+    private boolean guessingCast;
     private final List<LinearLayout> downloadBars = new ArrayList<>();
 
     private TextToSpeech speech;
@@ -986,6 +992,9 @@ public final class MainActivity extends Activity {
             reviewBase = null;
             scene = fullScene.forSection(sectionIndex);
         }
+        if (target != Screen.VOICES) {
+            castCheck = false;
+        }
         screen = target;
         render();
     }
@@ -1050,6 +1059,8 @@ public final class MainActivity extends Activity {
         titleField = null;
         editor = null;
         downloadLabels.clear();
+        studioEngineLabels.clear();
+        studioProgressLabels.clear();
         downloadBars.clear();
         snackbarView = null;
         switch (screen) {
@@ -4134,6 +4145,20 @@ public final class MainActivity extends Activity {
         // One voice reads the lines, so only its choices are shown: studio, AI or device voices.
         boolean studioCast = studioCastShown();
         boolean ai = !studioCast && useAiVoice();
+        if (castCheck && studioCast) {
+            LinearLayout check = ui.card(ACCENT_CONTAINER, null);
+            check.setPadding(ui.dp(16), ui.dp(14), ui.dp(16), ui.dp(14));
+            check.addView(ui.text(getString(R.string.cast_check_title), Type.SUBTITLE, ON_ACCENT_CONTAINER));
+            check.addView(ui.text(getString(guessingCast ? R.string.cast_check_guessing : R.string.cast_check_body),
+                Type.BODY, ON_ACCENT_CONTAINER), ui.spaced(4));
+            content.addView(check, ui.spaced(8));
+            LinearLayout actions = footerBar();
+            LinearLayout confirm = ui.button(getString(R.string.cast_check_confirm), R.drawable.ic_check, Kind.PRIMARY,
+                view -> confirmCastAndPrepare());
+            confirm.setEnabled(!guessingCast);
+            confirm.setAlpha(guessingCast ? 0.5f : 1f);
+            actions.addView(confirm, Ui.matchWidth());
+        }
         content.addView(ui.text(getString(studioCast ? R.string.cast_intro_studio : ai ? R.string.cast_intro_ai
             : R.string.cast_intro), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
         if (!studioCast && !ai && speechState != SpeechState.READY) {
@@ -4426,8 +4451,12 @@ public final class MainActivity extends Activity {
                 : scriptId == null && done > 0 ? getString(R.string.studio_sample)
                 : getString(R.string.voice_engine_studio_detail));
         };
-        extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.voice_engine_title), value,
-            view -> chooseVoiceEngine()), Ui.matchWidth());
+        LinearLayout engineRow = ui.listRow(R.drawable.ic_star, getString(R.string.voice_engine_title), value,
+            view -> chooseVoiceEngine());
+        if (engine == Engine.STUDIO && premium() && category.hasRoles()) {
+            studioEngineLabels.add(rowDetail(engineRow));
+        }
+        extras.addView(engineRow, Ui.matchWidth());
         extras.addView(ui.divider(70));
         if (engine == Engine.AI && premium() && NeuralVoice.isSupported()
             && neural.state() != NeuralVoice.State.INSTALLED && neural.state() != NeuralVoice.State.LOADING
@@ -4447,16 +4476,73 @@ public final class MainActivity extends Activity {
             return;
         }
         if (studio.isRunning()) {
-            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+            LinearLayout progressRow = ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
                 getString(R.string.studio_progress, done, total),
-                ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null), Ui.matchWidth());
+                ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null);
+            studioProgressLabels.add(rowDetail(progressRow));
+            extras.addView(progressRow, Ui.matchWidth());
             extras.addView(ui.divider(70));
         } else if (done < total) {
             String detail = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
             extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare),
-                detail + "\n" + getString(R.string.studio_allowance), view -> confirmStudio()), Ui.matchWidth());
+                detail + "\n" + getString(R.string.studio_allowance), view -> startStudio()), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
+    }
+
+    /** The value text of a list row, to change it without drawing the screen again. */
+    private static TextView rowDetail(LinearLayout row) {
+        LinearLayout labels = (LinearLayout) row.getChildAt(1);
+        return (TextView) labels.getChildAt(labels.getChildCount() - 1);
+    }
+
+    /** Shows how many lines are ready without redrawing the setup screen, which would flicker. */
+    private void updateStudioProgress(int done, int total) {
+        for (TextView label : studioEngineLabels) {
+            label.setText(getString(R.string.studio_title) + "\n" + getString(R.string.studio_ready, done, total));
+        }
+        for (TextView label : studioProgressLabels) {
+            label.setText(getString(R.string.studio_progress, done, total));
+        }
+    }
+
+    private String castConfirmedKey() {
+        return "studio_cast_confirmed_" + castKey();
+    }
+
+    /**
+     * Preparing studio voices starts on the character voices screen: each voice is fixed once
+     * prepared, so the user first checks that women and men have voices of their gender. The
+     * director's gender guesses fill in the cast while the screen opens.
+     */
+    private void startStudio() {
+        if (fullScene == null) {
+            return;
+        }
+        if (preferences.getBoolean(castConfirmedKey(), false)) {
+            confirmStudio();
+            return;
+        }
+        if (!studio.knowsGenders(fullScene.roles) && !guessingCast) {
+            guessingCast = true;
+            studio.guessGenders(fullScene, language, scriptTitle, () -> {
+                guessingCast = false;
+                if (screen == Screen.VOICES && !isDestroyed()) {
+                    render();
+                }
+            });
+        }
+        show(Screen.VOICES);
+        castCheck = true;
+        render();
+    }
+
+    /** Keeps the checked cast, so later guesses cannot change a voice, and goes on to prepare. */
+    private void confirmCastAndPrepare() {
+        VoiceCast.save(preferences, castKey(), currentCast());
+        preferences.edit().putBoolean(castConfirmedKey(), true).apply();
+        show(Screen.SETUP);
+        confirmStudio();
     }
 
     private void chooseVoiceEngine() {
@@ -4527,7 +4613,7 @@ public final class MainActivity extends Activity {
             public void progress(int done, int total) {
                 studioDone = done;
                 if (screen == Screen.SETUP && !isDestroyed()) {
-                    render();
+                    updateStudioProgress(done, total);
                 }
             }
 

@@ -10,7 +10,7 @@ name: Studio voice worker
 
 on:
   push:
-    branches: [main, feature/gemini-studio-voices]
+    branches: [main, fix/studio-cast-check-and-progress]
     paths:
       - '.github/workflows/worker.yml'
       - 'worker/**'

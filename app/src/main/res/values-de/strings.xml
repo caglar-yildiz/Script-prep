@@ -543,6 +543,10 @@
     <string name="studio_allowance">Studiostimmen lassen sich für 2 Texte im Monat vorbereiten.</string>
     <string name="studio_script_limit">Du hast die 2 Texte dieses Monats für Studiostimmen genutzt. Vorbereitete Texte spielen weiter; neue gehen nächsten Monat.</string>
     <string name="cast_intro_studio">Wähle für jede Figur eine Studiostimme. Tempo und Stimmung jeder Replik bestimmt die Regie. Tippe auf Abspielen, um sie zu hören.</string>
+    <string name="cast_check_title">Prüfe zuerst die Stimmen</string>
+    <string name="cast_check_body">Die Studiostimmen behalten die Stimme, die jede Figur jetzt hat. Achte darauf, dass Frauen und Männer passende Stimmen haben, dann bereite sie vor.</string>
+    <string name="cast_check_guessing">Die Regie liest die Szene, um das Geschlecht der Figuren zu erkennen …</string>
+    <string name="cast_check_confirm">Bestätigen und vorbereiten</string>
     <string name="cast_studio_voice_for">Studiostimme für %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Bestimmt</item>
