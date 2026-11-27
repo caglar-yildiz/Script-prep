@@ -604,5 +604,6 @@
     <string name="studio_playing">La voz de estudio está leyendo la frase…</string>
     <string name="studio_daily_limit">Se alcanzó el límite diario de voces de estudio. Las frases preparadas se guardan; continúa mañana.</string>
     <string name="studio_monthly_limit">Se alcanzó el límite mensual de voces de estudio.</string>
-    <string name="studio_failed">No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="studio_failed">No se pudo seguir preparando las voces de estudio. Las frases ya preparadas se guardan; inténtalo de nuevo en un rato.</string>
+    <string name="studio_partial">%1$d frases no se pudieron grabar; las leen las otras voces. Prepara de nuevo las voces de estudio para reintentar solo esas.</string>
 </resources>

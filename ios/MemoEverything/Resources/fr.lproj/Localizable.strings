@@ -436,13 +436,14 @@
 "stop_line" = "Arrêter l’audio";
 "studio_allowance" = "Les voix studio peuvent être préparées pour 2 textes par mois.";
 "studio_daily_limit" = "La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.";
-"studio_failed" = "Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.";
+"studio_failed" = "Impossible de continuer à préparer les voix studio. Les répliques déjà prêtes sont gardées ; réessaie dans un moment.";
 "studio_monthly_limit" = "La limite mensuelle des voix studio est atteinte.";
 "studio_none" = "Non préparées · les autres voix lisent en attendant";
 "studio_notification_done" = "Les voix studio sont prêtes. Ouvre l’app pour répéter.";
 "studio_notification_title" = "Préparation des voix studio";
 "studio_off" = "Désactivé · les autres voix lisent les répliques";
 "studio_on" = "Les répliques du partenaire utilisent les voix studio";
+"studio_partial" = "%1$d répliques n’ont pas pu être enregistrées ; les autres voix les lisent. Prépare à nouveau les voix studio pour réessayer seulement celles-là.";
 "studio_playing" = "La voix studio lit la réplique…";
 "studio_prepare" = "Préparer les voix studio";
 "studio_privacy" = "Les répliques sont envoyées à Google Gemini pour préparer les voix. Chaque réplique est préparée une fois puis reste sur ce téléphone.";

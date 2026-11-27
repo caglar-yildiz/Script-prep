@@ -604,5 +604,6 @@
     <string name="studio_playing">A voz de estúdio está lendo a fala…</string>
     <string name="studio_daily_limit">O limite diário de vozes de estúdio foi atingido. As falas preparadas ficam guardadas; continue amanhã.</string>
     <string name="studio_monthly_limit">O limite mensal de vozes de estúdio foi atingido.</string>
-    <string name="studio_failed">Não foi possível preparar as vozes de estúdio. Verifique sua conexão e tente de novo.</string>
+    <string name="studio_failed">Não foi possível continuar preparando as vozes de estúdio. As falas prontas ficam guardadas; tente de novo daqui a pouco.</string>
+    <string name="studio_partial">%1$d falas não puderam ser gravadas; as outras vozes leem essas. Prepare as vozes de estúdio de novo para tentar só essas.</string>
 </resources>

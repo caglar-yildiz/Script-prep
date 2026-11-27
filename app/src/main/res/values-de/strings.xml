@@ -590,5 +590,6 @@
     <string name="studio_playing">Die Studiostimme liest den Satz…</string>
     <string name="studio_daily_limit">Das heutige Limit für Studiostimmen ist erreicht. Die vorbereiteten Sätze bleiben; mach morgen weiter.</string>
     <string name="studio_monthly_limit">Das Monatslimit für Studiostimmen ist erreicht.</string>
-    <string name="studio_failed">Die Studiostimmen konnten nicht vorbereitet werden. Prüfe deine Verbindung und versuche es erneut.</string>
+    <string name="studio_failed">Die Studiostimmen konnten nicht weiter vorbereitet werden. Fertige Repliken bleiben erhalten; versuch es gleich noch einmal.</string>
+    <string name="studio_partial">%1$d Repliken konnten nicht vertont werden; sie lesen die anderen Stimmen. Bereite die Studiostimmen erneut vor, um nur diese zu wiederholen.</string>
 </resources>

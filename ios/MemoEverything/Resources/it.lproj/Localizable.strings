@@ -436,13 +436,14 @@
 "stop_line" = "Ferma audio";
 "studio_allowance" = "Le voci da studio si possono preparare per 2 copioni al mese.";
 "studio_daily_limit" = "Il limite giornaliero delle voci da studio è stato raggiunto. Le battute preparate restano salvate; continua domani.";
-"studio_failed" = "Impossibile preparare le voci da studio. Controlla la connessione e riprova.";
+"studio_failed" = "Non è stato possibile continuare a preparare le voci da studio. Le battute già pronte restano; riprova tra poco.";
 "studio_monthly_limit" = "Il limite mensile delle voci da studio è stato raggiunto.";
 "studio_none" = "Non preparate · nel frattempo leggono le altre voci";
 "studio_notification_done" = "Le voci da studio sono pronte. Apri l’app per provare.";
 "studio_notification_title" = "Preparazione delle voci da studio";
 "studio_off" = "Disattivato · le altre voci leggono le battute";
 "studio_on" = "Le battute del partner usano le voci da studio";
+"studio_partial" = "%1$d battute non sono state registrate; le leggono le altre voci. Prepara di nuovo le voci da studio per riprovare solo quelle.";
 "studio_playing" = "La voce da studio sta leggendo la battuta…";
 "studio_prepare" = "Prepara le voci da studio";
 "studio_privacy" = "Le battute vengono inviate a Google Gemini per preparare le voci. Ogni battuta viene preparata una volta e poi resta su questo telefono.";

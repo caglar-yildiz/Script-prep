@@ -436,13 +436,14 @@
 "stop_line" = "Parar áudio";
 "studio_allowance" = "Dá para preparar vozes de estúdio para 2 roteiros por mês.";
 "studio_daily_limit" = "O limite diário de vozes de estúdio foi atingido. As falas preparadas ficam guardadas; continue amanhã.";
-"studio_failed" = "Não foi possível preparar as vozes de estúdio. Verifique sua conexão e tente de novo.";
+"studio_failed" = "Não foi possível continuar preparando as vozes de estúdio. As falas prontas ficam guardadas; tente de novo daqui a pouco.";
 "studio_monthly_limit" = "O limite mensal de vozes de estúdio foi atingido.";
 "studio_none" = "Não preparado · até lá as outras vozes leem";
 "studio_notification_done" = "As vozes de estúdio estão prontas. Abra o app para ensaiar.";
 "studio_notification_title" = "Preparando vozes de estúdio";
 "studio_off" = "Desativado · as outras vozes leem as falas";
 "studio_on" = "As falas do parceiro usam as vozes de estúdio";
+"studio_partial" = "%1$d falas não puderam ser gravadas; as outras vozes leem essas. Prepare as vozes de estúdio de novo para tentar só essas.";
 "studio_playing" = "A voz de estúdio está lendo a fala…";
 "studio_prepare" = "Preparar vozes de estúdio";
 "studio_privacy" = "As falas são enviadas ao Google Gemini para preparar as vozes. Cada fala é preparada uma vez e depois fica neste telefone.";

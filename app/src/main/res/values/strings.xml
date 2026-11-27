@@ -598,5 +598,6 @@
     <string name="studio_playing">The studio voice is reading the line…</string>
     <string name="studio_daily_limit">Today’s studio voice limit is reached. The prepared lines are kept; continue tomorrow.</string>
     <string name="studio_monthly_limit">This month’s studio voice limit is reached.</string>
-    <string name="studio_failed">Couldn’t prepare the studio voices. Check your connection and try again.</string>
+    <string name="studio_failed">Couldn’t go on preparing the studio voices. The lines already prepared are kept; try again in a little while.</string>
+    <string name="studio_partial">%1$d lines couldn’t be voiced; the other voices read them. Prepare the studio voices again to retry just those.</string>
 </resources>

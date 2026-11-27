@@ -4756,6 +4756,7 @@ public final class MainActivity extends Activity {
                     case DAILY_LIMIT -> notifyUser(R.string.studio_daily_limit);
                     case MONTHLY_LIMIT -> notifyUser(R.string.studio_monthly_limit);
                     case SCRIPT_LIMIT -> notifyUser(R.string.studio_script_limit);
+                    case PARTIAL -> notifyUser(getString(R.string.studio_partial, studio.skippedLines()));
                     case FAILED -> notifyUser(R.string.studio_failed);
                     default -> { }
                 }

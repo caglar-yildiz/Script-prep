@@ -604,5 +604,6 @@
     <string name="studio_playing">La voix studio lit la réplique…</string>
     <string name="studio_daily_limit">La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.</string>
     <string name="studio_monthly_limit">La limite mensuelle des voix studio est atteinte.</string>
-    <string name="studio_failed">Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.</string>
+    <string name="studio_failed">Impossible de continuer à préparer les voix studio. Les répliques déjà prêtes sont gardées ; réessaie dans un moment.</string>
+    <string name="studio_partial">%1$d répliques n’ont pas pu être enregistrées ; les autres voix les lisent. Prépare à nouveau les voix studio pour réessayer seulement celles-là.</string>
 </resources>

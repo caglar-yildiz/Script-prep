@@ -590,5 +590,6 @@
     <string name="studio_playing">Stüdyo sesi repliği okuyor…</string>
     <string name="studio_daily_limit">Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.</string>
     <string name="studio_monthly_limit">Bu ayın stüdyo sesi sınırına ulaşıldı.</string>
-    <string name="studio_failed">Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="studio_failed">Stüdyo sesleri hazırlanmaya devam edemedi. Hazırlanan replikler saklandı; biraz sonra tekrar dene.</string>
+    <string name="studio_partial">%1$d replik seslendirilemedi; onları diğer sesler okuyacak. Stüdyo seslerini tekrar hazırlarsan sadece onlar yeniden denenir.</string>
 </resources>

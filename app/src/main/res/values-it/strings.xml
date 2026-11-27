@@ -604,5 +604,6 @@
     <string name="studio_playing">La voce da studio sta leggendo la battuta…</string>
     <string name="studio_daily_limit">Il limite giornaliero delle voci da studio è stato raggiunto. Le battute preparate restano salvate; continua domani.</string>
     <string name="studio_monthly_limit">Il limite mensile delle voci da studio è stato raggiunto.</string>
-    <string name="studio_failed">Impossibile preparare le voci da studio. Controlla la connessione e riprova.</string>
+    <string name="studio_failed">Non è stato possibile continuare a preparare le voci da studio. Le battute già pronte restano; riprova tra poco.</string>
+    <string name="studio_partial">%1$d battute non sono state registrate; le leggono le altre voci. Prepara di nuovo le voci da studio per riprovare solo quelle.</string>
 </resources>

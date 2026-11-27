@@ -127,3 +127,18 @@ function quotaName(body: string): string {
   const limit = /limit: (\d+)/.exec(body)?.[1] ?? "";
   return [metric.split("/").pop(), limit && `limit ${limit}`].filter(Boolean).join(", ") || body.slice(0, 160);
 }
+
+/**
+ * The answer's text when it holds audio. A voice sometimes answers 200 with no audio (text, or a
+ * stop for safety); that counts as a failure, so the next route is tried, and its reason is logged.
+ * Reading the answer as text, without parsing it, keeps the Worker's own work small.
+ */
+export async function audioAnswer(response: Response, route: string): Promise<string> {
+  const text = await response.text();
+  if (/"(inlineData|audio)"/.test(text) && /"data"\s*:\s*"/.test(text)) {
+    return text;
+  }
+  const reason = /"finishReason"\s*:\s*"([A-Z_]+)"/.exec(text)?.[1] ?? "no audio";
+  console.error(`${route} answered without audio (${reason}): ${text.slice(0, 300)}`);
+  throw new UpstreamError(`The voice answered without audio (${reason})`, 502);
+}

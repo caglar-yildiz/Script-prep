@@ -19,7 +19,7 @@ final class StudioVoices: ObservableObject {
     private static let refreshKey = "studio_refresh_token"
 
     enum Stop {
-        case done, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
+        case done, partial, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
     }
 
     private enum Failure: Error {
@@ -29,6 +29,10 @@ final class StudioVoices: ObservableObject {
     @Published private(set) var running = false
     @Published private(set) var done = 0
     @Published private(set) var total = 0
+    /// Lines the last preparation could not voice; they are tried again next time.
+    @Published private(set) var skippedLines = 0
+    /// Failures in a row after which preparing stops: the connection or the service is then down.
+    private static let failuresInARow = 3
 
     private let folder: URL
     private let notesFile: URL
@@ -137,6 +141,18 @@ final class StudioVoices: ObservableObject {
                 // Directed scene by scene without the reading.
             }
         }
+        // A line or a part that fails is skipped and tried again next time; only failures in a row stop
+        // preparing, as the connection or the service is then down.
+        var failures = 0
+        func skip(_ error: Error) throws {
+            if let failure = error as? Failure, case .limit(_) = failure {
+                throw error
+            }
+            failures += 1
+            if isCancelled || failures >= Self.failuresInARow {
+                throw error
+            }
+        }
         var start = 0
         while start < lines.count {
             let chunk = Array(lines[start..<min(lines.count, start + Self.linesPerRequest)])
@@ -147,8 +163,13 @@ final class StudioVoices: ObservableObject {
             if isCancelled {
                 return .cancelled
             }
-            try direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
-                       context: Self.contextFor(reading, section: chunk[0].section), language, title, script)
+            do {
+                try direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
+                           context: Self.contextFor(reading, section: chunk[0].section), language, title, script)
+                failures = 0
+            } catch {
+                try skip(error)
+            }
         }
         for line in lines {
             if isCancelled {
@@ -162,23 +183,32 @@ final class StudioVoices: ObservableObject {
             if audio(line, language, voice: voice) != nil {
                 continue
             }
-            let target = audioFile(line, language, voice, note, "wav")
-            let audio = try speak(note, language, voice, script)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try audio.write(to: target, options: [.atomic])
-            lock.lock()
-            var stored = loadNotes()
-            stored[Self.voicedPrefix + target.lastPathComponent] = lastVoiced
-            notes = stored
-            let snapshot = stored
-            lock.unlock()
-            try saveNotes(snapshot)
+            do {
+                let target = audioFile(line, language, voice, note, "wav")
+                let audio = try speak(note, language, voice, script)
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try audio.write(to: target, options: [.atomic])
+                lock.lock()
+                var stored = loadNotes()
+                stored[Self.voicedPrefix + target.lastPathComponent] = lastVoiced
+                notes = stored
+                let snapshot = stored
+                lock.unlock()
+                try saveNotes(snapshot)
+                failures = 0
+            } catch {
+                try skip(error)
+            }
             let ready = readyCount(scene, language, casting: casting)
             DispatchQueue.main.async {
                 self.done = ready
             }
         }
-        return .done
+        let skipped = lines.count - readyCount(scene, language, casting: casting)
+        DispatchQueue.main.async {
+            self.skippedLines = skipped
+        }
+        return skipped > 0 ? .partial : .done
     }
 
     private static func linesJson(_ lines: [ScriptScene.Line]) -> [[String: Any]] {
@@ -636,6 +666,9 @@ final class StudioVoices: ObservableObject {
             case 401:
                 idToken = nil
                 last = Failure.notSignedIn
+            case 500... where String(decoding: data, as: UTF8.self).contains("without audio"):
+                // The voice gave no audio for this line; asking again would not change that.
+                throw Failure.refused(String(decoding: data, as: UTF8.self))
             case 500...:
                 last = Failure.busy
             default:

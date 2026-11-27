@@ -135,18 +135,19 @@ public final class StudioService extends Service implements StudioVoices.Progres
     }
 
     private Notification resultNotification(StudioVoices.Stop reason) {
-        int text = switch (reason) {
+        String message = reason == StudioVoices.Stop.PARTIAL
+            ? getString(R.string.studio_partial, StudioVoices.get(this).skippedLines()) : getString(switch (reason) {
             case DONE -> R.string.studio_notification_done;
             case DAILY_LIMIT -> R.string.studio_daily_limit;
             case MONTHLY_LIMIT -> R.string.studio_monthly_limit;
             case SCRIPT_LIMIT -> R.string.studio_script_limit;
             default -> R.string.studio_failed;
-        };
+        });
         return new NotificationCompat.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_star)
             .setContentTitle(title.isEmpty() ? getString(R.string.studio_title) : title)
-            .setContentText(getString(text))
-            .setStyle(new NotificationCompat.BigTextStyle().bigText(getString(text)))
+            .setContentText(message)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true)
             .setContentIntent(openApp())
             .build();

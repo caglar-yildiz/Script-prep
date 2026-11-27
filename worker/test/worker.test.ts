@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { analyzePrompt, normalizeAnalysis, parseAnalyzeRequest } from "../src/analysis";
 import { AuthError, verifyIdToken } from "../src/auth";
 import { castPrompt, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
-import { generate, UpstreamError } from "../src/gemini";
+import { audioAnswer, generate, UpstreamError } from "../src/gemini";
 import { legacyPrompt, parseSpeakRequest, voiceInput } from "../src/speak";
 import { accessToken, forgetToken, parseServiceAccount, signedAssertion } from "../src/vertex";
 
@@ -251,5 +251,16 @@ describe("play analysis", () => {
     expect(analysis.scenes[0].moods).toEqual([{ role: "ALİ", mood: "kapana kısılmış" }]);
     expect(analysis.scenes[0].atmosphere).toBe("Kimse uyumadı.");
     expect(normalizeAnalysis(null)).toEqual({ summary: "", characters: [], relationships: [], scenes: [] });
+  });
+});
+
+describe("voice answers", () => {
+  it("passes an answer with audio on and refuses one without", async () => {
+    const audio = JSON.stringify({ candidates: [{ content: { parts: [{ inlineData: { mimeType: "audio/wav", data: "UklGRg" } }] } }] });
+    expect(await audioAnswer(new Response(audio), "vertex")).toBe(audio);
+    const steps = JSON.stringify({ steps: [{ content: [{ type: "audio", data: "UklGRg", mime_type: "audio/wav" }] }] });
+    expect(await audioAnswer(new Response(steps), "gemini")).toBe(steps);
+    const empty = JSON.stringify({ candidates: [{ finishReason: "OTHER", content: { parts: [{ text: "Sorry" }] } }] });
+    await expect(audioAnswer(new Response(empty), "vertex")).rejects.toThrow("The voice answered without audio (OTHER)");
   });
 });

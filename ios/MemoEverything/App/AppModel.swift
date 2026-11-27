@@ -1934,6 +1934,7 @@ final class AppModel: ObservableObject {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")
             case .scriptLimit: self.notifyKey("studio_script_limit")
+            case .partial: self.notify(L("studio_partial", self.studio.skippedLines))
             case .failed: self.notifyKey("studio_failed")
             default: break
             }

@@ -48,7 +48,10 @@ final class StudioVoices {
     private static final int LINES_PER_REQUEST = 60;
     private static final String REFRESH = "studio_refresh_token";
 
-    enum Stop { DONE, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
+    enum Stop { DONE, PARTIAL, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
+
+    /** Failures in a row after which preparing stops: the connection or the service is down. */
+    private static final int FAILURES_IN_A_ROW = 3;
 
     /** The Gemini voice of a character, from the script's cast. */
     interface Casting {
@@ -65,6 +68,8 @@ final class StudioVoices {
     private static StudioVoices instance;
     /** Also told of progress: the foreground service that keeps preparing while the app is away. */
     private volatile Progress observer;
+    /** Lines the last preparation could not voice; they are tried again next time. */
+    private volatile int skippedLines;
 
     private final Context context;
     private final SharedPreferences preferences;
@@ -187,6 +192,10 @@ final class StudioVoices {
         });
     }
 
+    int skippedLines() {
+        return skippedLines;
+    }
+
     void setObserver(Progress observer) {
         this.observer = observer;
     }
@@ -209,6 +218,11 @@ final class StudioVoices {
             }
         }
 
+        // A line or a part that fails is skipped and tried again next time; only failures in a row stop
+        // preparing, as the connection or the service is then down.
+        skippedLines = 0;
+        int failuresInARow = 0;
+
         // Notes: whole scenes, so the director sees what comes before and after each line.
         for (int start = 0; start < lines.size(); start += LINES_PER_REQUEST) {
             List<Scene.Line> chunk = lines.subList(start, Math.min(lines.size(), start + LINES_PER_REQUEST));
@@ -222,8 +236,18 @@ final class StudioVoices {
             if (cancelled) {
                 return Stop.CANCELLED;
             }
-            direct(chunk, linesBefore(fullScene, chunk.get(0)), contextFor(analysis, chunk.get(0).section), language,
-                title, script);
+            try {
+                direct(chunk, linesBefore(fullScene, chunk.get(0)), contextFor(analysis, chunk.get(0).section), language,
+                    title, script);
+                failuresInARow = 0;
+            } catch (LimitException limit) {
+                throw limit;
+            } catch (IOException | JSONException error) {
+                if (cancelled || ++failuresInARow >= FAILURES_IN_A_ROW) {
+                    throw error;
+                }
+                Log.w(TAG, "A part could not be directed; going on", error);
+            }
         }
 
         // Voices: one line at a time.
@@ -237,22 +261,33 @@ final class StudioVoices {
             if (note == null || audio(line, language, voice) != null) {
                 continue;
             }
-            File target = audioFile(line, language, voice, note, ".wav");
-            byte[] wav = speak(note, language, voice, script);
-            File partial = new File(target.getPath() + ".part");
-            try (OutputStream output = new FileOutputStream(partial)) {
-                output.write(wav);
-            }
-            if (!partial.renameTo(target)) {
-                throw new IOException("Could not save studio audio");
-            }
-            synchronized (this) {
-                notes().put(VOICED + target.getName(), lastVoiced);
-                saveNotes();
+            try {
+                File target = audioFile(line, language, voice, note, ".wav");
+                byte[] wav = speak(note, language, voice, script);
+                File partial = new File(target.getPath() + ".part");
+                try (OutputStream output = new FileOutputStream(partial)) {
+                    output.write(wav);
+                }
+                if (!partial.renameTo(target)) {
+                    throw new IOException("Could not save studio audio");
+                }
+                synchronized (this) {
+                    notes().put(VOICED + target.getName(), lastVoiced);
+                    saveNotes();
+                }
+                failuresInARow = 0;
+            } catch (LimitException limit) {
+                throw limit;
+            } catch (IOException | JSONException error) {
+                if (cancelled || ++failuresInARow >= FAILURES_IN_A_ROW) {
+                    throw error;
+                }
+                Log.w(TAG, "A line could not be voiced; going on", error);
             }
             post(progress, readyCount(scene, language, casting), total);
         }
-        return Stop.DONE;
+        skippedLines = total - readyCount(scene, language, casting);
+        return skippedLines > 0 ? Stop.PARTIAL : Stop.DONE;
     }
 
     private void post(Progress progress, int done, int total) {
@@ -798,6 +833,9 @@ final class StudioVoices {
                 if (code == 401) {
                     idToken = null;
                     last = new IOException("Not signed in");
+                } else if (code >= 500 && error.contains("without audio")) {
+                    // The voice gave no audio for this line; asking again would not change that.
+                    throw new IOException("Refused: " + code + " " + error);
                 } else if (code >= 500) {
                     last = new IOException("Service busy: " + code);
                 } else {

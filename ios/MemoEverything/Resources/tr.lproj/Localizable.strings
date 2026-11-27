@@ -436,13 +436,14 @@
 "stop_line" = "Sesi durdur";
 "studio_allowance" = "Her ay 2 senaryo için stüdyo sesi hazırlanabilir.";
 "studio_daily_limit" = "Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.";
-"studio_failed" = "Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.";
+"studio_failed" = "Stüdyo sesleri hazırlanmaya devam edemedi. Hazırlanan replikler saklandı; biraz sonra tekrar dene.";
 "studio_monthly_limit" = "Bu ayın stüdyo sesi sınırına ulaşıldı.";
 "studio_none" = "Hazırlanmadı · o zamana kadar diğer sesler okur";
 "studio_notification_done" = "Stüdyo sesleri hazır. Prova için uygulamayı aç.";
 "studio_notification_title" = "Stüdyo sesleri hazırlanıyor";
 "studio_off" = "Kapalı · replikleri diğer sesler okur";
 "studio_on" = "Karşı replikleri stüdyo sesleri okur";
+"studio_partial" = "%1$d replik seslendirilemedi; onları diğer sesler okuyacak. Stüdyo seslerini tekrar hazırlarsan sadece onlar yeniden denenir.";
 "studio_playing" = "Stüdyo sesi repliği okuyor…";
 "studio_prepare" = "Stüdyo seslerini hazırla";
 "studio_privacy" = "Sesleri hazırlamak için replikler Google Gemini’ye gönderilir. Her replik bir kez hazırlanır, sonra bu telefonda kalır.";
