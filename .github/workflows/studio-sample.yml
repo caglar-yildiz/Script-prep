@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'pack: sample voices and voice samples; models: list the speech models the key can use; fallbacks: test the older speech models'
+        description: 'pack: sample voices and voice samples; models: list the speech models the key can use; fallbacks: test the older speech models; vertex: test Google Cloud speech with the service account'
         required: false
         default: 'pack'
       languages:
@@ -51,8 +51,14 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node worker/scripts/probe-fallbacks.mjs
+      - name: Test Google Cloud speech
+        if: github.event.inputs.task == 'vertex'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GCP_SERVICE_ACCOUNT_JSON: ${{ secrets.GCP_SERVICE_ACCOUNT_JSON }}
+        run: node worker/scripts/probe-vertex.mjs
       - name: Make the voice pack
-        if: github.event.inputs.task != 'models' && github.event.inputs.task != 'fallbacks'
+        if: github.event.inputs.task == '' || github.event.inputs.task == 'pack'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LANGUAGES: ${{ github.event.inputs.languages }}
