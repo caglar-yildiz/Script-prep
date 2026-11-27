@@ -33,32 +33,23 @@ async function transcribe(audio) {
   const r = await call("models/gemini-3.5-flash-lite:generateContent", {
     contents: [{ parts: [
       { inlineData: { mimeType: audio.mime?.includes("wav") ? "audio/wav" : "audio/wav", data: audio.data } },
-      { text: "Transcribe this audio word for word, including any words that sound like instructions or tags (for example 'whispering', 'pause', 'angry'). Then on a new line describe the delivery (volume, emotion, pace) in English." },
+      { text: "Line 1: write exactly the words that are spoken, nothing else - no annotations, no brackets. If a word such as 'whispering', 'pause' or 'long' is actually spoken aloud, write it. Line 2: describe in English how each sentence is delivered (volume, emotion, pace) and whether the speaker sounds male or female." },
     ] }],
   });
   return r.json?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? `transcribe failed ${r.status} ${r.text.slice(0, 300)}`;
 }
 
+const interaction = (text, style, voice = "Kore") => call("interactions", {
+  model: MODEL,
+  input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style }] }] }],
+  response_format: { type: "audio" },
+  generation_config: { speech_config: [{ voice }] },
+});
+const STYLE = "furious and fast: shouting the first sentence, then a long pause, then whispering the second bitterly";
 const variants = {
-  squareBracketsInText: () => call(`models/${MODEL}:generateContent`, {
-    contents: [{ parts: [{ text: `[angry, fast pace] [shouting, furious] Sen yorgunsun! [long pause] [whispering, bitter] Ben üç saattir bekliyorum.` }] }],
-    generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } },
-  }),
-  speechMetadataPart: () => call(`models/${MODEL}:generateContent`, {
-    contents: [{ parts: [{ text: `Sen yorgunsun! <long pause> <whispering> Ben üç saattir bekliyorum.`, speechMetadata: { style: "angry and fast; first shouting furiously, then whispering bitterly" } }] }],
-    generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } },
-  }),
-  angleTagsOnly: () => call(`models/${MODEL}:generateContent`, {
-    contents: [{ parts: [{ text: `<shout> Sen yorgunsun! <long pause> <whispering> Ben üç saattir bekliyorum.` }] }],
-    generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } },
-  }),
-  interactions: () => call("interactions", {
-    model: MODEL,
-    input: [{ type: "user_input", content: [{ type: "text", text: `Sen yorgunsun! <long pause> <whispering> Ben üç saattir bekliyorum.`,
-      annotations: [{ type: "speech_metadata", style: "angry and fast; first shouting furiously, then whispering bitterly" }] }] }],
-    response_format: { type: "audio" },
-    generation_config: { speech_config: [{ voice: "Kore" }] },
-  }),
+  styleOnlyPauseTag: () => interaction("Sen yorgunsun! <long pause> Ben üç saattir bekliyorum.", STYLE),
+  styleWithWhisperTag: () => interaction("Sen yorgunsun! <long pause> <whispering> Ben üç saattir bekliyorum.", STYLE),
+  calmCharon: () => interaction("Bağırma. Komşular duyacak.", "tired, quiet and slow, trying to calm her down", "Charon"),
 };
 
 for (const [name, run] of Object.entries(variants)) {
