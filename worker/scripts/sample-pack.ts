@@ -17,8 +17,10 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSyn
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DIRECTION_SCHEMA, DirectRequest, directorPrompt, Language, normalizeCast, normalizeDirections } from "../src/director";
-import { answerText, DIRECTOR_MODELS, generate, interact, UpstreamError, VOICE_MODELS } from "../src/gemini";
+import { answerText, DIRECTOR_MODELS, generate, interact, UpstreamError, VERTEX_VOICE_MODELS, vertexGenerate,
+  VOICE_MODELS } from "../src/gemini";
 import { CAST_VOICES, parseSpeakRequest, voiceInput } from "../src/speak";
+import { accessToken, parseServiceAccount } from "../src/vertex";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ANDROID = join(ROOT, "app/src/main/assets/studio-sample");
@@ -29,6 +31,8 @@ const IOS_PREVIEWS = join(ROOT, "ios/MemoEverything/Resources/StudioVoices");
 const FOLDERS: Record<Language, string> = { en: "values", tr: "values-tr", de: "values-de", es: "values-es",
   fr: "values-fr", it: "values-it", pt: "values-pt" };
 const key = process.env.GEMINI_API_KEY ?? "";
+// With a Google Cloud service account the voices come from Vertex AI, which has no daily cap.
+const account = parseServiceAccount(process.env.GCP_SERVICE_ACCOUNT_JSON);
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface PackLine {
@@ -106,15 +110,62 @@ async function patiently<T>(work: () => Promise<T>): Promise<T> {
   }
 }
 
-function audioOf(interaction: { steps?: { content?: { type?: string; data?: string }[] }[] }): Buffer {
-  for (const step of interaction.steps ?? []) {
+interface Answer {
+  steps?: { content?: { type?: string; data?: string }[] }[];
+  candidates?: { content?: { parts?: { inlineData?: { data?: string } }[] } }[];
+}
+
+/** The WAV audio of an interaction (Gemini API) or a generateContent answer (Vertex AI). */
+function audioOf(answer: Answer): Buffer {
+  for (const step of answer.steps ?? []) {
     for (const part of step.content ?? []) {
       if (part.type === "audio" && part.data) {
         return Buffer.from(part.data, "base64");
       }
     }
   }
+  for (const part of answer.candidates?.[0]?.content?.parts ?? []) {
+    if (part.inlineData?.data) {
+      return Buffer.from(part.inlineData.data, "base64");
+    }
+  }
   throw new Error("No audio in the answer");
+}
+
+/** One line in a voice with a delivery, as WAV: through Vertex AI when there is an account. */
+async function speakLine(text: string, style: string, voice: string): Promise<Buffer> {
+  const response = account
+    ? await patiently(async () => vertexGenerate(VERTEX_VOICE_MODELS, {
+      contents: [{ role: "user", parts: [{ text, speechMetadata: { style } }] }],
+      generationConfig: { responseModalities: ["AUDIO"],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: voice } } } },
+    }, account.project_id, await accessToken(account)))
+    : await patiently(() => interact(VOICE_MODELS, (model) => ({
+      model,
+      input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style }] }] }],
+      response_format: { type: "audio" },
+      generation_config: { speech_config: [{ voice }] },
+    }), key));
+  const audio = audioOf((await response.json()) as Answer);
+  // Raw PCM is wrapped so ffmpeg can read it.
+  return audio.subarray(0, 4).toString() === "RIFF" ? audio : Buffer.concat([wavHeader(audio.length), audio]);
+}
+
+function wavHeader(length: number, rate = 24_000): Buffer {
+  const head = Buffer.alloc(44);
+  head.write("RIFF", 0);
+  head.writeUInt32LE(36 + length, 4);
+  head.write("WAVEfmt ", 8);
+  head.writeUInt32LE(16, 16);
+  head.writeUInt16LE(1, 20);
+  head.writeUInt16LE(1, 22);
+  head.writeUInt32LE(rate, 24);
+  head.writeUInt32LE(rate * 2, 28);
+  head.writeUInt16LE(2, 32);
+  head.writeUInt16LE(16, 34);
+  head.write("data", 36);
+  head.writeUInt32LE(length, 40);
+  return head;
 }
 
 async function makePack(language: Language, script: string, folder: string, name: string): Promise<Pack> {
@@ -158,14 +209,8 @@ async function makePack(language: Language, script: string, folder: string, name
     const note = line.note as Record<string, unknown>;
     const { text, style } = voiceInput(parseSpeakRequest({ language, voice: line.voice, ...note }));
     console.log(`${language} ${i + 1}: ${line.voice} | ${style} | ${text}`);
-    const interaction = await (await patiently(() => interact(VOICE_MODELS, (model) => ({
-      model,
-      input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style }] }] }],
-      response_format: { type: "audio" },
-      generation_config: { speech_config: [{ voice: line.voice }] },
-    }), key))).json();
     const wav = join(folder, `${name}-${i + 1}.wav`);
-    writeFileSync(wav, audioOf(interaction as never));
+    writeFileSync(wav, await speakLine(text, style, line.voice));
     execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", wav, "-ac", "1", "-c:a", "aac", "-b:a", "48k", join(folder, file)]);
     rmSync(wav);
     line.audio = file;
@@ -211,15 +256,8 @@ async function makePreviews(language: Language): Promise<void> {
     const target = join(ANDROID_PREVIEWS, `${language}-${voice}.m4a`);
     if (!existsSync(target)) {
       console.log(`${language} preview: ${voice}`);
-      const interaction = await (await patiently(() => interact(VOICE_MODELS, (model) => ({
-        model,
-        input: [{ type: "user_input", content: [{ type: "text", text,
-          annotations: [{ type: "speech_metadata", style: "warm, friendly and natural, like an actor at a rehearsal" }] }] }],
-        response_format: { type: "audio" },
-        generation_config: { speech_config: [{ voice }] },
-      }), key))).json();
       const wav = target.replace(/\.m4a$/, ".wav");
-      writeFileSync(wav, audioOf(interaction as never));
+      writeFileSync(wav, await speakLine(text, "warm, friendly and natural, like an actor at a rehearsal", voice));
       execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", wav, "-ac", "1", "-c:a", "aac", "-b:a", "48k", target]);
       rmSync(wav);
     }
