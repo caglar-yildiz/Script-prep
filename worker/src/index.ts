@@ -125,47 +125,57 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
   if (!allowance.allowed) {
     return problem(429, "monthly_limit", "Monthly limit for studio voices reached", 86_400);
   }
-  const response = await voice(line, voiceInput(line), env);
+  const input = voiceInput(line);
+  const { response, source } = await voice(line, input, env);
   await quota.add("spoken", 1);
   // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
-  return new Response(response.body, { headers: { "Content-Type": "application/json; charset=utf-8" } });
+  // What the voice was asked goes along in headers, so the apps can show how a line was made.
+  return new Response(response.body, { headers: {
+    "Content-Type": "application/json; charset=utf-8",
+    "X-Memo-Source": source,
+    "X-Memo-Style": encodeURIComponent(input.style),
+    "X-Memo-Text": encodeURIComponent(source === "legacy" ? legacyPrompt(input) : input.text),
+  } });
 }
 
 /**
  * The line's audio: first through Google Cloud, which has no daily request cap; then the Gemini
  * API's 3.8 voices; then, when those are used up for the day, its older voices.
  */
-async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<Response> {
+async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<{ response: Response; source: string }> {
   const speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } };
   const account = parseServiceAccount(env.GCP_SERVICE_ACCOUNT_JSON);
   if (account) {
     try {
-      return await vertexGenerate(VERTEX_VOICE_MODELS, {
+      const response = await vertexGenerate(VERTEX_VOICE_MODELS, {
         contents: [{ role: "user", parts: [{ text: input.text, speechMetadata: { style: input.style } }] }],
         generationConfig: { responseModalities: ["AUDIO"], speechConfig },
       }, account.project_id, await accessToken(account));
+      return { response, source: "vertex" };
     } catch (error) {
       console.error("Google Cloud voice failed, using the Gemini API", error);
     }
   }
   try {
-    return await interact(VOICE_MODELS, (model) => ({
+    const response = await interact(VOICE_MODELS, (model) => ({
       model,
       input: [{ type: "user_input", content: [{ type: "text", text: input.text,
         annotations: [{ type: "speech_metadata", style: input.style }] }] }],
       response_format: { type: "audio" },
       generation_config: { speech_config: [{ voice: line.voice }] },
     }), env.GEMINI_API_KEY);
+    return { response, source: "gemini" };
   } catch (error) {
     if (!(error instanceof UpstreamError && error.status === 429)) {
       throw error;
     }
     // The newer voices are used up for today: older ones answer in generateContent's form
     // (candidates with raw PCM), which the apps read as well.
-    return generate(LEGACY_VOICE_MODELS, {
+    const response = await generate(LEGACY_VOICE_MODELS, {
       contents: [{ parts: [{ text: legacyPrompt(input) }] }],
       generationConfig: { responseModalities: ["AUDIO"], speechConfig },
     }, env.GEMINI_API_KEY);
+    return { response, source: "legacy" };
   }
 }
 

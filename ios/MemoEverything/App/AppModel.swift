@@ -5,7 +5,7 @@ import SwiftUI
 import UIKit
 
 enum Screen: String {
-    case home, categories, source, editor, sections, setup, reader, rehearsal, voices, settings, premium, lines
+    case home, categories, source, editor, sections, setup, reader, rehearsal, voices, settings, premium, lines, notes
 }
 
 /// A button of an alert dialog.
@@ -324,7 +324,7 @@ final class AppModel: ObservableObject {
     /// Android's back button, used by the top bar's back arrow where it goes "back".
     func back() {
         switch screen {
-        case .rehearsal, .reader, .voices:
+        case .rehearsal, .reader, .voices, .notes:
             show(.setup)
         case .source:
             show(.categories)
@@ -1767,6 +1767,49 @@ final class AppModel: ObservableObject {
             return 0
         }
         return studio.running ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
+    }
+
+    // MARK: - Director's notes
+
+    /// A line's note and voicing as plain text, for the notes screen and for sharing.
+    func noteText(_ line: ScriptScene.Line) -> String {
+        var text = line.notes.map { L("notes_script_direction", $0) + "\n" }.joined()
+        guard let note = studio.noteOf(line, language) else {
+            return text + L("notes_not_directed")
+        }
+        text += L("notes_delivery", note["emotion"] as? String ?? "", note["pace"] as? String ?? "") + "\n"
+        if let subtext = note["note"] as? String, !subtext.isEmpty {
+            text += L("notes_subtext", subtext) + "\n"
+        }
+        for segment in note["segments"] as? [[String: Any]] ?? [] {
+            let style = segment["style"] as? String ?? ""
+            text += "• [" + (segment["volume"] as? String ?? "") + (style.isEmpty ? "" : ", " + style) + "] "
+                + (segment["text"] as? String ?? "")
+            let pause = (segment["pauseAfterMs"] as? NSNumber)?.intValue ?? 0
+            text += (pause > 0 ? " (\(pause) ms)" : "") + "\n"
+        }
+        for saying in note["pronunciations"] as? [[String: Any]] ?? [] {
+            text += L("notes_pronounce", saying["word"] as? String ?? "", saying["say"] as? String ?? "") + "\n"
+        }
+        let voice = studioCasting()(line.role)
+        guard let voiced = studio.voicedOf(line, language, voice: voice) else {
+            return text + L(studio.audio(line, language, voice: voice) == nil ? "notes_not_voiced" : "notes_voiced_unknown", voice)
+        }
+        text += L("notes_voiced", voiced["voice"] as? String ?? voice, voiced["model"] as? String ?? "?",
+                  voiced["source"] as? String ?? "?")
+        if let style = voiced["style"] as? String, !style.isEmpty {
+            text += "\n" + L("notes_style", style)
+        }
+        if let sent = voiced["text"] as? String, !sent.isEmpty {
+            text += "\n" + L("notes_sent", sent)
+        }
+        return text
+    }
+
+    /// Every line's note, to share.
+    var notesText: String {
+        L("notes_title") + " · " + scriptTitle + " · " + language.code + "\n\n"
+            + scene.lines.map { $0.role + ": " + $0.text + "\n" + noteText($0) }.joined(separator: "\n\n")
     }
 
     private var castConfirmedKey: String {

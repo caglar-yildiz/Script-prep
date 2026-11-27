@@ -75,6 +75,10 @@ final class StudioVoices {
     private long idTokenExpires;
     private volatile boolean cancelled;
     private volatile boolean running;
+    /** Headers of the last answer, read on the preparing thread only. */
+    private java.util.Map<String, List<String>> lastHeaders = java.util.Collections.emptyMap();
+    /** How the last line was voiced: model, route, style and text the voice was given. */
+    private JSONObject lastVoiced = new JSONObject();
 
     private StudioVoices(Context context) {
         this.context = context.getApplicationContext();
@@ -217,6 +221,10 @@ final class StudioVoices {
             if (!partial.renameTo(target)) {
                 throw new IOException("Could not save studio audio");
             }
+            synchronized (this) {
+                notes().put(VOICED + target.getName(), lastVoiced);
+                saveNotes();
+            }
             post(progress, readyCount(scene, language, casting), total);
         }
         return Stop.DONE;
@@ -319,6 +327,37 @@ final class StudioVoices {
         });
     }
 
+    private String header(String name) {
+        for (java.util.Map.Entry<String, List<String>> entry : lastHeaders.entrySet()) {
+            if (name.equalsIgnoreCase(entry.getKey()) && !entry.getValue().isEmpty()) {
+                try {
+                    return java.net.URLDecoder.decode(entry.getValue().get(0), "UTF-8");
+                } catch (java.io.UnsupportedEncodingException | IllegalArgumentException error) {
+                    return entry.getValue().get(0);
+                }
+            }
+        }
+        return "";
+    }
+
+    // ---------------------------------------------------------------- What the director decided
+
+    private static final String VOICED = "voiced:";
+
+    /** The director's note of a line: emotion, pace, subtext, segments; null until it is directed. */
+    synchronized JSONObject noteOf(Scene.Line line, ScriptLanguage language) {
+        return notes().optJSONObject(noteKey(line, language));
+    }
+
+    /**
+     * How a line's audio in the given voice was made (model, route, the style and text the voice
+     * was given), or null for audio made before this was kept, or not made yet.
+     */
+    synchronized JSONObject voicedOf(Scene.Line line, ScriptLanguage language, String voice) {
+        File audio = audio(line, language, voice);
+        return audio == null ? null : notes().optJSONObject(VOICED + audio.getName());
+    }
+
     private static String genderKey(String role) {
         return "gender:" + role.trim().toLowerCase(Locale.ROOT);
     }
@@ -392,6 +431,13 @@ final class StudioVoices {
             .put("pronunciations", note.optJSONArray("pronunciations") == null ? new JSONArray()
                 : note.getJSONArray("pronunciations"));
         JSONObject answer = new JSONObject(new String(post("/v1/speak", body), StandardCharsets.UTF_8));
+        lastVoiced = new JSONObject()
+            .put("model", answer.optString("modelVersion", answer.optString("model", "")))
+            .put("source", header("X-Memo-Source"))
+            .put("style", header("X-Memo-Style"))
+            .put("text", header("X-Memo-Text"))
+            .put("voice", voice)
+            .put("at", System.currentTimeMillis());
         // Gemini's interaction: steps of model output whose content holds the audio.
         JSONArray steps = answer.optJSONArray("steps");
         for (int i = 0; steps != null && i < steps.length(); i++) {
@@ -496,6 +542,7 @@ final class StudioVoices {
                 }
                 int code = connection.getResponseCode();
                 if (code == 200) {
+                    lastHeaders = connection.getHeaderFields();
                     return readAll(connection.getInputStream());
                 }
                 String error = connection.getErrorStream() == null ? ""

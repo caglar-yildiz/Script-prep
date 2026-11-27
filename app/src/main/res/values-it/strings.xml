@@ -561,6 +561,20 @@
     <string name="cast_check_body">Le voci da studio mantengono la voce che ogni personaggio ha ora. Assicurati che donne e uomini abbiano voci del loro genere, poi preparale.</string>
     <string name="cast_check_guessing">Il regista sta leggendo la scena per capire il genere dei personaggi…</string>
     <string name="cast_check_confirm">Conferma e prepara</string>
+    <string name="notes_title">Note del regista</string>
+    <string name="notes_value">Come è recitata ogni battuta e come è stata fatta la sua voce</string>
+    <string name="notes_share">Condividi le note</string>
+    <string name="notes_intro">Cosa ha deciso il regista IA per ogni battuta e cosa ha ricevuto la voce da studio.</string>
+    <string name="notes_script_direction">Nel testo: %1$s</string>
+    <string name="notes_not_directed">Non ancora diretta.</string>
+    <string name="notes_delivery">Stato d’animo: %1$s · ritmo: %2$s</string>
+    <string name="notes_subtext">Regista: %1$s</string>
+    <string name="notes_pronounce">Dire “%1$s” come “%2$s”</string>
+    <string name="notes_not_voiced">Voce %1$s: non ancora preparata.</string>
+    <string name="notes_voiced_unknown">Voce %1$s: preparata prima che i dettagli fossero salvati.</string>
+    <string name="notes_voiced">Voce %1$s · %2$s (%3$s)</string>
+    <string name="notes_style">Stile dato: %1$s</string>
+    <string name="notes_sent">Testo dato: %1$s</string>
     <string name="cast_studio_voice_for">Voce da studio per %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Decisa</item>

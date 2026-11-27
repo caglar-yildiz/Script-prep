@@ -37,6 +37,11 @@ final class StudioVoices: ObservableObject {
     private var idToken: String?
     private var idTokenExpires = Date.distantPast
     private var cancelled = false
+    /// Headers of the last answer, read on the preparing queue only.
+    private var lastHeaders: [AnyHashable: Any] = [:]
+    /// How the last line was voiced: model, route, style and text the voice was given.
+    private var lastVoiced: [String: Any] = [:]
+    private static let voicedPrefix = "voiced:"
 
     private init() {
         folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
@@ -148,6 +153,13 @@ final class StudioVoices: ObservableObject {
             let audio = try speak(note, language, voice, script)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try audio.write(to: target, options: [.atomic])
+            lock.lock()
+            var stored = loadNotes()
+            stored[Self.voicedPrefix + target.lastPathComponent] = lastVoiced
+            notes = stored
+            let snapshot = stored
+            lock.unlock()
+            try saveNotes(snapshot)
             let ready = readyCount(scene, language, casting: casting)
             DispatchQueue.main.async {
                 self.done = ready
@@ -196,6 +208,32 @@ final class StudioVoices: ObservableObject {
 
     private static func genderKey(_ role: String) -> String {
         "gender:" + role.trimmingCharacters(in: .whitespaces).lowercased()
+    }
+
+    private func header(_ name: String) -> String {
+        for (key, value) in lastHeaders where (key as? String)?.caseInsensitiveCompare(name) == .orderedSame {
+            let text = value as? String ?? ""
+            return text.removingPercentEncoding ?? text
+        }
+        return ""
+    }
+
+    // MARK: - What the director decided
+
+    /// The director's note of a line: emotion, pace, subtext, segments; nil until it is directed.
+    func noteOf(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> [String: Any]? {
+        note(line, language)
+    }
+
+    /// How a line's audio in the given voice was made (model, route, the style and text the voice was
+    /// given), or nil for audio made before this was kept, or not made yet.
+    func voicedOf(_ line: ScriptScene.Line, _ language: ScriptLanguage, voice: String) -> [String: Any]? {
+        guard let audio = audio(line, language, voice: voice) else {
+            return nil
+        }
+        lock.lock()
+        defer { lock.unlock() }
+        return loadNotes()[Self.voicedPrefix + audio.lastPathComponent] as? [String: Any]
     }
 
     /// Whether the director has given a gender for every character.
@@ -314,6 +352,9 @@ final class StudioVoices: ObservableObject {
         guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw Failure.busy
         }
+        lastVoiced = ["model": answer["modelVersion"] as? String ?? answer["model"] as? String ?? "",
+                      "source": header("X-Memo-Source"), "style": header("X-Memo-Style"),
+                      "text": header("X-Memo-Text"), "voice": voice, "at": Date().timeIntervalSince1970]
         // Gemini's interaction: steps of model output whose content holds the audio.
         let steps = (answer["steps"] as? [[String: Any]] ?? []).flatMap { $0["content"] as? [[String: Any]] ?? [] }
             .filter { $0["type"] as? String == "audio" }
@@ -371,9 +412,10 @@ final class StudioVoices: ObservableObject {
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer " + (try token(fresh: attempt > 0)), forHTTPHeaderField: "Authorization")
             request.httpBody = try JSONSerialization.data(withJSONObject: body)
-            let (data, status) = try Self.send(request)
+            let (data, status, headers) = try Self.send(request)
             switch status {
             case 200:
+                lastHeaders = headers
                 return data
             case 429:
                 let answer = String(decoding: data, as: UTF8.self)
@@ -407,7 +449,7 @@ final class StudioVoices: ObservableObject {
             request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
             let encoded = refresh.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? refresh
             request.httpBody = Data("grant_type=refresh_token&refresh_token=\(encoded)".utf8)
-            let (data, status) = try Self.send(request)
+            let (data, status, _) = try Self.send(request)
             if status == 200, let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                let id = answer["id_token"] as? String, let next = answer["refresh_token"] as? String {
                 UserDefaults.standard.set(next, forKey: Self.refreshKey)
@@ -420,7 +462,7 @@ final class StudioVoices: ObservableObject {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = Data(#"{"returnSecureToken":true}"#.utf8)
-        let (data, status) = try Self.send(request)
+        let (data, status, _) = try Self.send(request)
         guard status == 200, let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
               let id = answer["idToken"] as? String, let refresh = answer["refreshToken"] as? String else {
             throw Failure.notSignedIn
@@ -432,15 +474,16 @@ final class StudioVoices: ObservableObject {
     }
 
     /// A blocking request for the background queue.
-    private static func send(_ request: URLRequest) throws -> (Data, Int) {
+    private static func send(_ request: URLRequest) throws -> (Data, Int, [AnyHashable: Any]) {
         let semaphore = DispatchSemaphore(value: 0)
-        var result: (Data, Int)?
+        var result: (Data, Int, [AnyHashable: Any])?
         var failure: Error?
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
                 failure = error
             } else {
-                result = (data ?? Data(), (response as? HTTPURLResponse)?.statusCode ?? 0)
+                let http = response as? HTTPURLResponse
+                result = (data ?? Data(), http?.statusCode ?? 0, http?.allHeaderFields ?? [:])
             }
             semaphore.signal()
         }.resume()
@@ -448,7 +491,7 @@ final class StudioVoices: ObservableObject {
         if let failure {
             throw failure
         }
-        return result ?? (Data(), 0)
+        return result ?? (Data(), 0, [:])
     }
 
     // MARK: - Storage

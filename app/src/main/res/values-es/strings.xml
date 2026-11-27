@@ -561,6 +561,20 @@
     <string name="cast_check_body">Las voces de estudio mantienen la voz que tiene ahora cada personaje. Asegúrate de que mujeres y hombres tengan voces de su género y luego prepáralas.</string>
     <string name="cast_check_guessing">El director está leyendo la escena para saber el género de los personajes…</string>
     <string name="cast_check_confirm">Confirmar y preparar</string>
+    <string name="notes_title">Notas del director</string>
+    <string name="notes_value">Cómo se interpreta cada frase y cómo se hizo su voz</string>
+    <string name="notes_share">Compartir las notas</string>
+    <string name="notes_intro">Lo que decidió el director con IA para cada frase y lo que recibió la voz de estudio.</string>
+    <string name="notes_script_direction">En el texto: %1$s</string>
+    <string name="notes_not_directed">Aún sin dirigir.</string>
+    <string name="notes_delivery">Ánimo: %1$s · ritmo: %2$s</string>
+    <string name="notes_subtext">Director: %1$s</string>
+    <string name="notes_pronounce">Decir “%1$s” como “%2$s”</string>
+    <string name="notes_not_voiced">Voz %1$s: aún sin preparar.</string>
+    <string name="notes_voiced_unknown">Voz %1$s: preparada antes de guardar los detalles.</string>
+    <string name="notes_voiced">Voz %1$s · %2$s (%3$s)</string>
+    <string name="notes_style">Estilo dado: %1$s</string>
+    <string name="notes_sent">Texto dado: %1$s</string>
     <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>
