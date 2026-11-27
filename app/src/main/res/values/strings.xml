@@ -542,6 +542,21 @@
     <string name="studio_prepare">Prepare studio voices</string>
     <string name="studio_progress">Preparing… %1$d of %2$d lines ready</string>
     <string name="studio_ready">%1$d of %2$d lines ready</string>
+    <string name="studio_sample">Try the studio voices in this sample scene. Premium prepares them for your own scripts.</string>
+    <string name="cast_studio">Studio</string>
+    <string name="cast_studio_voice_for">Studio voice for %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Firm</item>
+        <item>Breezy</item>
+        <item>Youthful</item>
+        <item>Warm</item>
+        <item>Mature</item>
+        <item>Informative</item>
+        <item>Upbeat</item>
+        <item>Steady</item>
+        <item>Gravelly</item>
+        <item>Clear</item>
+    </string-array>
     <string name="studio_none">Not prepared · the other voices read until then</string>
     <string name="studio_on">Partner lines use the studio voices</string>
     <string name="studio_off">Off · the other voices read the lines</string>

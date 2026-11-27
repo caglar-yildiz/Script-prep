@@ -548,6 +548,21 @@
     <string name="studio_prepare">Preparar voces de estudio</string>
     <string name="studio_progress">Preparando… %1$d de %2$d frases listas</string>
     <string name="studio_ready">%1$d de %2$d frases listas</string>
+    <string name="studio_sample">Escucha las voces de estudio en esta escena de ejemplo. Premium las prepara para tus textos.</string>
+    <string name="cast_studio">Estudio</string>
+    <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Firme</item>
+        <item>Ligera</item>
+        <item>Juvenil</item>
+        <item>Cálida</item>
+        <item>Madura</item>
+        <item>Informativa</item>
+        <item>Alegre</item>
+        <item>Serena</item>
+        <item>Rasposa</item>
+        <item>Clara</item>
+    </string-array>
     <string name="studio_none">Sin preparar · mientras tanto leen las otras voces</string>
     <string name="studio_on">Las frases del compañero usan las voces de estudio</string>
     <string name="studio_off">Desactivado · las otras voces leen las frases</string>

@@ -71,8 +71,8 @@ final class VoiceCast {
 
     private static final String PREFIX = "voice_cast_";
     private static final Tone[] TONE_CYCLE = {Tone.NORMAL, Tone.LOW, Tone.HIGH};
-    /** AI speakers in turns of female (0–4) and male (5–9) so neighbouring characters differ. */
-    private static final int[] AI_ORDER = {0, 5, 1, 6, 2, 7, 3, 8, 4, 9};
+    /** AI speakers 0–4 are female and 5–9 male. */
+    private static final int HALF = 5;
 
     private VoiceCast() {}
 
@@ -81,13 +81,26 @@ final class VoiceCast {
      * varies the tone so that characters sharing a voice still sound apart.
      */
     static Map<String, Part> automatic(List<String> roles, List<String> voices) {
+        return automatic(roles, voices, java.util.Collections.emptyMap());
+    }
+
+    /**
+     * As above, with the characters' likely genders ("female" or "male", by role) where they are
+     * known: women take the female speakers 0–4 in turn, men the male speakers 5–9, and the others
+     * whichever gender has fewer so far, so an unknown cast alternates as before.
+     */
+    static Map<String, Part> automatic(List<String> roles, List<String> voices, Map<String, String> genders) {
         Map<String, Part> cast = new LinkedHashMap<>();
+        int women = 0;
+        int men = 0;
         for (int i = 0; i < roles.size(); i++) {
             String voice = voices.isEmpty() || i == 0 ? "" : voices.get((i - 1) % voices.size());
             int round = voices.isEmpty() ? i : i / (voices.size() + 1);
+            String gender = genders.get(roles.get(i));
+            boolean female = "female".equals(gender) || (!"male".equals(gender) && women <= men);
+            int speaker = female ? women++ % HALF : HALF + men++ % HALF;
             // Tone only shapes device voices; the AI voice has ten distinct speakers instead.
-            cast.put(roles.get(i), new Part(voice, AI_ORDER[i % AI_ORDER.length],
-                TONE_CYCLE[round % TONE_CYCLE.length], Pace.NORMAL));
+            cast.put(roles.get(i), new Part(voice, speaker, TONE_CYCLE[round % TONE_CYCLE.length], Pace.NORMAL));
         }
         return cast;
     }
@@ -95,8 +108,13 @@ final class VoiceCast {
     /** The saved cast completed with automatic choices for characters added since. */
     static Map<String, Part> load(SharedPreferences preferences, String key, List<String> roles,
                                   List<String> voices) {
+        return load(preferences, key, roles, voices, java.util.Collections.emptyMap());
+    }
+
+    static Map<String, Part> load(SharedPreferences preferences, String key, List<String> roles,
+                                  List<String> voices, Map<String, String> genders) {
         Map<String, Part> saved = fromJson(preferences.getString(PREFIX + key, null));
-        Map<String, Part> defaults = automatic(roles, voices);
+        Map<String, Part> defaults = automatic(roles, voices, genders);
         Map<String, Part> cast = new LinkedHashMap<>();
         for (String role : roles) {
             Part part = saved.get(role);

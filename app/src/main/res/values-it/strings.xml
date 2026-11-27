@@ -548,6 +548,21 @@
     <string name="studio_prepare">Prepara le voci da studio</string>
     <string name="studio_progress">Preparazione… %1$d battute pronte su %2$d</string>
     <string name="studio_ready">%1$d battute pronte su %2$d</string>
+    <string name="studio_sample">Ascolta le voci da studio in questa scena di esempio. Premium le prepara per i tuoi testi.</string>
+    <string name="cast_studio">Studio</string>
+    <string name="cast_studio_voice_for">Voce da studio per %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Decisa</item>
+        <item>Leggera</item>
+        <item>Giovane</item>
+        <item>Calda</item>
+        <item>Matura</item>
+        <item>Informativa</item>
+        <item>Allegra</item>
+        <item>Calma</item>
+        <item>Roca</item>
+        <item>Chiara</item>
+    </string-array>
     <string name="studio_none">Non preparate · nel frattempo leggono le altre voci</string>
     <string name="studio_on">Le battute del partner usano le voci da studio</string>
     <string name="studio_off">Disattivato · le altre voci leggono le battute</string>

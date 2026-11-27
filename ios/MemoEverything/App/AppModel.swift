@@ -406,6 +406,10 @@ final class AppModel: ObservableObject {
         category = .roleRehearsal
         openSavedScript(Script(id: "", title: L("sample_title"), text: L("sample_script"), category: .roleRehearsal,
                                language: Strings.interfaceLanguage), sample: true)
+        if let fullScene {
+            studio.installSample(fullScene, language)
+            objectWillChange.send()
+        }
     }
 
     func openSavedScript(_ entry: Script, sample: Bool = false) {
@@ -1461,7 +1465,8 @@ final class AppModel: ObservableObject {
     }
 
     func currentCast() -> [String: VoiceCast.Part] {
-        VoiceCast.load(defaults, key: castKey, roles: fullScene?.roles ?? [], voices: castVoiceNames)
+        let roles = fullScene?.roles ?? []
+        return VoiceCast.load(defaults, key: castKey, roles: roles, voices: castVoiceNames, genders: studio.genders(roles))
     }
 
     func saveCast(_ cast: [String: VoiceCast.Part]) {
@@ -1503,6 +1508,25 @@ final class AppModel: ObservableObject {
 
     func aiVoiceTrait(_ speaker: Int) -> String {
         L("ai_voice_traits_\(max(0, min(NeuralVoice.speakers - 1, speaker)))")
+    }
+
+    /// "Kore · Female · Firm": a studio voice with its gender and character.
+    func studioVoiceLabel(_ speaker: Int) -> String {
+        let index = max(0, min(StudioVoices.castVoices.count - 1, speaker))
+        return StudioVoices.castVoices[index] + " · " + aiVoiceGender(index) + " · " + L("studio_voice_traits_\(index)")
+    }
+
+    /// The studio voice follows the character's speaker, so choosing it also sets the gender.
+    func chooseStudioVoice(_ character: String) {
+        let speakers = Array(0..<StudioVoices.castVoices.count)
+        choose(L("cast_studio_voice_for", character), speakers.map(studioVoiceLabel),
+               selected: currentCast()[character]?.speaker) { index in
+            guard var part = self.currentCast()[character] else {
+                return
+            }
+            part.speaker = index
+            self.updateCast(character, part)
+        }
     }
 
     func chooseCharacterVoice(_ character: String) {
@@ -1628,12 +1652,31 @@ final class AppModel: ObservableObject {
         objectWillChange.send()
     }
 
-    /// The studio voice audio of a line, when it is prepared and switched on.
+    /// The studio voice audio of a line, when it is prepared and switched on. The sample scene's
+    /// come with the app and play for everyone, so the studio voices can be heard before buying.
     func studioAudio(_ line: ScriptScene.Line) -> URL? {
-        guard premium, studioOn, let fullScene else {
+        guard premium || scriptId == nil, studioOn, fullScene != nil else {
             return nil
         }
-        return studio.audio(fullScene, line, language)
+        return studio.audio(line, language, voice: studioCasting()(line.role))
+    }
+
+    /// Whether the sample scene's studio voices can be heard without Premium.
+    var studioSampleReady: Bool {
+        !premium && scriptId == nil && fullScene != nil && studioReady > 0
+    }
+
+    /// Each character's studio voice follows their voice in the cast (female or male). Reads the saved
+    /// cast only, so it can be asked from the preparing queue.
+    func studioCasting() -> StudioVoices.Casting {
+        let roles = fullScene?.roles ?? []
+        let key = castKey
+        let defaults = defaults
+        let studio = studio
+        return { character in
+            StudioVoices.voice(of: VoiceCast.load(defaults, key: key, roles: roles, voices: [],
+                                                  genders: studio.genders(roles))[character])
+        }
     }
 
     var studioTotal: Int {
@@ -1641,10 +1684,10 @@ final class AppModel: ObservableObject {
     }
 
     var studioReady: Int {
-        guard let fullScene else {
+        guard fullScene != nil else {
             return 0
         }
-        return studio.running ? studio.done : studio.readyCount(fullScene, scene, role: role, language)
+        return studio.running ? studio.done : studio.readyCount(scene, role: role, language, casting: studioCasting())
     }
 
     func confirmStudio() {
@@ -1655,10 +1698,10 @@ final class AppModel: ObservableObject {
     }
 
     func prepareStudio() {
-        guard let fullScene, !studio.running else {
+        guard fullScene != nil, !studio.running else {
             return
         }
-        studio.prepare(fullScene, scene, role: role, language: language, title: scriptTitle) { reason in
+        studio.prepare(scene, role: role, language: language, title: scriptTitle, casting: studioCasting()) { reason in
             switch reason {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")

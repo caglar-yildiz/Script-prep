@@ -534,6 +534,21 @@
     <string name="studio_prepare">Studiostimmen vorbereiten</string>
     <string name="studio_progress">Wird vorbereitet… %1$d von %2$d Sätzen fertig</string>
     <string name="studio_ready">%1$d von %2$d Sätzen fertig</string>
+    <string name="studio_sample">Hör dir die Studiostimmen in dieser Beispielszene an. Premium bereitet sie für deine Texte vor.</string>
+    <string name="cast_studio">Studio</string>
+    <string name="cast_studio_voice_for">Studiostimme für %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Bestimmt</item>
+        <item>Luftig</item>
+        <item>Jugendlich</item>
+        <item>Warm</item>
+        <item>Reif</item>
+        <item>Sachlich</item>
+        <item>Fröhlich</item>
+        <item>Ruhig</item>
+        <item>Rau</item>
+        <item>Klar</item>
+    </string-array>
     <string name="studio_none">Nicht vorbereitet · bis dahin lesen die anderen Stimmen</string>
     <string name="studio_on">Partnersätze nutzen die Studiostimmen</string>
     <string name="studio_off">Aus · die anderen Stimmen lesen die Sätze</string>

@@ -253,7 +253,11 @@ struct StudioRow: View {
     var body: some View {
         let total = model.studioTotal
         let done = model.studioReady
-        if !model.premium {
+        if model.studioSampleReady {
+            ListRow(icon: "ic_star", title: L("studio_title"),
+                    value: L(model.studioOn ? "studio_on" : "studio_off") + "\n" + L("studio_sample"),
+                    action: model.toggleStudio) { ToggleKnob(on: model.studioOn) }
+        } else if !model.premium {
             ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_value"),
                     action: { model.showPaywall("studio_title") }) { PremiumBadge() }
         } else if studio.running {
@@ -675,7 +679,19 @@ struct VoicesScreen: View {
             .padding(.top, 4)
             if ai {
                 Styled(model.aiVoiceTrait(part.speaker), .caption, Palette.textTertiary).padding(.leading, 56).padding(.top, 4)
-            } else {
+            }
+            if model.premium || model.scriptId == nil {
+                // The studio voice follows the character's speaker, so choosing it also sets the gender.
+                HStack(spacing: 0) {
+                    Styled(L("cast_studio"), .label, Palette.textSecondary).frame(width: 56, alignment: .leading)
+                    MemoButton(model.studioVoiceLabel(part.speaker), kind: .tonal, fill: true, height: 44) {
+                        model.chooseStudioVoice(character)
+                    }
+                }
+                .padding(.trailing, 8)
+                .padding(.top, 8)
+            }
+            if !ai {
                 optionRow("cast_tone", ["tone_low", "tone_normal", "tone_high"],
                           VoiceCast.Tone.allCases.firstIndex(of: part.tone) ?? 1) { index in
                     var changed = part

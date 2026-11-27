@@ -37,14 +37,23 @@ import java.util.concurrent.Executors;
  */
 final class StudioVoices {
     static final String WORKER = "https://memo-studio.cayildiz01.workers.dev";
-    /** Gemini voices given to characters in turn, alternating female and male voices. */
-    static final String[] VOICES = {"Kore", "Puck", "Aoede", "Charon", "Leda", "Fenrir", "Zephyr", "Orus",
-        "Despina", "Iapetus", "Callirrhoe", "Enceladus", "Autonoe", "Algenib", "Erinome", "Alnilam"};
+    /**
+     * The Gemini voice of each character voice of the cast: speakers 0–4 are female and 5–9 male,
+     * like the on-device AI voices. The Worker's sample voice pack uses the same table.
+     */
+    static final String[] CAST_VOICES = {"Kore", "Aoede", "Leda", "Sulafat", "Gacrux",
+        "Charon", "Puck", "Orus", "Algenib", "Iapetus"};
+    private static final String SAMPLE_PACK = "studio-sample/";
     private static final String TAG = "ScriptPrep";
     private static final int LINES_PER_REQUEST = 60;
     private static final String REFRESH = "studio_refresh_token";
 
     enum Stop { DONE, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, FAILED }
+
+    /** The Gemini voice of a character, from the script's cast. */
+    interface Casting {
+        String voice(String role);
+    }
 
     interface Progress {
         /** Lines with studio audio so far, of all partner lines of the scene. */
@@ -91,27 +100,30 @@ final class StudioVoices {
 
     // ---------------------------------------------------------------- What is ready
 
-    /** The Gemini voice of a character: characters take the voices in turn. */
-    static String voiceFor(Scene scene, String role) {
-        int index = Math.max(0, scene.roles.indexOf(role));
-        return VOICES[index % VOICES.length];
+    /** The Gemini voice of a character voice of the cast. */
+    static String voiceOf(VoiceCast.Part part) {
+        return CAST_VOICES[Math.max(0, Math.min(CAST_VOICES.length - 1, part == null ? 0 : part.speaker))];
     }
 
-    /** The studio audio of a line, or null when it has not been prepared. */
-    synchronized File audio(Scene fullScene, Scene.Line line, ScriptLanguage language) {
+    /** The studio audio of a line in the given voice, or null when it has not been prepared. */
+    synchronized File audio(Scene.Line line, ScriptLanguage language, String voice) {
         JSONObject note = notes().optJSONObject(noteKey(line, language));
         if (note == null) {
             return null;
         }
-        File file = audioFile(line, language, voiceFor(fullScene, line.role), note);
-        return file.isFile() ? file : null;
+        File file = audioFile(line, language, voice, note, ".wav");
+        if (file.isFile()) {
+            return file;
+        }
+        File packed = audioFile(line, language, voice, note, ".m4a");
+        return packed.isFile() ? packed : null;
     }
 
     /** How many of the lines the actor does not say have studio audio. */
-    int readyCount(Scene fullScene, Scene scene, String role, ScriptLanguage language) {
+    int readyCount(Scene scene, String role, ScriptLanguage language, Casting casting) {
         int ready = 0;
         for (Scene.Line line : partnerLines(scene, role)) {
-            if (audio(fullScene, line, language) != null) {
+            if (audio(line, language, casting.voice(line.role)) != null) {
                 ready++;
             }
         }
@@ -134,7 +146,7 @@ final class StudioVoices {
      * Prepares the partner lines of a scene in the background: notes first, a whole scene at a
      * time, then each line's audio. Stops at the first limit or lasting error; what is done stays.
      */
-    void prepare(Scene fullScene, Scene scene, String role, ScriptLanguage language, String title, Progress progress) {
+    void prepare(Scene scene, String role, ScriptLanguage language, String title, Casting casting, Progress progress) {
         if (running) {
             return;
         }
@@ -143,7 +155,7 @@ final class StudioVoices {
         worker.execute(() -> {
             Stop reason;
             try {
-                reason = run(fullScene, scene, role, language, title, progress);
+                reason = run(scene, role, language, title, casting, progress);
             } catch (LimitException limit) {
                 reason = limit.monthly ? Stop.MONTHLY_LIMIT : Stop.DAILY_LIMIT;
             } catch (IOException | JSONException | RuntimeException error) {
@@ -160,11 +172,11 @@ final class StudioVoices {
         });
     }
 
-    private Stop run(Scene fullScene, Scene scene, String role, ScriptLanguage language, String title,
+    private Stop run(Scene scene, String role, ScriptLanguage language, String title, Casting casting,
         Progress progress) throws IOException, JSONException {
         List<Scene.Line> partners = partnerLines(scene, role);
         int total = partners.size();
-        post(progress, readyCount(fullScene, scene, role, language), total);
+        post(progress, readyCount(scene, role, language, casting), total);
 
         // Notes: whole scenes, so the director sees what comes before and after each line.
         List<Scene.Line> lines = scene.lines;
@@ -189,14 +201,12 @@ final class StudioVoices {
                 return Stop.CANCELLED;
             }
             JSONObject note = note(line, language);
-            String voice = voiceFor(fullScene, line.role);
-            if (note == null) {
+            // Asked line by line: the director's genders can change the automatic cast.
+            String voice = casting.voice(line.role);
+            if (note == null || audio(line, language, voice) != null) {
                 continue;
             }
-            File target = audioFile(line, language, voice, note);
-            if (target.isFile()) {
-                continue;
-            }
+            File target = audioFile(line, language, voice, note, ".wav");
             byte[] wav = speak(note, language, voice);
             File partial = new File(target.getPath() + ".part");
             try (OutputStream output = new FileOutputStream(partial)) {
@@ -205,7 +215,7 @@ final class StudioVoices {
             if (!partial.renameTo(target)) {
                 throw new IOException("Could not save studio audio");
             }
-            post(progress, readyCount(fullScene, scene, role, language), total);
+            post(progress, readyCount(scene, role, language, casting), total);
         }
         return Stop.DONE;
     }
@@ -226,11 +236,95 @@ final class StudioVoices {
         JSONObject body = new JSONObject().put("language", language.code).put("title", title).put("lines", lines);
         JSONObject answer = new JSONObject(new String(post("/v1/direct", body), StandardCharsets.UTF_8));
         JSONArray directions = answer.getJSONArray("lines");
+        JSONArray cast = answer.optJSONArray("cast");
         synchronized (this) {
             for (int i = 0; i < chunk.size() && i < directions.length(); i++) {
                 notes().put(noteKey(chunk.get(i), language), directions.getJSONObject(i));
             }
+            for (int i = 0; cast != null && i < cast.length(); i++) {
+                JSONObject member = cast.getJSONObject(i);
+                putGender(member.optString("role"), member.optString("gender"));
+            }
             saveNotes();
+        }
+    }
+
+    private void putGender(String role, String gender) throws JSONException {
+        if (!role.isEmpty() && ("female".equals(gender) || "male".equals(gender))) {
+            notes().put(genderKey(role), gender);
+        }
+    }
+
+    /** The genders the director gave the characters ("female" or "male"), for the automatic cast. */
+    synchronized java.util.Map<String, String> genders(List<String> roles) {
+        java.util.Map<String, String> genders = new java.util.HashMap<>();
+        for (String role : roles) {
+            String gender = notes().optString(genderKey(role), "");
+            if (!gender.isEmpty()) {
+                genders.put(role, gender);
+            }
+        }
+        return genders;
+    }
+
+    private static String genderKey(String role) {
+        return "gender:" + role.trim().toLowerCase(Locale.ROOT);
+    }
+
+    // ---------------------------------------------------------------- The sample scene
+
+    /**
+     * Copies the voice pack of the sample scene from the app's assets (made by the Worker's
+     * scripts/sample-pack.ts), so the first scene plays with studio voices without preparing it.
+     * Only lines that match the scene are taken; it is done once per language and pack.
+     */
+    synchronized void installSample(Scene scene, ScriptLanguage language) {
+        String done = "sample_pack_" + language.code;
+        String name = SAMPLE_PACK + language.code + ".json";
+        try {
+            JSONObject pack = new JSONObject(new String(readAll(context.getAssets().open(name)), StandardCharsets.UTF_8));
+            JSONArray lines = pack.getJSONArray("lines");
+            String stamp = pack.optInt("version") + "/" + lines.length() + "/" + pack.toString().hashCode();
+            if (stamp.equals(preferences.getString(done, ""))) {
+                return;
+            }
+            JSONObject cast = pack.optJSONObject("cast");
+            java.util.Iterator<String> roles = cast == null ? java.util.Collections.emptyIterator() : cast.keys();
+            while (roles.hasNext()) {
+                String role = roles.next();
+                putGender(role, cast.getString(role));
+            }
+            if (!folder.isDirectory() && !folder.mkdirs()) {
+                throw new IOException("Could not create the studio folder");
+            }
+            for (int i = 0; i < lines.length(); i++) {
+                JSONObject entry = lines.getJSONObject(i);
+                String key = EnsembleRecordings.lineKey(entry.getString("role"), entry.getString("text"));
+                Scene.Line line = null;
+                for (Scene.Line candidate : scene.lines) {
+                    if (EnsembleRecordings.lineKey(candidate.role, candidate.text).equals(key)) {
+                        line = candidate;
+                        break;
+                    }
+                }
+                String audio = entry.optString("audio", "");
+                if (line == null || audio.isEmpty()) {
+                    continue;
+                }
+                JSONObject note = entry.getJSONObject("note");
+                notes().put(noteKey(line, language), note);
+                File target = audioFile(line, language, entry.getString("voice"), note, ".m4a");
+                try (InputStream input = context.getAssets().open(SAMPLE_PACK + audio);
+                     OutputStream output = new FileOutputStream(target)) {
+                    output.write(readAll(input));
+                }
+            }
+            saveNotes();
+            preferences.edit().putString(done, stamp).apply();
+        } catch (java.io.FileNotFoundException missing) {
+            // No pack for this language yet.
+        } catch (IOException | JSONException error) {
+            Log.w(TAG, "Sample studio voices could not be installed", error);
         }
     }
 
@@ -244,14 +338,17 @@ final class StudioVoices {
             .put("pronunciations", note.optJSONArray("pronunciations") == null ? new JSONArray()
                 : note.getJSONArray("pronunciations"));
         JSONObject answer = new JSONObject(new String(post("/v1/speak", body), StandardCharsets.UTF_8));
-        JSONArray parts = answer.getJSONArray("candidates").getJSONObject(0).getJSONObject("content")
-            .getJSONArray("parts");
-        for (int i = 0; i < parts.length(); i++) {
-            JSONObject data = parts.getJSONObject(i).optJSONObject("inlineData");
-            if (data != null) {
-                byte[] audio = Base64.decode(data.getString("data"), Base64.DEFAULT);
-                String type = data.optString("mimeType", "");
-                return type.contains("wav") || isWav(audio) ? audio : wav(audio, sampleRate(type));
+        // Gemini's interaction: steps of model output whose content holds the audio.
+        JSONArray steps = answer.optJSONArray("steps");
+        for (int i = 0; steps != null && i < steps.length(); i++) {
+            JSONArray content = steps.getJSONObject(i).optJSONArray("content");
+            for (int j = 0; content != null && j < content.length(); j++) {
+                JSONObject part = content.getJSONObject(j);
+                if ("audio".equals(part.optString("type")) && part.has("data")) {
+                    byte[] audio = Base64.decode(part.getString("data"), Base64.DEFAULT);
+                    String type = part.optString("mime_type", "");
+                    return type.contains("wav") || isWav(audio) ? audio : wav(audio, sampleRate(type));
+                }
             }
         }
         throw new IOException("No audio in the answer");
@@ -486,8 +583,8 @@ final class StudioVoices {
     }
 
     /** A line's audio changes with its words, its note and its voice; each combination is one file. */
-    private File audioFile(Scene.Line line, ScriptLanguage language, String voice, JSONObject note) {
-        return new File(folder, sha(language.code + "\n" + voice + "\n" + line.text + "\n" + note) + ".wav");
+    private File audioFile(Scene.Line line, ScriptLanguage language, String voice, JSONObject note, String extension) {
+        return new File(folder, sha(language.code + "\n" + voice + "\n" + line.text + "\n" + note) + extension);
     }
 
     private static String sha(String value) {

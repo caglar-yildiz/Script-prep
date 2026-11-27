@@ -9,9 +9,12 @@ import MemoCore
 final class StudioVoices: ObservableObject {
     static let shared = StudioVoices()
     static let worker = URL(string: "https://memo-studio.cayildiz01.workers.dev")!
-    /// Gemini voices given to characters in turn, alternating female and male voices.
-    static let voices = ["Kore", "Puck", "Aoede", "Charon", "Leda", "Fenrir", "Zephyr", "Orus",
-                         "Despina", "Iapetus", "Callirrhoe", "Enceladus", "Autonoe", "Algenib", "Erinome", "Alnilam"]
+    /// The Gemini voice of each character voice of the cast: speakers 0–4 are female and 5–9 male,
+    /// like the on-device AI voices. The Worker's sample voice pack uses the same table.
+    static let castVoices = ["Kore", "Aoede", "Leda", "Sulafat", "Gacrux", "Charon", "Puck", "Orus", "Algenib", "Iapetus"]
+
+    /// The Gemini voice of a character, from the script's cast.
+    typealias Casting = (String) -> String
     private static let linesPerRequest = 60
     private static let refreshKey = "studio_refresh_token"
 
@@ -55,34 +58,34 @@ final class StudioVoices: ObservableObject {
 
     // MARK: - What is ready
 
-    /// The Gemini voice of a character: characters take the voices in turn.
-    static func voice(_ scene: ScriptScene, _ role: String) -> String {
-        voices[max(0, scene.roles.firstIndex(of: role) ?? 0) % voices.count]
+    /// The Gemini voice of a character voice of the cast.
+    static func voice(of part: VoiceCast.Part?) -> String {
+        castVoices[max(0, min(castVoices.count - 1, part?.speaker ?? 0))]
     }
 
     static func partnerLines(_ scene: ScriptScene, role: String?) -> [ScriptScene.Line] {
         scene.lines.filter { $0.role != role }
     }
 
-    /// The studio audio of a line, or nil when it has not been prepared.
-    func audio(_ fullScene: ScriptScene, _ line: ScriptScene.Line, _ language: ScriptLanguage) -> URL? {
+    /// The studio audio of a line in the given voice, or nil when it has not been prepared.
+    func audio(_ line: ScriptScene.Line, _ language: ScriptLanguage, voice: String) -> URL? {
         guard let note = note(line, language) else {
             return nil
         }
-        let file = audioFile(line, language, Self.voice(fullScene, line.role), note)
-        return FileManager.default.fileExists(atPath: file.path) ? file : nil
+        return ["wav", "m4a"].map { audioFile(line, language, voice, note, $0) }
+            .first { FileManager.default.fileExists(atPath: $0.path) }
     }
 
-    func readyCount(_ fullScene: ScriptScene, _ scene: ScriptScene, role: String?, _ language: ScriptLanguage) -> Int {
-        Self.partnerLines(scene, role: role).filter { audio(fullScene, $0, language) != nil }.count
+    func readyCount(_ scene: ScriptScene, role: String?, _ language: ScriptLanguage, casting: Casting) -> Int {
+        Self.partnerLines(scene, role: role).filter { audio($0, language, voice: casting($0.role)) != nil }.count
     }
 
     // MARK: - Preparing
 
     /// Prepares the partner lines of a scene: notes a scene at a time, then each line's audio.
     /// Stops at the first limit or lasting error; what is done stays. `finished` runs on the main thread.
-    func prepare(_ fullScene: ScriptScene, _ scene: ScriptScene, role: String?, language: ScriptLanguage,
-                 title: String, finished: @escaping (Stop) -> Void) {
+    func prepare(_ scene: ScriptScene, role: String?, language: ScriptLanguage, title: String,
+                 casting: @escaping Casting, finished: @escaping (Stop) -> Void) {
         guard !running else {
             return
         }
@@ -91,11 +94,11 @@ final class StudioVoices: ObservableObject {
         cancelled = false
         lock.unlock()
         total = Self.partnerLines(scene, role: role).count
-        done = readyCount(fullScene, scene, role: role, language)
+        done = readyCount(scene, role: role, language, casting: casting)
         DispatchQueue.global(qos: .userInitiated).async {
             let reason: Stop
             do {
-                reason = try self.run(fullScene, scene, role: role, language: language, title: title)
+                reason = try self.run(scene, role: role, language: language, title: title, casting: casting)
             } catch Failure.limit(let monthly) {
                 reason = monthly ? .monthlyLimit : .dailyLimit
             } catch {
@@ -108,8 +111,8 @@ final class StudioVoices: ObservableObject {
         }
     }
 
-    private func run(_ fullScene: ScriptScene, _ scene: ScriptScene, role: String?, language: ScriptLanguage,
-                     title: String) throws -> Stop {
+    private func run(_ scene: ScriptScene, role: String?, language: ScriptLanguage, title: String,
+                     casting: Casting) throws -> Stop {
         let lines = scene.lines
         var start = 0
         while start < lines.count {
@@ -130,15 +133,16 @@ final class StudioVoices: ObservableObject {
             guard let note = note(line, language) else {
                 continue
             }
-            let voice = Self.voice(fullScene, line.role)
-            let target = audioFile(line, language, voice, note)
-            if FileManager.default.fileExists(atPath: target.path) {
+            // Asked line by line: the director's genders can change the automatic cast.
+            let voice = casting(line.role)
+            if audio(line, language, voice: voice) != nil {
                 continue
             }
+            let target = audioFile(line, language, voice, note, "wav")
             let audio = try speak(note, language, voice)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try audio.write(to: target, options: [.atomic])
-            let ready = readyCount(fullScene, scene, role: role, language)
+            let ready = readyCount(scene, role: role, language, casting: casting)
             DispatchQueue.main.async {
                 self.done = ready
             }
@@ -162,11 +166,89 @@ final class StudioVoices: ObservableObject {
         for (line, direction) in zip(chunk, directions) {
             stored[Self.noteKey(line, language)] = direction
         }
+        for member in answer["cast"] as? [[String: Any]] ?? [] {
+            Self.putGender(&stored, member["role"] as? String ?? "", member["gender"] as? String ?? "")
+        }
         notes = stored
         let snapshot = stored
         lock.unlock()
+        try saveNotes(snapshot)
+    }
+
+    private func saveNotes(_ snapshot: [String: Any]) throws {
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try JSONSerialization.data(withJSONObject: snapshot).write(to: notesFile, options: [.atomic])
+    }
+
+    private static func putGender(_ notes: inout [String: Any], _ role: String, _ gender: String) {
+        if !role.isEmpty && (gender == "female" || gender == "male") {
+            notes[genderKey(role)] = gender
+        }
+    }
+
+    private static func genderKey(_ role: String) -> String {
+        "gender:" + role.trimmingCharacters(in: .whitespaces).lowercased()
+    }
+
+    /// The genders the director gave the characters ("female" or "male"), for the automatic cast.
+    func genders(_ roles: [String]) -> [String: String] {
+        lock.lock()
+        defer { lock.unlock() }
+        let stored = loadNotes()
+        var genders: [String: String] = [:]
+        for role in roles {
+            if let gender = stored[Self.genderKey(role)] as? String {
+                genders[role] = gender
+            }
+        }
+        return genders
+    }
+
+    // MARK: - The sample scene
+
+    /// Copies the voice pack of the sample scene from the app (made by the Worker's
+    /// scripts/sample-pack.ts), so the first scene plays with studio voices without preparing it.
+    /// Only lines that match the scene are taken; it is done once per language and pack.
+    func installSample(_ scene: ScriptScene, _ language: ScriptLanguage) {
+        guard let index = Bundle.main.url(forResource: "studio-sample-" + language.code, withExtension: "json"),
+              let data = try? Data(contentsOf: index),
+              let pack = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
+              let lines = pack["lines"] as? [[String: Any]] else {
+            return
+        }
+        let doneKey = "sample_pack_" + language.code
+        let stamp = "\(pack["version"] ?? 0)/\(lines.count)/\(data.count)"
+        if UserDefaults.standard.string(forKey: doneKey) == stamp {
+            return
+        }
+        lock.lock()
+        var stored = loadNotes()
+        for (role, gender) in pack["cast"] as? [String: String] ?? [:] {
+            Self.putGender(&stored, role, gender)
+        }
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        for entry in lines {
+            guard let role = entry["role"] as? String, let text = entry["text"] as? String,
+                  let voice = entry["voice"] as? String, let note = entry["note"] as? [String: Any],
+                  let name = entry["audio"] as? String, !name.isEmpty,
+                  let source = Bundle.main.url(forResource: (name as NSString).deletingPathExtension, withExtension: "m4a") else {
+                continue
+            }
+            let key = EnsembleRules.lineKey(role: role, text: text)
+            guard let line = scene.lines.first(where: { EnsembleRules.lineKey(role: $0.role, text: $0.text) == key }) else {
+                continue
+            }
+            stored[Self.noteKey(line, language)] = note
+            let target = audioFile(line, language, voice, note, "m4a")
+            try? FileManager.default.removeItem(at: target)
+            try? FileManager.default.copyItem(at: source, to: target)
+        }
+        notes = stored
+        let snapshot = stored
+        lock.unlock()
+        if (try? saveNotes(snapshot)) != nil {
+            UserDefaults.standard.set(stamp, forKey: doneKey)
+        }
     }
 
     private func speak(_ note: [String: Any], _ language: ScriptLanguage, _ voice: String) throws -> Data {
@@ -179,16 +261,14 @@ final class StudioVoices: ObservableObject {
             "pronunciations": note["pronunciations"] as? [Any] ?? [],
         ]
         let data = try post("/v1/speak", body)
+        // Gemini's interaction: steps of model output whose content holds the audio.
         guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let candidates = answer["candidates"] as? [[String: Any]],
-              let content = candidates.first?["content"] as? [String: Any],
-              let parts = content["parts"] as? [[String: Any]] else {
+              let steps = answer["steps"] as? [[String: Any]] else {
             throw Failure.busy
         }
-        for part in parts {
-            if let inline = part["inlineData"] as? [String: Any], let base64 = inline["data"] as? String,
-               let audio = Data(base64Encoded: base64) {
-                let type = inline["mimeType"] as? String ?? ""
+        for part in steps.flatMap({ $0["content"] as? [[String: Any]] ?? [] }) where part["type"] as? String == "audio" {
+            if let base64 = part["data"] as? String, let audio = Data(base64Encoded: base64) {
+                let type = part["mime_type"] as? String ?? ""
                 if type.contains("wav") || audio.starts(with: Array("RIFF".utf8)) {
                     return audio
                 }
@@ -339,11 +419,11 @@ final class StudioVoices: ObservableObject {
 
     /// A line's audio changes with its words, its note and its voice; each combination is one file.
     private func audioFile(_ line: ScriptScene.Line, _ language: ScriptLanguage, _ voice: String,
-                           _ note: [String: Any]) -> URL {
+                           _ note: [String: Any], _ fileExtension: String) -> URL {
         let noteText = (try? JSONSerialization.data(withJSONObject: note, options: [.sortedKeys]))
             .map { String(decoding: $0, as: UTF8.self) } ?? ""
         let digest = SHA256.hash(data: Data("\(language.code)\n\(voice)\n\(line.text)\n\(noteText)".utf8))
         let name = digest.prefix(16).map { String(format: "%02x", $0) }.joined()
-        return folder.appendingPathComponent(name + ".wav")
+        return folder.appendingPathComponent(name + "." + fileExtension)
     }
 }

@@ -548,6 +548,21 @@
     <string name="studio_prepare">Préparer les voix studio</string>
     <string name="studio_progress">Préparation… %1$d répliques prêtes sur %2$d</string>
     <string name="studio_ready">%1$d répliques prêtes sur %2$d</string>
+    <string name="studio_sample">Écoutez les voix studio dans cette scène d’exemple. Premium les prépare pour vos textes.</string>
+    <string name="cast_studio">Studio</string>
+    <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
+    <string-array name="studio_voice_traits">
+        <item>Ferme</item>
+        <item>Légère</item>
+        <item>Jeune</item>
+        <item>Chaleureuse</item>
+        <item>Mûre</item>
+        <item>Posée</item>
+        <item>Enjouée</item>
+        <item>Calme</item>
+        <item>Rauque</item>
+        <item>Claire</item>
+    </string-array>
     <string name="studio_none">Non préparées · les autres voix lisent en attendant</string>
     <string name="studio_on">Les répliques du partenaire utilisent les voix studio</string>
     <string name="studio_off">Désactivé · les autres voix lisent les répliques</string>

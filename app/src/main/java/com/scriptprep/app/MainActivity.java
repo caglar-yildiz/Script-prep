@@ -1320,6 +1320,10 @@ public final class MainActivity extends Activity {
         category = TextCategory.ROLE_REHEARSAL;
         openSavedScript(new ScriptLibrary.Script(null, getString(R.string.sample_title),
             getString(R.string.sample_script), TextCategory.ROLE_REHEARSAL, interfaceLanguage()));
+        if (fullScene != null) {
+            studio.installSample(fullScene, language);
+            render();
+        }
     }
 
     private void renderEmptyLibrary() {
@@ -4092,7 +4096,7 @@ public final class MainActivity extends Activity {
 
     private Map<String, VoiceCast.Part> currentCast() {
         List<String> roles = fullScene == null ? Collections.emptyList() : fullScene.roles;
-        return VoiceCast.load(preferences, castKey(), roles, castVoiceNames());
+        return VoiceCast.load(preferences, castKey(), roles, castVoiceNames(), studio.genders(roles));
     }
 
     private Voice defaultVoice(ScriptLanguage target) {
@@ -4165,6 +4169,18 @@ public final class MainActivity extends Activity {
                 trait.setPadding(ui.dp(56), ui.dp(4), 0, 0);
                 card.addView(trait, Ui.matchWidth());
             }
+            if (premium() || scriptId == null) {
+                // The studio voice follows the character's speaker, so choosing it also sets the gender.
+                LinearLayout studioRow = horizontal();
+                studioRow.setPadding(0, ui.dp(8), ui.dp(8), 0);
+                studioRow.addView(ui.text(getString(R.string.cast_studio), Type.LABEL, TEXT_SECONDARY),
+                    new LinearLayout.LayoutParams(ui.dp(56), -2));
+                LinearLayout studioPicker = ui.button(studioVoiceLabel(part.speaker), 0, Kind.TONAL,
+                    view -> chooseStudioVoice(character));
+                studioPicker.setMinimumHeight(ui.dp(44));
+                studioRow.addView(studioPicker, new LinearLayout.LayoutParams(0, -2, 1));
+                card.addView(studioRow, ui.spaced(4));
+            }
 
             if (!ai) {
                 VoiceCast.Tone[] tones = VoiceCast.Tone.values();
@@ -4216,6 +4232,26 @@ public final class MainActivity extends Activity {
         cast.put(character, part);
         VoiceCast.save(preferences, castKey(), cast);
         render();
+    }
+
+    /** "Kore · Female · Firm": a studio voice with its gender and character. */
+    private String studioVoiceLabel(int speaker) {
+        String[] traits = getResources().getStringArray(R.array.studio_voice_traits);
+        int index = Math.max(0, Math.min(StudioVoices.CAST_VOICES.length - 1, speaker));
+        return StudioVoices.CAST_VOICES[index] + " · " + aiVoiceGender(index) + " · " + traits[index];
+    }
+
+    private void chooseStudioVoice(String character) {
+        CharSequence[] voices = new CharSequence[StudioVoices.CAST_VOICES.length];
+        for (int i = 0; i < voices.length; i++) {
+            voices[i] = studioVoiceLabel(i);
+        }
+        new AlertDialog.Builder(this).setTitle(getString(R.string.cast_studio_voice_for, character))
+            .setSingleChoiceItems(voices, currentCast().get(character).speaker, (dialog, index) -> {
+                dialog.dismiss();
+                updateCast(character, currentCast().get(character).withSpeaker(index));
+            })
+            .setNegativeButton(android.R.string.cancel, null).show();
     }
 
     private void chooseCharacterVoice(String character) {
@@ -4287,16 +4323,45 @@ public final class MainActivity extends Activity {
 
     // ---------------------------------------------------------------- Studio voices
 
-    /** The studio voice audio of a line, when it is prepared and switched on. */
+    /**
+     * The studio voice audio of a line, when it is prepared and switched on. The sample scene's
+     * come with the app and play for everyone, so the studio voices can be heard before buying.
+     */
     private java.io.File studioAudio(Scene.Line line) {
-        if (!premium() || fullScene == null || !preferences.getBoolean(STUDIO_PREFERENCE, true)) {
+        if ((!premium() && scriptId != null) || fullScene == null || !preferences.getBoolean(STUDIO_PREFERENCE, true)) {
             return null;
         }
-        return studio.audio(fullScene, line, language);
+        return studio.audio(line, language, studioCasting().voice(line.role));
+    }
+
+    /**
+     * Each character's studio voice follows their voice in the cast (female or male). Read from
+     * the saved cast only, so it can be asked from the preparing thread.
+     */
+    private StudioVoices.Casting studioCasting() {
+        List<String> roles = fullScene == null ? Collections.emptyList() : new ArrayList<>(fullScene.roles);
+        String key = castKey();
+        return character -> StudioVoices.voiceOf(VoiceCast.load(preferences, key, roles, Collections.emptyList(),
+            studio.genders(roles)).get(character));
     }
 
     /** Practice options rows: prepare the scene's studio voices, and use them once there are some. */
     private void addStudioRows(LinearLayout extras) {
+        if (!premium() && scriptId == null && fullScene != null) {
+            int total = StudioVoices.partnerLines(scene, role).size();
+            int done = studio.readyCount(scene, role, language, studioCasting());
+            if (done > 0) {
+                boolean on = preferences.getBoolean(STUDIO_PREFERENCE, true);
+                extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
+                    getString(on ? R.string.studio_on : R.string.studio_off) + "\n" + getString(R.string.studio_sample),
+                    ui.toggle(on), view -> {
+                        preferences.edit().putBoolean(STUDIO_PREFERENCE, !on).apply();
+                        render();
+                    }), Ui.matchWidth());
+                extras.addView(ui.divider(70));
+                return;
+            }
+        }
         if (!premium()) {
             extras.addView(premiumRow(R.drawable.ic_star, R.string.studio_title, getString(R.string.studio_value),
                 null, () -> { }), Ui.matchWidth());
@@ -4304,7 +4369,7 @@ public final class MainActivity extends Activity {
             return;
         }
         int total = StudioVoices.partnerLines(scene, role).size();
-        int done = studio.isRunning() && studioDone >= 0 ? studioDone : studio.readyCount(fullScene, scene, role, language);
+        int done = studio.isRunning() && studioDone >= 0 ? studioDone : studio.readyCount(scene, role, language, studioCasting());
         if (studio.isRunning()) {
             extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
                 getString(R.string.studio_progress, done, total),
@@ -4339,7 +4404,7 @@ public final class MainActivity extends Activity {
             return;
         }
         studioDone = -1;
-        studio.prepare(fullScene, scene, role, language, scriptTitle, new StudioVoices.Progress() {
+        studio.prepare(scene, role, language, scriptTitle, studioCasting(), new StudioVoices.Progress() {
             @Override
             public void progress(int done, int total) {
                 studioDone = done;
