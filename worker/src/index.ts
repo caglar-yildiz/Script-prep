@@ -2,15 +2,15 @@
  * Memo Everything studio voices. The apps send a scene or a line with the user's Firebase ID
  * token; this Worker checks the user and their monthly allowance, asks Gemini and answers.
  *
- *   POST /v1/direct  a scene        -> performance notes per line
- *   POST /v1/speak   one noted line -> Gemini's audio answer (24 kHz 16-bit mono PCM, base64)
+ *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
+ *   POST /v1/speak   one noted line -> Gemini's interaction, whose steps hold the line as base64 WAV
  *   GET  /v1/usage                  -> this month's counts and limits
  */
 import { AuthError, verifyIdToken } from "./auth";
-import { DIRECTION_SCHEMA, directorPrompt, normalizeDirections, parseDirectRequest, RequestError } from "./director";
-import { answerText, DIRECTOR_MODELS, generate, UpstreamError, VOICE_MODELS } from "./gemini";
+import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError } from "./director";
+import { answerText, DIRECTOR_MODELS, generate, interact, UpstreamError, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
-import { parseSpeakRequest, voicePrompt } from "./speak";
+import { parseSpeakRequest, voiceInput } from "./speak";
 
 export { Quota };
 
@@ -67,13 +67,16 @@ async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota
     generationConfig: { responseMimeType: "application/json", responseSchema: DIRECTION_SCHEMA, temperature: 0.7 },
   }, env.GEMINI_API_KEY);
   let directions;
+  let cast;
   try {
-    directions = normalizeDirections(scene, JSON.parse(await answerText(response)));
+    const answer = JSON.parse(await answerText(response));
+    directions = normalizeDirections(scene, answer);
+    cast = normalizeCast(scene, answer);
   } catch (error) {
     throw error instanceof UpstreamError ? error : new UpstreamError("The director's answer could not be used", 502);
   }
   const used = await quota.add("directed", scene.lines.length);
-  return json({ lines: directions, usage: { directed: used, limit } });
+  return json({ lines: directions, cast, usage: { directed: used, limit } });
 }
 
 async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
@@ -83,13 +86,13 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
   if (!allowance.allowed) {
     return problem(429, "monthly_limit", "Monthly limit for studio voices reached", 86_400);
   }
-  const response = await generate(VOICE_MODELS, {
-    contents: [{ parts: [{ text: voicePrompt(line) }] }],
-    generationConfig: {
-      responseModalities: ["AUDIO"],
-      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } },
-    },
-  }, env.GEMINI_API_KEY);
+  const { text, style } = voiceInput(line);
+  const response = await interact(VOICE_MODELS, (model) => ({
+    model,
+    input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style }] }] }],
+    response_format: { type: "audio" },
+    generation_config: { speech_config: [{ voice: line.voice }] },
+  }), env.GEMINI_API_KEY);
   await quota.add("spoken", 1);
   // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
   return new Response(response.body, { headers: { "Content-Type": "application/json; charset=utf-8" } });

@@ -1,7 +1,7 @@
 name: Studio sample voices
 
-# Uses the Gemini key (secret GEMINI_API_KEY) to check how the voice model follows directions and
-# to make the studio voice pack of the bundled sample scene.
+# Makes the studio voice pack of the sample scene with the Gemini key (secret GEMINI_API_KEY) and
+# commits it to the branch. A run stopped by a Gemini limit keeps what it made; run it again later.
 
 on:
   push:
@@ -10,22 +10,42 @@ on:
       - '.github/workflows/studio-sample.yml'
       - 'worker/scripts/**'
   workflow_dispatch:
+    inputs:
+      languages:
+        description: 'Languages, comma separated (empty for all)'
+        required: false
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: studio-sample
+  cancel-in-progress: false
 
 jobs:
-  probe:
+  pack:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v5
-        with:
-          persist-credentials: false
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-      - name: Probe voice directions
+      - name: Install ffmpeg
+        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+      - name: Make the voice pack
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node worker/scripts/probe.mjs
+          LANGUAGES: ${{ github.event.inputs.languages }}
+        run: npx -y tsx worker/scripts/sample-pack.ts $LANGUAGES || echo "stopped=1" >> "$GITHUB_ENV"
+      - name: Commit the pack
+        run: |
+          git add app/src/main/assets/studio-sample ios/MemoEverything/Resources/StudioSample
+          if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Add studio voices of the sample scene"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
+      - name: Report a stopped run
+        if: env.stopped == '1'
+        run: echo "::warning::The pack is not complete yet (a Gemini limit or error); run this workflow again later."

@@ -63,30 +63,56 @@ export function parseSpeakRequest(body: unknown): SpeakRequest {
   };
 }
 
-const VOLUME_TAGS: Record<string, string> = {
+const VOLUME_WORDS: Record<string, string> = {
   whisper: "whispering",
   quiet: "quietly",
-  normal: "",
+  normal: "at normal volume",
   loud: "loudly",
   shout: "shouting",
 };
 
-/**
- * The text sent to the voice model: performance directions in square brackets, which the model
- * follows without reading them aloud, and the line itself. Brackets in the script are removed so
- * they cannot be taken for directions.
- */
-export function voicePrompt(request: SpeakRequest): string {
-  const opening = [request.emotion !== "neutral" ? request.emotion : "", request.pace !== "normal" ? `${request.pace} pace` : ""]
-    .filter(Boolean).join(", ");
-  const parts = request.segments.map((segment) => {
-    let spoken = segment.text.replace(/[[\]]/g, "");
-    for (const { word, say } of request.pronunciations) {
-      spoken = spoken.split(word).join(say);
-    }
-    const tag = [VOLUME_TAGS[segment.volume], segment.style].filter(Boolean).join(", ");
-    const pause = segment.pauseAfterMs >= 600 ? " [long pause]" : segment.pauseAfterMs >= 250 ? " [short pause]" : "";
-    return (tag ? `[${tag}] ` : "") + spoken + pause;
-  });
-  return (opening ? `[${opening}] ` : "") + parts.join(" ");
+const PACE_WORDS: Record<string, string> = { slow: "speaking slowly", normal: "", fast: "speaking quickly" };
+
+export interface VoiceInput {
+  /** What is said: the script's words only, with English pause tags where the director wants them. */
+  text: string;
+  /** How it is said, for the turn's speech_metadata style. */
+  style: string;
 }
+
+/**
+ * Splits a noted line into the two things Gemini 3.8 voices take: the transcript, which is spoken
+ * word for word, and the style, which is followed but never spoken. A line that changes delivery
+ * part way (shouted, then whispered) is described in order in the style, with a pause tag at the
+ * change. Angle brackets in the script are removed so a line cannot add tags of its own.
+ */
+export function voiceInput(request: SpeakRequest): VoiceInput {
+  const parts = request.segments.map((segment, i) => {
+    let spoken = segment.text.replace(/[<>|]/g, "");
+    for (const { word, say } of request.pronunciations) {
+      spoken = spoken.split(word).join(say.replace(/[<>|]/g, ""));
+    }
+    const last = i === request.segments.length - 1;
+    const pause = last ? "" : segment.pauseAfterMs >= 600 ? " <long pause>" : segment.pauseAfterMs >= 250 ? " <short pause>" : "";
+    return spoken + pause;
+  });
+  const delivery = (segment: SpeakRequest["segments"][number], many: boolean) =>
+    [segment.volume === "normal" && !many ? "" : VOLUME_WORDS[segment.volume], segment.style].filter(Boolean).join(", ");
+  const many = request.segments.length > 1
+    && new Set(request.segments.map((s) => `${s.volume}|${s.style}`)).size > 1;
+  const turn = [request.emotion !== "neutral" ? request.emotion : "", PACE_WORDS[request.pace]].filter(Boolean);
+  if (many) {
+    const steps = request.segments.map((s) => delivery(s, true));
+    turn.push(steps.map((step, i) => (i === 0 ? `first ${step}` : `then ${step}`)).join(", "));
+  } else {
+    turn.push(delivery(request.segments[0], false));
+  }
+  const style = turn.filter(Boolean).join("; ");
+  return { text: parts.join(" "), style: style || "natural, as in a stage rehearsal" };
+}
+
+/**
+ * The studio voice of each of the apps' ten character voices (speakers 0–4 female, 5–9 male, as
+ * the on-device voices). The apps keep the same table; the sample voice pack is made with it.
+ */
+export const CAST_VOICES = ["Kore", "Aoede", "Leda", "Sulafat", "Gacrux", "Charon", "Puck", "Orus", "Algenib", "Iapetus"] as const;

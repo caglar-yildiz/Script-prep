@@ -11,6 +11,13 @@ export const EMOTIONS = ["neutral", "angry", "sarcastic", "sad", "tired", "afrai
   "desperate", "cold", "pleading", "hurt", "happy", "nervous"] as const;
 export const PACES = ["slow", "normal", "fast"] as const;
 export const VOLUMES = ["whisper", "quiet", "normal", "loud", "shout"] as const;
+export const GENDERS = ["female", "male", "unknown"] as const;
+
+/** A character's likely gender, so the apps can give them a matching voice. */
+export interface CastMember {
+  role: string;
+  gender: (typeof GENDERS)[number];
+}
 
 export const MAX_LINES = 80;
 const MAX_LINE_CHARS = 1500;
@@ -106,6 +113,7 @@ Rules:
 - segments: split a line only where the delivery changes (for example shouted, then whispered). The segment texts joined with spaces must reproduce the spoken line exactly, without the stage directions.
 - volume: whisper, quiet, normal, loud or shout. style: 2-6 English words for the voice actor, e.g. "icy, mocking" or "breaking, close to tears".
 - note: one short sentence in ${LANGUAGE_NAMES[request.language]} explaining the subtext to the actor.
+- cast: every character who speaks, with their likely gender from the name, the text and the stage directions (female, male, or unknown when it cannot be told).
 - pronunciations: only words a speech engine is likely to misread (foreign names, abbreviations, numbers), each with how to say it in ${LANGUAGE_NAMES[request.language]} spelling. Usually empty.
 ${request.title ? `Play: ${request.title}\n` : ""}
 SCENE:
@@ -115,6 +123,14 @@ ${scene}`;
 export const DIRECTION_SCHEMA = {
   type: "object",
   properties: {
+    cast: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { role: { type: "string" }, gender: { type: "string", enum: [...GENDERS] } },
+        required: ["role", "gender"],
+      },
+    },
     lines: {
       type: "array",
       items: {
@@ -149,8 +165,24 @@ export const DIRECTION_SCHEMA = {
       },
     },
   },
-  required: ["lines"],
+  required: ["cast", "lines"],
 };
+
+/** The genders the director gave, for characters of this scene only. */
+export function normalizeCast(request: DirectRequest, answer: unknown): CastMember[] {
+  const roles = new Map(request.lines.map((line) => [line.role.toLowerCase(), line.role]));
+  const cast = (answer as { cast?: unknown[] } | null)?.cast;
+  const seen = new Set<string>();
+  return (Array.isArray(cast) ? cast : []).flatMap((raw) => {
+    const entry = (raw ?? {}) as Record<string, unknown>;
+    const role = roles.get(String(entry.role ?? "").trim().toLowerCase());
+    if (!role || seen.has(role)) {
+      return [];
+    }
+    seen.add(role);
+    return [{ role, gender: pick(GENDERS, entry.gender, "unknown") }];
+  });
+}
 
 function squash(value: string): string {
   return value.replace(/\s+/g, " ").trim();

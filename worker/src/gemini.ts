@@ -1,6 +1,6 @@
 /** Calls Gemini with retries on overload and a fallback model when one stays busy. */
 
-const BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+const BASE = "https://generativelanguage.googleapis.com/v1beta/";
 
 export const DIRECTOR_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
 export const VOICE_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
@@ -27,10 +27,25 @@ function isDailyLimit(body: string): boolean {
  */
 export async function generate(models: string[], body: unknown, apiKey: string, fetcher: Fetcher = fetch,
   sleep: Sleeper = wait): Promise<Response> {
+  return send(models, (model) => ({ path: `models/${model}:generateContent`, body }), apiKey, fetcher, sleep);
+}
+
+/**
+ * Speech through the Interactions API, the one where Gemini 3.8 voices follow a turn's style
+ * (speech_metadata) instead of hearing the directions as part of the text.
+ */
+export async function interact(models: string[], body: (model: string) => unknown, apiKey: string,
+  fetcher: Fetcher = fetch, sleep: Sleeper = wait): Promise<Response> {
+  return send(models, (model) => ({ path: "interactions", body: body(model) }), apiKey, fetcher, sleep);
+}
+
+async function send(models: string[], request: (model: string) => { path: string; body: unknown }, apiKey: string,
+  fetcher: Fetcher, sleep: Sleeper): Promise<Response> {
   let last: UpstreamError = new UpstreamError("No model answered", 503);
   for (const model of models) {
     for (let attempt = 0; attempt < 3; attempt++) {
-      const response = await fetcher(BASE + model + ":generateContent", {
+      const { path, body } = request(model);
+      const response = await fetcher(BASE + path, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-goog-api-key": apiKey },
         body: JSON.stringify(body),
