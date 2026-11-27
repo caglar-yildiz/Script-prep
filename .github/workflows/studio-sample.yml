@@ -1,0 +1,31 @@
+name: Studio sample voices
+
+# Uses the Gemini key (secret GEMINI_API_KEY) to check how the voice model follows directions and
+# to make the studio voice pack of the bundled sample scene.
+
+on:
+  push:
+    branches: [ccr-5eb10d38-qkeayr]
+    paths:
+      - '.github/workflows/studio-sample.yml'
+      - 'worker/scripts/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+      - name: Probe voice directions
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node worker/scripts/probe.mjs
