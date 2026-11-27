@@ -246,9 +246,13 @@
 "next_line" = "Weiter";
 "notes_delivery" = "Stimmung: %1$@ · Tempo: %2$@";
 "notes_intro" = "Was die KI-Regie für jede Replik entschieden hat und was die Studiostimme bekommen hat.";
+"notes_no_reading" = "Noch nicht gelesen: Das Stück wird beim nächsten Vorbereiten der Studiostimmen ganz gelesen.";
 "notes_not_directed" = "Noch nicht inszeniert.";
 "notes_not_voiced" = "Stimme %1$@: noch nicht vorbereitet.";
 "notes_pronounce" = "„%1$@“ wie „%2$@“ sprechen";
+"notes_reading" = "Wie die Regie das Stück liest";
+"notes_redirect" = "Neu inszenieren";
+"notes_redirect_message" = "Die Regie liest das ganze Stück noch einmal und inszeniert und vertont die Repliken dieser Szene damit neu. Das zählt zu den Studiostimmen dieses Monats.";
 "notes_script_direction" = "Im Text: %1$@";
 "notes_sent" = "Gesendeter Text: %1$@";
 "notes_share" = "Notizen teilen";

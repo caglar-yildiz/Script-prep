@@ -2,12 +2,14 @@
  * Memo Everything studio voices. The apps send a scene or a line with the user's Firebase ID
  * token; this Worker checks the user and their monthly allowance, asks Gemini and answers.
  *
+ *   POST /v1/analyze the whole play     -> the director's reading: story, characters, relationships, scenes
  *   POST /v1/cast    a scene        -> the characters' likely genders, before the cast is chosen
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
  *   POST /v1/speak   one noted line -> Gemini's answer: candidates with base64 WAV (Google Cloud) or
  *                                      PCM (older voices), or an interaction whose steps hold WAV
  *   GET  /v1/usage                  -> this month's counts and limits
  */
+import { ANALYSIS_SCHEMA, analyzePrompt, MAX_PLAY_CHARS, normalizeAnalysis, parseAnalyzeRequest } from "./analysis";
 import { AuthError, verifyIdToken } from "./auth";
 import { CAST_SCHEMA, castPrompt, DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
 import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
@@ -29,7 +31,7 @@ export interface Env {
   QUOTA: DurableObjectNamespace<Quota>;
 }
 
-const MAX_BODY_BYTES = 64 * 1024;
+const MAX_BODY_BYTES = 256 * 1024;
 
 function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
@@ -97,6 +99,36 @@ async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota
   }
   const used = await quota.add("directed", scene.lines.length);
   return json({ lines: directions, cast, usage: { directed: used, limit } });
+}
+
+/**
+ * The director reads the whole play once. It comes as plain text (see analysis.ts) with its
+ * language, title and script id in headers, which keeps the Worker's own work small.
+ */
+async function analyze(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
+  if (Number(request.headers.get("content-length") ?? "0") > MAX_PLAY_CHARS * 3) {
+    throw new RequestError("The play is too long");
+  }
+  let title = "";
+  try {
+    title = decodeURIComponent(request.headers.get("x-memo-title") ?? "");
+  } catch {
+    // A title that cannot be read is left out.
+  }
+  const play = parseAnalyzeRequest(request.headers.get("x-memo-language"), title, await request.text());
+  const refused = await openScript({ script: request.headers.get("x-memo-script") ?? undefined }, env, quota);
+  if (refused) {
+    return refused;
+  }
+  const response = await generate(DIRECTOR_MODELS, {
+    contents: [{ parts: [{ text: analyzePrompt(play) }] }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: ANALYSIS_SCHEMA, temperature: 0.4 },
+  }, env.GEMINI_API_KEY);
+  try {
+    return json(normalizeAnalysis(JSON.parse(await answerText(response))));
+  } catch (error) {
+    throw error instanceof UpstreamError ? error : new UpstreamError("The director's reading could not be used", 502);
+  }
 }
 
 /** The characters' genders only; cheap, so it counts against no allowance. */
@@ -185,7 +217,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({ ok: true });
     }
-    const routes: Record<string, string> = { "/v1/cast": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
+    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
       "/v1/usage": "GET" };
     const method = routes[url.pathname];
     if (!method) {
@@ -205,6 +237,9 @@ export default {
         const used = await quota.usage();
         return json({ used, limits: { directed: limitFor(env, "directed"), spoken: limitFor(env, "spoken"),
           scripts: Number(env.MONTHLY_SCRIPTS) || 0 } });
+      }
+      if (url.pathname === "/v1/analyze") {
+        return await analyze(request, env, quota);
       }
       if (url.pathname === "/v1/cast") {
         return await cast(request, env);

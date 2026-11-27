@@ -152,7 +152,7 @@ final class StudioVoices {
      * @param script an id of the script, so the Worker can count the scripts of the month; made
      *               from the app's own id and not readable back to it
      */
-    void prepare(Scene scene, ScriptLanguage language, String title, String script, Casting casting,
+    void prepare(Scene fullScene, Scene scene, ScriptLanguage language, String title, String script, Casting casting,
         Progress progress) {
         if (running) {
             return;
@@ -162,7 +162,7 @@ final class StudioVoices {
         worker.execute(() -> {
             Stop reason;
             try {
-                reason = run(scene, language, title, sha(script), casting, progress);
+                reason = run(fullScene, scene, language, title, sha(script), casting, progress);
             } catch (LimitException limit) {
                 reason = limit.reason;
             } catch (IOException | JSONException | RuntimeException error) {
@@ -179,11 +179,23 @@ final class StudioVoices {
         });
     }
 
-    private Stop run(Scene scene, ScriptLanguage language, String title, String script, Casting casting,
-        Progress progress) throws IOException, JSONException {
+    private Stop run(Scene fullScene, Scene scene, ScriptLanguage language, String title, String script,
+        Casting casting, Progress progress) throws IOException, JSONException {
         List<Scene.Line> lines = scene.lines;
         int total = lines.size();
         post(progress, readyCount(scene, language, casting), total);
+
+        // The director first reads the whole play once; each part is then directed knowing it.
+        JSONObject analysis = analysis(fullScene, language, script);
+        if (analysis == null) {
+            try {
+                analysis = analyze(fullScene, language, title, script);
+            } catch (LimitException limit) {
+                throw limit;
+            } catch (IOException | JSONException error) {
+                Log.w(TAG, "The play could not be read as a whole; directing scene by scene", error);
+            }
+        }
 
         // Notes: whole scenes, so the director sees what comes before and after each line.
         for (int start = 0; start < lines.size(); start += LINES_PER_REQUEST) {
@@ -198,7 +210,8 @@ final class StudioVoices {
             if (cancelled) {
                 return Stop.CANCELLED;
             }
-            direct(chunk, language, title, script);
+            direct(chunk, linesBefore(fullScene, chunk.get(0)), contextFor(analysis, chunk.get(0).section), language,
+                title, script);
         }
 
         // Voices: one line at a time.
@@ -234,18 +247,22 @@ final class StudioVoices {
         main.post(() -> progress.progress(done, total));
     }
 
-    private void direct(List<Scene.Line> chunk, ScriptLanguage language, String title, String script)
-        throws IOException, JSONException {
+    private static JSONArray linesJson(List<Scene.Line> chunk) throws JSONException {
         JSONArray lines = new JSONArray();
         for (Scene.Line line : chunk) {
             JSONArray notes = new JSONArray();
             for (String note : line.notes) {
-                notes.put(note);
+                notes.put(note.length() > 300 ? note.substring(0, 300) : note);
             }
             lines.put(new JSONObject().put("role", line.role).put("text", line.text).put("notes", notes));
         }
+        return lines;
+    }
+
+    private void direct(List<Scene.Line> chunk, List<Scene.Line> before, String context, ScriptLanguage language,
+        String title, String script) throws IOException, JSONException {
         JSONObject body = new JSONObject().put("language", language.code).put("title", title).put("script", script)
-            .put("lines", lines);
+            .put("lines", linesJson(chunk)).put("before", linesJson(before)).put("context", context);
         JSONObject answer = new JSONObject(new String(post("/v1/direct", body), StandardCharsets.UTF_8));
         JSONArray directions = answer.getJSONArray("lines");
         JSONArray cast = answer.optJSONArray("cast");
@@ -277,6 +294,203 @@ final class StudioVoices {
             }
         }
         return genders;
+    }
+
+    // ---------------------------------------------------------------- Reading the whole play
+
+    private static final String ANALYSIS = "analysis:";
+    private static final int LINES_BEFORE = 30;
+    private static final int MAX_PLAY_CHARS = 590_000;
+
+    /** The key of a play's reading: the script and its words, so an edited script is read again. */
+    private static String analysisKey(Scene fullScene, ScriptLanguage language, String script) {
+        StringBuilder words = new StringBuilder(language.code).append('\n').append(script);
+        for (Scene.Line line : fullScene.lines) {
+            words.append('\n').append(line.role).append(':').append(line.text);
+        }
+        return ANALYSIS + sha(words.toString());
+    }
+
+    /** The director's reading of the play, or null until it has been read. */
+    synchronized JSONObject analysis(Scene fullScene, ScriptLanguage language, String script) {
+        return notes().optJSONObject(analysisKey(fullScene, language, script));
+    }
+
+    /** The app's id of a script, as the Worker sees it. */
+    static String scriptId(String castKey) {
+        return sha(castKey);
+    }
+
+    /**
+     * The play as the director reads it: "## SCENE:" where a named scene starts, then
+     * "ROLE: text (direction)". A very long play is cut at the Worker's limit.
+     */
+    static String playText(Scene fullScene) {
+        StringBuilder play = new StringBuilder();
+        String section = null;
+        for (Scene.Line line : fullScene.lines) {
+            if (!line.section.equals(section)) {
+                section = line.section;
+                if (!section.isEmpty()) {
+                    play.append("\n## SCENE: ").append(section).append('\n');
+                }
+            }
+            play.append(line.role).append(": ").append(line.text);
+            for (String note : line.notes) {
+                play.append(' ').append(note.startsWith("(") || note.startsWith("[") ? note : "(" + note + ")");
+            }
+            play.append('\n');
+            if (play.length() > MAX_PLAY_CHARS) {
+                break;
+            }
+        }
+        return play.length() > MAX_PLAY_CHARS ? play.substring(0, MAX_PLAY_CHARS) : play.toString();
+    }
+
+    /** Asks the director to read the whole play; keeps the reading and the characters' genders. */
+    private JSONObject analyze(Scene fullScene, ScriptLanguage language, String title, String script)
+        throws IOException, JSONException {
+        java.util.Map<String, String> headers = new java.util.HashMap<>();
+        headers.put("X-Memo-Language", language.code);
+        headers.put("X-Memo-Title", URLEncoder.encode(title, "UTF-8").replace("+", "%20"));
+        headers.put("X-Memo-Script", script);
+        byte[] answer = post("/v1/analyze", playText(fullScene).getBytes(StandardCharsets.UTF_8),
+            "text/plain; charset=utf-8", headers);
+        JSONObject analysis = new JSONObject(new String(answer, StandardCharsets.UTF_8));
+        synchronized (this) {
+            notes().put(analysisKey(fullScene, language, script), analysis);
+            JSONArray characters = analysis.optJSONArray("characters");
+            for (int i = 0; characters != null && i < characters.length(); i++) {
+                JSONObject character = characters.getJSONObject(i);
+                putGender(character.optString("role"), character.optString("gender"));
+            }
+            saveNotes();
+        }
+        return analysis;
+    }
+
+    /**
+     * Reads the play before the cast is checked, so its genders fill in the cast, and keeps the
+     * reading for directing. Falls back to asking for the genders alone. {@code done} runs on the
+     * main thread.
+     */
+    void analyzeFirst(Scene fullScene, ScriptLanguage language, String title, String castKey, Runnable done) {
+        if (!running) {
+            cancelled = false;
+        }
+        String script = scriptId(castKey);
+        worker.execute(() -> {
+            try {
+                if (analysis(fullScene, language, script) == null) {
+                    analyze(fullScene, language, title, script);
+                }
+            } catch (IOException | JSONException | RuntimeException error) {
+                Log.w(TAG, "The play could not be read; asking for the genders alone", error);
+                main.post(() -> guessGenders(fullScene, language, title, done));
+                return;
+            }
+            main.post(done);
+        });
+    }
+
+    /** The lines just before a line in the whole play, for the director's context. */
+    private static List<Scene.Line> linesBefore(Scene fullScene, Scene.Line first) {
+        int index = fullScene.lines.indexOf(first);
+        if (index <= 0) {
+            return java.util.Collections.emptyList();
+        }
+        return fullScene.lines.subList(Math.max(0, index - LINES_BEFORE), index);
+    }
+
+    /** The part of the director's reading that a scene needs: the play, its people, this scene. */
+    static String contextFor(JSONObject analysis, String section) {
+        if (analysis == null) {
+            return "";
+        }
+        StringBuilder context = new StringBuilder();
+        String summary = analysis.optString("summary");
+        if (!summary.isEmpty()) {
+            context.append("Story: ").append(summary).append('\n');
+        }
+        JSONArray characters = analysis.optJSONArray("characters");
+        if (characters != null && characters.length() > 0) {
+            context.append("Characters:\n");
+            for (int i = 0; i < characters.length(); i++) {
+                JSONObject c = characters.optJSONObject(i);
+                if (c != null) {
+                    context.append("- ").append(c.optString("role")).append(" (").append(c.optString("gender"))
+                        .append(", ").append(c.optString("age")).append("): ").append(c.optString("description"))
+                        .append('\n');
+                }
+            }
+        }
+        JSONArray relationships = analysis.optJSONArray("relationships");
+        if (relationships != null && relationships.length() > 0) {
+            context.append("Relationships:\n");
+            for (int i = 0; i < relationships.length(); i++) {
+                context.append("- ").append(relationships.optString(i)).append('\n');
+            }
+        }
+        JSONObject scene = sceneOf(analysis, section);
+        if (scene != null) {
+            context.append("This scene").append(section.isEmpty() ? "" : " (" + section + ")").append(": ")
+                .append(scene.optString("summary")).append('\n');
+            JSONArray moods = scene.optJSONArray("moods");
+            if (moods != null && moods.length() > 0) {
+                context.append("State of mind in this scene:\n");
+                for (int i = 0; i < moods.length(); i++) {
+                    JSONObject mood = moods.optJSONObject(i);
+                    if (mood != null) {
+                        context.append("- ").append(mood.optString("role")).append(": ").append(mood.optString("mood"))
+                            .append('\n');
+                    }
+                }
+            }
+        }
+        return context.length() > 15_000 ? context.substring(0, 15_000) : context.toString();
+    }
+
+    /** The reading of one scene: the one with this name, or the only one. */
+    static JSONObject sceneOf(JSONObject analysis, String section) {
+        JSONArray scenes = analysis == null ? null : analysis.optJSONArray("scenes");
+        if (scenes == null || scenes.length() == 0) {
+            return null;
+        }
+        for (int i = 0; i < scenes.length(); i++) {
+            JSONObject scene = scenes.optJSONObject(i);
+            if (scene != null && scene.optString("scene").trim().equalsIgnoreCase(section.trim())) {
+                return scene;
+            }
+        }
+        return scenes.length() == 1 ? scenes.optJSONObject(0) : null;
+    }
+
+    /**
+     * Forgets the director's notes and audio of a scene's lines, and the reading of the play, so
+     * they are made again (with the reading) the next time the scene is prepared.
+     */
+    synchronized void forget(Scene fullScene, Scene scene, ScriptLanguage language, String castKey) {
+        for (Scene.Line line : scene.lines) {
+            JSONObject note = notes().optJSONObject(noteKey(line, language));
+            if (note != null) {
+                for (String voice : CAST_VOICES) {
+                    for (String extension : new String[] {".wav", ".m4a"}) {
+                        File file = audioFile(line, language, voice, note, extension);
+                        notes().remove(VOICED + file.getName());
+                        if (file.isFile() && !file.delete()) {
+                            Log.w(TAG, "Could not delete " + file.getName());
+                        }
+                    }
+                }
+            }
+            notes().remove(noteKey(line, language));
+        }
+        notes().remove(analysisKey(fullScene, language, scriptId(castKey)));
+        try {
+            saveNotes();
+        } catch (IOException error) {
+            Log.w(TAG, "Studio notes could not be saved", error);
+        }
     }
 
     /** Whether the director has given a gender for every character. */
@@ -524,6 +738,11 @@ final class StudioVoices {
 
     /** Posts to the Worker, retrying a busy service a few times. */
     private byte[] post(String path, JSONObject body) throws IOException {
+        return post(path, body.toString().getBytes(StandardCharsets.UTF_8), "application/json",
+            java.util.Collections.emptyMap());
+    }
+
+    private byte[] post(String path, byte[] body, String type, java.util.Map<String, String> headers) throws IOException {
         IOException last = null;
         for (int attempt = 0; attempt < 4; attempt++) {
             if (cancelled) {
@@ -531,14 +750,17 @@ final class StudioVoices {
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(WORKER + path).openConnection();
             connection.setConnectTimeout(20_000);
-            connection.setReadTimeout(120_000);
+            connection.setReadTimeout(240_000);
             connection.setRequestMethod("POST");
             connection.setDoOutput(true);
-            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Content-Type", type);
             connection.setRequestProperty("Authorization", "Bearer " + idToken(attempt > 0));
+            for (java.util.Map.Entry<String, String> header : headers.entrySet()) {
+                connection.setRequestProperty(header.getKey(), header.getValue());
+            }
             try {
                 try (OutputStream output = connection.getOutputStream()) {
-                    output.write(body.toString().getBytes(StandardCharsets.UTF_8));
+                    output.write(body);
                 }
                 int code = connection.getResponseCode();
                 if (code == 200) {

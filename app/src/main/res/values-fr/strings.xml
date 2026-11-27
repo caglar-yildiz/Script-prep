@@ -575,6 +575,10 @@
     <string name="notes_voiced">Voix %1$s · %2$s (%3$s)</string>
     <string name="notes_style">Style donné : %1$s</string>
     <string name="notes_sent">Texte donné : %1$s</string>
+    <string name="notes_reading">La lecture du metteur en scène</string>
+    <string name="notes_no_reading">Pas encore lue : la pièce est lue en entier la prochaine fois que les voix studio sont préparées.</string>
+    <string name="notes_redirect">Remettre en scène</string>
+    <string name="notes_redirect_message">Le metteur en scène relit toute la pièce et remet en scène et en voix les répliques de cette scène. Cela compte dans les voix studio du mois.</string>
     <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Ferme</item>

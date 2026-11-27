@@ -246,9 +246,13 @@
 "next_line" = "Continua";
 "notes_delivery" = "Stato d’animo: %1$@ · ritmo: %2$@";
 "notes_intro" = "Cosa ha deciso il regista IA per ogni battuta e cosa ha ricevuto la voce da studio.";
+"notes_no_reading" = "Non ancora letta: l’opera viene letta per intero la prossima volta che si preparano le voci da studio.";
 "notes_not_directed" = "Non ancora diretta.";
 "notes_not_voiced" = "Voce %1$@: non ancora preparata.";
 "notes_pronounce" = "Dire “%1$@” come “%2$@”";
+"notes_reading" = "La lettura del regista";
+"notes_redirect" = "Dirigi di nuovo";
+"notes_redirect_message" = "Il regista rilegge tutta l’opera e con essa dirige e dà voce di nuovo alle battute di questa scena. Conta nelle voci da studio di questo mese.";
 "notes_script_direction" = "Nel testo: %1$@";
 "notes_sent" = "Testo dato: %1$@";
 "notes_share" = "Condividi le note";

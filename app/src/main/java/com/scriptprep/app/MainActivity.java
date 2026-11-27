@@ -4505,6 +4505,16 @@ public final class MainActivity extends Activity {
         LinearLayout bar = topBar(R.drawable.ic_back, getString(R.string.notes_title), () -> show(Screen.SETUP));
         barAction(bar, R.drawable.ic_share, R.string.notes_share, view -> shareNotes());
         content.addView(ui.text(getString(R.string.notes_intro), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout reading = ui.card(ACCENT_CONTAINER, null);
+        reading.setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(14));
+        reading.addView(ui.text(getString(R.string.notes_reading), Type.SUBTITLE, ON_ACCENT_CONTAINER));
+        reading.addView(ui.text(readingText(), Type.CAPTION, ON_ACCENT_CONTAINER), ui.spaced(6));
+        content.addView(reading, ui.spaced(10));
+        if (!studio.isRunning()) {
+            LinearLayout actions = footerBar();
+            actions.addView(ui.button(getString(R.string.notes_redirect), R.drawable.ic_replay, Kind.TONAL,
+                view -> confirmRedirect()), Ui.matchWidth());
+        }
         for (Scene.Line line : scene.lines) {
             LinearLayout card = ui.card(SURFACE, null);
             card.setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(14));
@@ -4571,9 +4581,34 @@ public final class MainActivity extends Activity {
         return text.toString();
     }
 
+    /** What the director made of the play and of this scene, or why there is nothing yet. */
+    private String readingText() {
+        org.json.JSONObject analysis = studio.analysis(fullScene, language, StudioVoices.scriptId(castKey()));
+        if (analysis == null) {
+            return getString(R.string.notes_no_reading);
+        }
+        String context = StudioVoices.contextFor(analysis, scene.lines.isEmpty() ? "" : scene.lines.get(0).section);
+        return context.isEmpty() ? getString(R.string.notes_no_reading) : context.trim();
+    }
+
+    /** Directs and voices the scene again, after the play is read again. */
+    private void confirmRedirect() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.notes_redirect)
+            .setMessage(R.string.notes_redirect_message)
+            .setPositiveButton(R.string.notes_redirect, (dialog, which) -> {
+                studio.forget(fullScene, scene, language, castKey());
+                show(Screen.SETUP);
+                prepareStudio();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
     private void shareNotes() {
         StringBuilder all = new StringBuilder(getString(R.string.notes_title)).append(" · ").append(scriptTitle)
-            .append(" · ").append(language.code).append("\n\n");
+            .append(" · ").append(language.code).append("\n\n").append(getString(R.string.notes_reading))
+            .append(":\n").append(readingText()).append("\n\n");
         for (Scene.Line line : scene.lines) {
             all.append(line.role).append(": ").append(line.text).append('\n').append(noteText(line)).append("\n\n");
         }
@@ -4614,9 +4649,9 @@ public final class MainActivity extends Activity {
             confirmStudio();
             return;
         }
-        if (!studio.knowsGenders(fullScene.roles) && !guessingCast) {
+        if (studio.analysis(fullScene, language, StudioVoices.scriptId(castKey())) == null && !guessingCast) {
             guessingCast = true;
-            studio.guessGenders(fullScene, language, scriptTitle, () -> {
+            studio.analyzeFirst(fullScene, language, scriptTitle, castKey(), () -> {
                 guessingCast = false;
                 if (screen == Screen.VOICES && !isDestroyed()) {
                     render();
@@ -4699,7 +4734,7 @@ public final class MainActivity extends Activity {
             return;
         }
         studioDone = -1;
-        studio.prepare(scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
+        studio.prepare(fullScene, scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
             @Override
             public void progress(int done, int total) {
                 studioDone = done;

@@ -94,7 +94,7 @@ final class StudioVoices: ObservableObject {
     /// Stops at the first limit or lasting error; what is done stays. `finished` runs on the main thread.
     /// `script` is an id of the script, so the Worker can count the scripts of the month; it is hashed
     /// before it leaves the phone.
-    func prepare(_ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
+    func prepare(_ fullScene: ScriptScene, _ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
                  casting: @escaping Casting, finished: @escaping (Stop) -> Void) {
         guard !running else {
             return
@@ -109,7 +109,8 @@ final class StudioVoices: ObservableObject {
         DispatchQueue.global(qos: .userInitiated).async {
             let reason: Stop
             do {
-                reason = try self.run(scene, language: language, title: title, script: scriptId, casting: casting)
+                reason = try self.run(fullScene, scene, language: language, title: title, script: scriptId,
+                                      casting: casting)
             } catch Failure.limit(let stop) {
                 reason = stop
             } catch {
@@ -122,9 +123,20 @@ final class StudioVoices: ObservableObject {
         }
     }
 
-    private func run(_ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
-                     casting: Casting) throws -> Stop {
+    private func run(_ fullScene: ScriptScene, _ scene: ScriptScene, language: ScriptLanguage, title: String,
+                     script: String, casting: Casting) throws -> Stop {
         let lines = scene.lines
+        // The director first reads the whole play once; each part is then directed knowing it.
+        var reading = analysis(fullScene, language, script: script)
+        if reading == nil {
+            do {
+                reading = try analyze(fullScene, language, title: title, script: script)
+            } catch Failure.limit(let stop) {
+                throw Failure.limit(stop)
+            } catch {
+                // Directed scene by scene without the reading.
+            }
+        }
         var start = 0
         while start < lines.count {
             let chunk = Array(lines[start..<min(lines.count, start + Self.linesPerRequest)])
@@ -135,7 +147,8 @@ final class StudioVoices: ObservableObject {
             if isCancelled {
                 return .cancelled
             }
-            try direct(chunk, language, title, script)
+            try direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
+                       context: Self.contextFor(reading, section: chunk[0].section), language, title, script)
         }
         for line in lines {
             if isCancelled {
@@ -168,13 +181,19 @@ final class StudioVoices: ObservableObject {
         return .done
     }
 
-    private func direct(_ chunk: [ScriptScene.Line], _ language: ScriptLanguage, _ title: String,
-                        _ script: String) throws {
+    private static func linesJson(_ lines: [ScriptScene.Line]) -> [[String: Any]] {
+        lines.map { ["role": $0.role, "text": $0.text, "notes": $0.notes.map { String($0.prefix(300)) }] }
+    }
+
+    private func direct(_ chunk: [ScriptScene.Line], before: [ScriptScene.Line], context: String,
+                        _ language: ScriptLanguage, _ title: String, _ script: String) throws {
         let body: [String: Any] = [
             "language": language.code,
             "title": title,
             "script": script,
-            "lines": chunk.map { ["role": $0.role, "text": $0.text, "notes": $0.notes] },
+            "lines": Self.linesJson(chunk),
+            "before": Self.linesJson(before),
+            "context": context,
         ]
         let data = try post("/v1/direct", body)
         guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -234,6 +253,175 @@ final class StudioVoices: ObservableObject {
         lock.lock()
         defer { lock.unlock() }
         return loadNotes()[Self.voicedPrefix + audio.lastPathComponent] as? [String: Any]
+    }
+
+    // MARK: - Reading the whole play
+
+    private static let analysisPrefix = "analysis:"
+    private static let contextLines = 30
+    private static let maxPlayCharacters = 590_000
+
+    /// The key of a play's reading: the script and its words, so an edited script is read again.
+    private static func analysisKey(_ fullScene: ScriptScene, _ language: ScriptLanguage, _ script: String) -> String {
+        let words = ([language.code, script] + fullScene.lines.map { $0.role + ":" + $0.text }).joined(separator: "\n")
+        return analysisPrefix + hash(words)
+    }
+
+    /// The director's reading of the play, or nil until it has been read.
+    func analysis(_ fullScene: ScriptScene, _ language: ScriptLanguage, script: String) -> [String: Any]? {
+        lock.lock()
+        defer { lock.unlock() }
+        return loadNotes()[Self.analysisKey(fullScene, language, script)] as? [String: Any]
+    }
+
+    /// The app's id of a script, as the Worker sees it.
+    static func scriptId(_ castKey: String) -> String {
+        hash(castKey)
+    }
+
+    /// The play as the director reads it: "## SCENE:" where a named scene starts, then
+    /// "ROLE: text (direction)". A very long play is cut at the Worker's limit.
+    static func playText(_ fullScene: ScriptScene) -> String {
+        var play = ""
+        var section: String?
+        for line in fullScene.lines {
+            if line.section != section {
+                section = line.section
+                if !line.section.isEmpty {
+                    play += "\n## SCENE: " + line.section + "\n"
+                }
+            }
+            play += line.role + ": " + line.text
+            for note in line.notes {
+                play += " " + (note.hasPrefix("(") || note.hasPrefix("[") ? note : "(" + note + ")")
+            }
+            play += "\n"
+            if play.count > maxPlayCharacters {
+                break
+            }
+        }
+        return String(play.prefix(maxPlayCharacters))
+    }
+
+    /// Asks the director to read the whole play; keeps the reading and the characters' genders.
+    @discardableResult
+    private func analyze(_ fullScene: ScriptScene, _ language: ScriptLanguage, title: String,
+                         script: String) throws -> [String: Any] {
+        let data = try post("/v1/analyze", body: Data(Self.playText(fullScene).utf8), type: "text/plain; charset=utf-8",
+                            headers: ["X-Memo-Language": language.code,
+                                      "X-Memo-Title": title.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? "",
+                                      "X-Memo-Script": script])
+        guard let reading = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] else {
+            throw Failure.busy
+        }
+        lock.lock()
+        var stored = loadNotes()
+        stored[Self.analysisKey(fullScene, language, script)] = reading
+        for character in reading["characters"] as? [[String: Any]] ?? [] {
+            Self.putGender(&stored, character["role"] as? String ?? "", character["gender"] as? String ?? "")
+        }
+        notes = stored
+        let snapshot = stored
+        lock.unlock()
+        try saveNotes(snapshot)
+        return reading
+    }
+
+    /// Reads the play before the cast is checked, so its genders fill in the cast, and keeps the
+    /// reading for directing. Falls back to asking for the genders alone. `done` runs on the main thread.
+    func analyzeFirst(_ fullScene: ScriptScene, _ language: ScriptLanguage, title: String, castKey: String,
+                      done: @escaping () -> Void) {
+        if !running {
+            lock.lock()
+            cancelled = false
+            lock.unlock()
+        }
+        let script = Self.scriptId(castKey)
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                if self.analysis(fullScene, language, script: script) == nil {
+                    try self.analyze(fullScene, language, title: title, script: script)
+                }
+                DispatchQueue.main.async(execute: done)
+            } catch {
+                DispatchQueue.main.async {
+                    self.guessGenders(fullScene, language, title: title, done: done)
+                }
+            }
+        }
+    }
+
+    /// The lines just before a line in the whole play, for the director's context.
+    private static func linesBefore(_ fullScene: ScriptScene, _ first: ScriptScene.Line) -> [ScriptScene.Line] {
+        guard let index = fullScene.lines.firstIndex(of: first), index > 0 else {
+            return []
+        }
+        return Array(fullScene.lines[max(0, index - contextLines)..<index])
+    }
+
+    /// The part of the director's reading that a scene needs: the play, its people, this scene.
+    static func contextFor(_ reading: [String: Any]?, section: String) -> String {
+        guard let reading else {
+            return ""
+        }
+        var context = ""
+        if let summary = reading["summary"] as? String, !summary.isEmpty {
+            context += "Story: " + summary + "\n"
+        }
+        let characters = reading["characters"] as? [[String: Any]] ?? []
+        if !characters.isEmpty {
+            context += "Characters:\n" + characters.map {
+                "- \($0["role"] as? String ?? "") (\($0["gender"] as? String ?? ""), \($0["age"] as? String ?? "")): "
+                    + ($0["description"] as? String ?? "") + "\n"
+            }.joined()
+        }
+        let relationships = reading["relationships"] as? [String] ?? []
+        if !relationships.isEmpty {
+            context += "Relationships:\n" + relationships.map { "- " + $0 + "\n" }.joined()
+        }
+        if let scene = sceneOf(reading, section: section) {
+            context += "This scene" + (section.isEmpty ? "" : " (" + section + ")") + ": "
+                + (scene["summary"] as? String ?? "") + "\n"
+            let moods = scene["moods"] as? [[String: Any]] ?? []
+            if !moods.isEmpty {
+                context += "State of mind in this scene:\n" + moods.map {
+                    "- " + ($0["role"] as? String ?? "") + ": " + ($0["mood"] as? String ?? "") + "\n"
+                }.joined()
+            }
+        }
+        return String(context.prefix(15_000))
+    }
+
+    /// The reading of one scene: the one with this name, or the only one.
+    static func sceneOf(_ reading: [String: Any], section: String) -> [String: Any]? {
+        let scenes = reading["scenes"] as? [[String: Any]] ?? []
+        let wanted = section.trimmingCharacters(in: .whitespaces).lowercased()
+        return scenes.first { ($0["scene"] as? String ?? "").trimmingCharacters(in: .whitespaces).lowercased() == wanted }
+            ?? (scenes.count == 1 ? scenes[0] : nil)
+    }
+
+    /// Forgets the director's notes and audio of a scene's lines, and the reading of the play, so they
+    /// are made again (with the reading) the next time the scene is prepared.
+    func forget(_ fullScene: ScriptScene, _ scene: ScriptScene, _ language: ScriptLanguage, castKey: String) {
+        lock.lock()
+        var stored = loadNotes()
+        for line in scene.lines {
+            if let note = stored[Self.noteKey(line, language)] as? [String: Any] {
+                for voice in Self.castVoices {
+                    for fileExtension in ["wav", "m4a"] {
+                        let file = audioFile(line, language, voice, note, fileExtension)
+                        stored.removeValue(forKey: Self.voicedPrefix + file.lastPathComponent)
+                        try? FileManager.default.removeItem(at: file)
+                    }
+                }
+            }
+            stored.removeValue(forKey: Self.noteKey(line, language))
+        }
+        stored.removeValue(forKey: Self.analysisKey(fullScene, language, Self.scriptId(castKey)))
+        notes = stored
+        let snapshot = stored
+        lock.unlock()
+        try? saveNotes(snapshot)
     }
 
     /// Whether the director has given a gender for every character.
@@ -402,16 +590,23 @@ final class StudioVoices: ObservableObject {
 
     /// Posts to the Worker, retrying a busy service a few times. Runs on a background queue.
     private func post(_ path: String, _ body: [String: Any]) throws -> Data {
+        try post(path, body: try JSONSerialization.data(withJSONObject: body), type: "application/json", headers: [:])
+    }
+
+    private func post(_ path: String, body: Data, type: String, headers: [String: String]) throws -> Data {
         var last: Error = Failure.busy
         for attempt in 0..<4 {
             if isCancelled {
                 throw Failure.cancelled
             }
-            var request = URLRequest(url: Self.worker.appendingPathComponent(path), timeoutInterval: 120)
+            var request = URLRequest(url: Self.worker.appendingPathComponent(path), timeoutInterval: 240)
             request.httpMethod = "POST"
-            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue(type, forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer " + (try token(fresh: attempt > 0)), forHTTPHeaderField: "Authorization")
-            request.httpBody = try JSONSerialization.data(withJSONObject: body)
+            for (name, value) in headers {
+                request.setValue(value, forHTTPHeaderField: name)
+            }
+            request.httpBody = body
             let (data, status, headers) = try Self.send(request)
             switch status {
             case 200:

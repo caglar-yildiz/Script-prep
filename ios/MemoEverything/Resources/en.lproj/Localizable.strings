@@ -246,9 +246,13 @@
 "next_line" = "Continue";
 "notes_delivery" = "Mood: %1$@ · pace: %2$@";
 "notes_intro" = "What the AI director decided for each line, and what the studio voice was given.";
+"notes_no_reading" = "Not read yet: the play is read as a whole the next time studio voices are prepared.";
 "notes_not_directed" = "Not directed yet.";
 "notes_not_voiced" = "Voice %1$@: not prepared yet.";
 "notes_pronounce" = "Say “%1$@” as “%2$@”";
+"notes_reading" = "The director’s reading";
+"notes_redirect" = "Direct again";
+"notes_redirect_message" = "The director reads the whole play again and directs and voices this scene’s lines again with it. This uses lines from this month’s studio voices.";
 "notes_script_direction" = "Script: %1$@";
 "notes_sent" = "Text given: %1$@";
 "notes_share" = "Share the notes";

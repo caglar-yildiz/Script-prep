@@ -776,6 +776,12 @@ struct NotesScreen: View {
             }
         }, content: {
             Styled(L("notes_intro"), .body, Palette.textSecondary).padding(.top, 8)
+            Card(color: Palette.accentContainer, stroke: Palette.accent.opacity(0.25),
+                 padding: EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16)) {
+                Styled(L("notes_reading"), .subtitle, Palette.onAccentContainer)
+                Styled(model.readingText, .caption, Palette.onAccentContainer).padding(.top, 6).textSelection(.enabled)
+            }
+            .padding(.top, 10)
             ForEach(Array(model.scene.lines.enumerated()), id: \.offset) { _, line in
                 Card(padding: EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16)) {
                     Styled(line.role, .label, Palette.accent)
@@ -784,6 +790,13 @@ struct NotesScreen: View {
                         .textSelection(.enabled)
                 }
                 .padding(.top, 10)
+            }
+        }, footer: {
+            if !StudioVoices.shared.running {
+                FooterBar {
+                    MemoButton(L("notes_redirect"), icon: "ic_replay", kind: .tonal, fill: true, height: 56,
+                               action: model.confirmRedirect)
+                }
             }
         })
     }

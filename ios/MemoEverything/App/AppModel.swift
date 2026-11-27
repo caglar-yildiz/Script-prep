@@ -1806,9 +1806,36 @@ final class AppModel: ObservableObject {
         return text
     }
 
+    /// What the director made of the play and of this scene, or why there is nothing yet.
+    var readingText: String {
+        guard let fullScene,
+              let reading = studio.analysis(fullScene, language, script: StudioVoices.scriptId(castKey)) else {
+            return L("notes_no_reading")
+        }
+        let context = StudioVoices.contextFor(reading, section: scene.lines.first?.section ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return context.isEmpty ? L("notes_no_reading") : context
+    }
+
+    /// Directs and voices the scene again, after the play is read again.
+    func confirmRedirect() {
+        alert(L("notes_redirect"), L("notes_redirect_message"), [
+            DialogButton(label: L("notes_redirect")) {
+                guard let fullScene = self.fullScene else {
+                    return
+                }
+                self.studio.forget(fullScene, self.scene, self.language, castKey: self.castKey)
+                self.show(.setup)
+                self.prepareStudio()
+            },
+            DialogButton(label: L("cancel"), role: .cancel),
+        ])
+    }
+
     /// Every line's note, to share.
     var notesText: String {
         L("notes_title") + " · " + scriptTitle + " · " + language.code + "\n\n"
+            + L("notes_reading") + ":\n" + readingText + "\n\n"
             + scene.lines.map { $0.role + ": " + $0.text + "\n" + noteText($0) }.joined(separator: "\n\n")
     }
 
@@ -1827,9 +1854,9 @@ final class AppModel: ObservableObject {
             confirmStudio()
             return
         }
-        if !studio.knowsGenders(fullScene.roles) && !guessingCast {
+        if studio.analysis(fullScene, language, script: StudioVoices.scriptId(castKey)) == nil && !guessingCast {
             guessingCast = true
-            studio.guessGenders(fullScene, language, title: scriptTitle) {
+            studio.analyzeFirst(fullScene, language, title: scriptTitle, castKey: castKey) {
                 self.guessingCast = false
                 self.objectWillChange.send()
             }
@@ -1854,10 +1881,11 @@ final class AppModel: ObservableObject {
     }
 
     func prepareStudio() {
-        guard fullScene != nil, !studio.running else {
+        guard let fullScene, !studio.running else {
             return
         }
-        studio.prepare(scene, language: language, title: scriptTitle, script: castKey, casting: studioCasting()) { reason in
+        studio.prepare(fullScene, scene, language: language, title: scriptTitle, script: castKey,
+                       casting: studioCasting()) { reason in
             switch reason {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")

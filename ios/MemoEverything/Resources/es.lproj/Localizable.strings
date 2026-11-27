@@ -246,9 +246,13 @@
 "next_line" = "Continuar";
 "notes_delivery" = "Ánimo: %1$@ · ritmo: %2$@";
 "notes_intro" = "Lo que decidió el director con IA para cada frase y lo que recibió la voz de estudio.";
+"notes_no_reading" = "Aún sin leer: la obra se lee entera la próxima vez que se preparen las voces de estudio.";
 "notes_not_directed" = "Aún sin dirigir.";
 "notes_not_voiced" = "Voz %1$@: aún sin preparar.";
 "notes_pronounce" = "Decir “%1$@” como “%2$@”";
+"notes_reading" = "Cómo lee el director la obra";
+"notes_redirect" = "Dirigir de nuevo";
+"notes_redirect_message" = "El director vuelve a leer toda la obra y con eso dirige y pone voz de nuevo a las frases de esta escena. Cuenta para las voces de estudio de este mes.";
 "notes_script_direction" = "En el texto: %1$@";
 "notes_sent" = "Texto dado: %1$@";
 "notes_share" = "Compartir las notas";

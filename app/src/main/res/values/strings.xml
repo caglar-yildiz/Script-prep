@@ -569,6 +569,10 @@
     <string name="notes_voiced">Voice %1$s · %2$s (%3$s)</string>
     <string name="notes_style">Style given: %1$s</string>
     <string name="notes_sent">Text given: %1$s</string>
+    <string name="notes_reading">The director’s reading</string>
+    <string name="notes_no_reading">Not read yet: the play is read as a whole the next time studio voices are prepared.</string>
+    <string name="notes_redirect">Direct again</string>
+    <string name="notes_redirect_message">The director reads the whole play again and directs and voices this scene’s lines again with it. This uses lines from this month’s studio voices.</string>
     <string name="cast_studio_voice_for">Studio voice for %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firm</item>

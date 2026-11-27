@@ -561,6 +561,10 @@
     <string name="notes_voiced">Stimme %1$s · %2$s (%3$s)</string>
     <string name="notes_style">Vorgabe: %1$s</string>
     <string name="notes_sent">Gesendeter Text: %1$s</string>
+    <string name="notes_reading">Wie die Regie das Stück liest</string>
+    <string name="notes_no_reading">Noch nicht gelesen: Das Stück wird beim nächsten Vorbereiten der Studiostimmen ganz gelesen.</string>
+    <string name="notes_redirect">Neu inszenieren</string>
+    <string name="notes_redirect_message">Die Regie liest das ganze Stück noch einmal und inszeniert und vertont die Repliken dieser Szene damit neu. Das zählt zu den Studiostimmen dieses Monats.</string>
     <string name="cast_studio_voice_for">Studiostimme für %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Bestimmt</item>

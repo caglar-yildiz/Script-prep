@@ -575,6 +575,10 @@
     <string name="notes_voiced">Voce %1$s · %2$s (%3$s)</string>
     <string name="notes_style">Stile dato: %1$s</string>
     <string name="notes_sent">Testo dato: %1$s</string>
+    <string name="notes_reading">La lettura del regista</string>
+    <string name="notes_no_reading">Non ancora letta: l’opera viene letta per intero la prossima volta che si preparano le voci da studio.</string>
+    <string name="notes_redirect">Dirigi di nuovo</string>
+    <string name="notes_redirect_message">Il regista rilegge tutta l’opera e con essa dirige e dà voce di nuovo alle battute di questa scena. Conta nelle voci da studio di questo mese.</string>
     <string name="cast_studio_voice_for">Voce da studio per %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Decisa</item>
