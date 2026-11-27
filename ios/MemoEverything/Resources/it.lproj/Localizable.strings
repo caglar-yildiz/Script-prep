@@ -439,6 +439,8 @@
 "studio_failed" = "Impossibile preparare le voci da studio. Controlla la connessione e riprova.";
 "studio_monthly_limit" = "Il limite mensile delle voci da studio è stato raggiunto.";
 "studio_none" = "Non preparate · nel frattempo leggono le altre voci";
+"studio_notification_done" = "Le voci da studio sono pronte. Apri l’app per provare.";
+"studio_notification_title" = "Preparazione delle voci da studio";
 "studio_off" = "Disattivato · le altre voci leggono le battute";
 "studio_on" = "Le battute del partner usano le voci da studio";
 "studio_playing" = "La voce da studio sta leggendo la battuta…";

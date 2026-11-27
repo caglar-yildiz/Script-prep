@@ -162,6 +162,11 @@ final class AppModel: ObservableObject {
     @Published var recordingSpeaking = false
     /// The character voices screen was opened to check the cast before studio voices are prepared.
     @Published var castCheck = false
+    /// iOS stops an app's work soon after it leaves the screen: preparing studio voices that was cut
+    /// off there starts again by itself when the user comes back to the same script.
+    private var studioLeftWhileRunning = false
+    private var studioResumeScript: String?
+    private var studioBackgroundTask: UIBackgroundTaskIdentifier = .invalid
     @Published var guessingCast = false
     /// Whether the line being read now is a studio voice recording.
     @Published var studioSpeaking = false
@@ -212,6 +217,12 @@ final class AppModel: ObservableObject {
         billing.onChange = { [weak self] _ in
             self?.onBillingChanged()
         }
+        NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+            .sink { [weak self] _ in self?.studioLeftWhileRunning = self?.studio.running ?? false }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { [weak self] _ in self?.resumeStudioIfInterrupted() }
+            .store(in: &cancellables)
         studio.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] _ in
             self?.objectWillChange.send()
         }.store(in: &cancellables)
@@ -1871,6 +1882,21 @@ final class AppModel: ObservableObject {
         castCheck = true
     }
 
+    private func endStudioBackgroundTask() {
+        if studioBackgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(studioBackgroundTask)
+            studioBackgroundTask = .invalid
+        }
+    }
+
+    private func resumeStudioIfInterrupted() {
+        studioLeftWhileRunning = false
+        guard let script = studioResumeScript, script == castKey, !studio.running, fullScene != nil else {
+            return
+        }
+        prepareStudio()
+    }
+
     /// Keeps the checked cast, so later guesses cannot change a voice, and goes on to prepare.
     func confirmCastAndPrepare() {
         saveCast(currentCast())
@@ -1890,8 +1916,20 @@ final class AppModel: ObservableObject {
         guard let fullScene, !studio.running else {
             return
         }
+        studioResumeScript = nil
+        // A little time to finish the line in hand when the user switches apps.
+        studioBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "studio-voices") { [weak self] in
+            self?.endStudioBackgroundTask()
+        }
         studio.prepare(fullScene, scene, language: language, title: scriptTitle, script: castKey,
                        casting: studioCasting()) { reason in
+            self.endStudioBackgroundTask()
+            if reason == .failed && (self.studioLeftWhileRunning || UIApplication.shared.applicationState != .active) {
+                // Cut off while the app was away: it goes on when the user is back.
+                self.studioResumeScript = self.castKey
+                self.objectWillChange.send()
+                return
+            }
             switch reason {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")

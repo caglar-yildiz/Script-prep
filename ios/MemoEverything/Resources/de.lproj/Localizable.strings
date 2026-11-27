@@ -439,6 +439,8 @@
 "studio_failed" = "Die Studiostimmen konnten nicht vorbereitet werden. Prüfe deine Verbindung und versuche es erneut.";
 "studio_monthly_limit" = "Das Monatslimit für Studiostimmen ist erreicht.";
 "studio_none" = "Nicht vorbereitet · bis dahin lesen die anderen Stimmen";
+"studio_notification_done" = "Die Studiostimmen sind fertig. Öffne die App zum Proben.";
+"studio_notification_title" = "Studiostimmen werden vorbereitet";
 "studio_off" = "Aus · die anderen Stimmen lesen die Sätze";
 "studio_on" = "Partnersätze nutzen die Studiostimmen";
 "studio_playing" = "Die Studiostimme liest den Satz…";

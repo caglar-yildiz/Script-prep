@@ -439,6 +439,8 @@
 "studio_failed" = "Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.";
 "studio_monthly_limit" = "La limite mensuelle des voix studio est atteinte.";
 "studio_none" = "Non préparées · les autres voix lisent en attendant";
+"studio_notification_done" = "Les voix studio sont prêtes. Ouvre l’app pour répéter.";
+"studio_notification_title" = "Préparation des voix studio";
 "studio_off" = "Désactivé · les autres voix lisent les répliques";
 "studio_on" = "Les répliques du partenaire utilisent les voix studio";
 "studio_playing" = "La voix studio lit la réplique…";

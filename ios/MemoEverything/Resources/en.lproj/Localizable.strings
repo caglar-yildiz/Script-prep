@@ -439,6 +439,8 @@
 "studio_failed" = "Couldn’t prepare the studio voices. Check your connection and try again.";
 "studio_monthly_limit" = "This month’s studio voice limit is reached.";
 "studio_none" = "Not prepared · the other voices read until then";
+"studio_notification_done" = "Studio voices are ready. Open the app to rehearse.";
+"studio_notification_title" = "Preparing studio voices";
 "studio_off" = "Off · the other voices read the lines";
 "studio_on" = "Partner lines use the studio voices";
 "studio_playing" = "The studio voice is reading the line…";

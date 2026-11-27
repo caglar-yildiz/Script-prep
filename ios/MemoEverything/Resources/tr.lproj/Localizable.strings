@@ -439,6 +439,8 @@
 "studio_failed" = "Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.";
 "studio_monthly_limit" = "Bu ayın stüdyo sesi sınırına ulaşıldı.";
 "studio_none" = "Hazırlanmadı · o zamana kadar diğer sesler okur";
+"studio_notification_done" = "Stüdyo sesleri hazır. Prova için uygulamayı aç.";
+"studio_notification_title" = "Stüdyo sesleri hazırlanıyor";
 "studio_off" = "Kapalı · replikleri diğer sesler okur";
 "studio_on" = "Karşı replikleri stüdyo sesleri okur";
 "studio_playing" = "Stüdyo sesi repliği okuyor…";

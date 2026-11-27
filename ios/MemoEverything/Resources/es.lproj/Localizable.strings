@@ -439,6 +439,8 @@
 "studio_failed" = "No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.";
 "studio_monthly_limit" = "Se alcanzó el límite mensual de voces de estudio.";
 "studio_none" = "Sin preparar · mientras tanto leen las otras voces";
+"studio_notification_done" = "Las voces de estudio están listas. Abre la app para ensayar.";
+"studio_notification_title" = "Preparando voces de estudio";
 "studio_off" = "Desactivado · las otras voces leen las frases";
 "studio_on" = "Las frases del compañero usan las voces de estudio";
 "studio_playing" = "La voz de estudio está leyendo la frase…";

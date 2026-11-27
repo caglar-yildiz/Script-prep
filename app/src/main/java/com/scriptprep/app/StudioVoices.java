@@ -63,6 +63,8 @@ final class StudioVoices {
     }
 
     private static StudioVoices instance;
+    /** Also told of progress: the foreground service that keeps preparing while the app is away. */
+    private volatile Progress observer;
 
     private final Context context;
     private final SharedPreferences preferences;
@@ -175,8 +177,18 @@ final class StudioVoices {
             }
             running = false;
             Stop result = reason;
-            main.post(() -> progress.finished(result));
+            main.post(() -> {
+                progress.finished(result);
+                Progress watching = observer;
+                if (watching != null) {
+                    watching.finished(result);
+                }
+            });
         });
+    }
+
+    void setObserver(Progress observer) {
+        this.observer = observer;
     }
 
     private Stop run(Scene fullScene, Scene scene, ScriptLanguage language, String title, String script,
@@ -244,7 +256,13 @@ final class StudioVoices {
     }
 
     private void post(Progress progress, int done, int total) {
-        main.post(() -> progress.progress(done, total));
+        main.post(() -> {
+            progress.progress(done, total);
+            Progress watching = observer;
+            if (watching != null) {
+                watching.progress(done, total);
+            }
+        });
     }
 
     private static JSONArray linesJson(List<Scene.Line> chunk) throws JSONException {

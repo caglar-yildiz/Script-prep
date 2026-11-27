@@ -439,6 +439,8 @@
 "studio_failed" = "Não foi possível preparar as vozes de estúdio. Verifique sua conexão e tente de novo.";
 "studio_monthly_limit" = "O limite mensal de vozes de estúdio foi atingido.";
 "studio_none" = "Não preparado · até lá as outras vozes leem";
+"studio_notification_done" = "As vozes de estúdio estão prontas. Abra o app para ensaiar.";
+"studio_notification_title" = "Preparando vozes de estúdio";
 "studio_off" = "Desativado · as outras vozes leem as falas";
 "studio_on" = "As falas do parceiro usam as vozes de estúdio";
 "studio_playing" = "A voz de estúdio está lendo a fala…";

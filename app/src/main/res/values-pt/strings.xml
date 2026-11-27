@@ -555,6 +555,8 @@
     <string name="voice_engine_ai_detail">Uma voz natural que funciona neste celular, offline</string>
     <string name="voice_engine_studio_detail">Vozes interpretadas e expressivas preparadas por um diretor com IA</string>
     <string name="studio_allowance">Dá para preparar vozes de estúdio para 2 roteiros por mês.</string>
+    <string name="studio_notification_title">Preparando vozes de estúdio</string>
+    <string name="studio_notification_done">As vozes de estúdio estão prontas. Abra o app para ensaiar.</string>
     <string name="studio_script_limit">Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.</string>
     <string name="cast_intro_studio">Escolha uma voz de estúdio para cada personagem. O diretor define o ritmo e o tom de cada fala. Toque em reproduzir para ouvir.</string>
     <string name="cast_check_title">Confira as vozes primeiro</string>

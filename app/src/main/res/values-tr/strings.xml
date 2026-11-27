@@ -541,6 +541,8 @@
     <string name="voice_engine_ai_detail">Bu telefonda çalışan doğal ses, internetsiz</string>
     <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
     <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
+    <string name="studio_notification_title">Stüdyo sesleri hazırlanıyor</string>
+    <string name="studio_notification_done">Stüdyo sesleri hazır. Prova için uygulamayı aç.</string>
     <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>
     <string name="cast_intro_studio">Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.</string>
     <string name="cast_check_title">Önce sesleri kontrol et</string>

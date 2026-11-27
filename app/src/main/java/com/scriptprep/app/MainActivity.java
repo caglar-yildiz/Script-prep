@@ -136,6 +136,9 @@ public final class MainActivity extends Activity {
     private static final String VOICE_ENGINE_PREFERENCE = "voice_engine";
 
     private enum Engine { DEVICE, AI, STUDIO }
+
+    private static final String NOTIFICATIONS_ASKED = "notifications_asked";
+    private static final int NOTIFICATIONS_REQUEST = 4713;
     private Billing billing;
     private boolean listening;
     private boolean listeningPaused;
@@ -4761,6 +4764,14 @@ public final class MainActivity extends Activity {
                 }
             }
         });
+        // Keeps preparing while the user is in another app, with progress in a notification.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+            && checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            && !preferences.getBoolean(NOTIFICATIONS_ASKED, false)) {
+            preferences.edit().putBoolean(NOTIFICATIONS_ASKED, true).apply();
+            requestPermissions(new String[] {android.Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATIONS_REQUEST);
+        }
+        StudioService.start(this, scriptTitle);
         render();
     }
 
