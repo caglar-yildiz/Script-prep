@@ -4,6 +4,12 @@ const BASE = "https://generativelanguage.googleapis.com/v1beta/";
 
 export const DIRECTOR_MODELS = ["gemini-3.5-flash-lite", "gemini-flash-lite-latest"];
 export const VOICE_MODELS = ["gemini-3.8-flash-lite-tts", "gemini-3.8-flash-tts"];
+/**
+ * Older speech models, each with a daily quota of its own, used when the ones above are used up
+ * for the day. They take no speech_metadata, so the delivery is written before the line.
+ */
+export const LEGACY_VOICE_MODELS = ["gemini-3.1-flash-tts-preview", "gemini-2.5-flash-preview-tts",
+  "gemini-2.5-pro-preview-tts"];
 
 export class UpstreamError extends Error {
   constructor(message: string, readonly status: number, readonly retryAfterSeconds?: number) {

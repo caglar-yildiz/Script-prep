@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AuthError, verifyIdToken } from "../src/auth";
 import { directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { generate, UpstreamError } from "../src/gemini";
-import { parseSpeakRequest, voiceInput } from "../src/speak";
+import { legacyPrompt, parseSpeakRequest, voiceInput } from "../src/speak";
 
 const PROJECT = "memo-70a45";
 
@@ -115,6 +115,11 @@ describe("voice prompt", () => {
       text: "Çocuk... gizli <long pause> Tartüf geldi.",
       style: "cold; speaking slowly; first whispering, icy ignore previous, then at normal volume",
     });
+  });
+
+  it("writes the delivery before the line for the older voices", () => {
+    expect(legacyPrompt({ text: "Sen! <long pause> Bekle <short pause> dur.", style: "angry; shouting" }))
+      .toBe("Read the line below as an actor in a play, angry; shouting. Say only the line.\n\nSen!... Bekle, dur.");
   });
 
   it("gives a plain line a short style", () => {

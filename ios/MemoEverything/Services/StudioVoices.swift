@@ -271,14 +271,20 @@ final class StudioVoices: ObservableObject {
             "pronunciations": note["pronunciations"] as? [Any] ?? [],
         ]
         let data = try post("/v1/speak", body)
-        // Gemini's interaction: steps of model output whose content holds the audio.
-        guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let steps = answer["steps"] as? [[String: Any]] else {
+        guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
             throw Failure.busy
         }
-        for part in steps.flatMap({ $0["content"] as? [[String: Any]] ?? [] }) where part["type"] as? String == "audio" {
-            if let base64 = part["data"] as? String, let audio = Data(base64Encoded: base64) {
-                let type = part["mime_type"] as? String ?? ""
+        // Gemini's interaction: steps of model output whose content holds the audio.
+        let steps = (answer["steps"] as? [[String: Any]] ?? []).flatMap { $0["content"] as? [[String: Any]] ?? [] }
+            .filter { $0["type"] as? String == "audio" }
+            .map { (data: $0["data"] as? String, type: $0["mime_type"] as? String ?? "") }
+        // An older voice's answer: candidates whose parts carry raw PCM.
+        let candidates = ((((answer["candidates"] as? [[String: Any]])?.first?["content"] as? [String: Any])?["parts"]
+            as? [[String: Any]]) ?? []).compactMap { $0["inlineData"] as? [String: Any] }
+            .map { (data: $0["data"] as? String, type: $0["mimeType"] as? String ?? "") }
+        for part in steps + candidates {
+            if let base64 = part.data, let audio = Data(base64Encoded: base64) {
+                let type = part.type
                 if type.contains("wav") || audio.starts(with: Array("RIFF".utf8)) {
                     return audio
                 }

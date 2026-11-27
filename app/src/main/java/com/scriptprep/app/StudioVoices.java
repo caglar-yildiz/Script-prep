@@ -357,6 +357,19 @@ final class StudioVoices {
                 }
             }
         }
+        // An older voice's answer: candidates whose parts carry raw PCM.
+        JSONArray candidates = answer.optJSONArray("candidates");
+        JSONObject content = candidates == null || candidates.length() == 0 ? null
+            : candidates.getJSONObject(0).optJSONObject("content");
+        JSONArray parts = content == null ? null : content.optJSONArray("parts");
+        for (int i = 0; parts != null && i < parts.length(); i++) {
+            JSONObject data = parts.getJSONObject(i).optJSONObject("inlineData");
+            if (data != null && data.has("data")) {
+                byte[] audio = Base64.decode(data.getString("data"), Base64.DEFAULT);
+                String type = data.optString("mimeType", "");
+                return type.contains("wav") || isWav(audio) ? audio : wav(audio, sampleRate(type));
+            }
+        }
         throw new IOException("No audio in the answer");
     }
 

@@ -4,13 +4,14 @@
  *
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
  *   POST /v1/speak   one noted line -> Gemini's interaction, whose steps hold the line as base64 WAV
+ *                                      (or, from an older model, candidates with base64 PCM)
  *   GET  /v1/usage                  -> this month's counts and limits
  */
 import { AuthError, verifyIdToken } from "./auth";
 import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
-import { answerText, DIRECTOR_MODELS, generate, interact, UpstreamError, VOICE_MODELS } from "./gemini";
+import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
-import { parseSpeakRequest, voiceInput } from "./speak";
+import { legacyPrompt, parseSpeakRequest, voiceInput } from "./speak";
 
 export { Quota };
 
@@ -105,13 +106,28 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
   if (!allowance.allowed) {
     return problem(429, "monthly_limit", "Monthly limit for studio voices reached", 86_400);
   }
-  const { text, style } = voiceInput(line);
-  const response = await interact(VOICE_MODELS, (model) => ({
-    model,
-    input: [{ type: "user_input", content: [{ type: "text", text, annotations: [{ type: "speech_metadata", style }] }] }],
-    response_format: { type: "audio" },
-    generation_config: { speech_config: [{ voice: line.voice }] },
-  }), env.GEMINI_API_KEY);
+  const input = voiceInput(line);
+  let response: Response;
+  try {
+    response = await interact(VOICE_MODELS, (model) => ({
+      model,
+      input: [{ type: "user_input", content: [{ type: "text", text: input.text,
+        annotations: [{ type: "speech_metadata", style: input.style }] }] }],
+      response_format: { type: "audio" },
+      generation_config: { speech_config: [{ voice: line.voice }] },
+    }), env.GEMINI_API_KEY);
+  } catch (error) {
+    if (!(error instanceof UpstreamError && error.status === 429)) {
+      throw error;
+    }
+    // The newer voices are used up for today: older ones answer in generateContent's form
+    // (candidates with raw PCM), which the apps read as well.
+    response = await generate(LEGACY_VOICE_MODELS, {
+      contents: [{ parts: [{ text: legacyPrompt(input) }] }],
+      generationConfig: { responseModalities: ["AUDIO"],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } } },
+    }, env.GEMINI_API_KEY);
+  }
   await quota.add("spoken", 1);
   // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
   return new Response(response.body, { headers: { "Content-Type": "application/json; charset=utf-8" } });

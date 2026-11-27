@@ -116,3 +116,13 @@ export function voiceInput(request: SpeakRequest): VoiceInput {
  * the on-device voices). The apps keep the same table; the sample voice pack is made with it.
  */
 export const CAST_VOICES = ["Kore", "Aoede", "Leda", "Sulafat", "Gacrux", "Charon", "Puck", "Orus", "Algenib", "Iapetus"] as const;
+
+/**
+ * The prompt for the older speech models: the delivery as a direction, then the line. Pause tags
+ * become ellipses, which those models pause at; on CI they spoke only the line.
+ */
+export function legacyPrompt(input: VoiceInput): string {
+  const line = input.text.replace(/\s*<long pause>\s*/g, "... ").replace(/\s*<short pause>\s*/g, ", ")
+    .replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+  return `Read the line below as an actor in a play, ${input.style}. Say only the line.\n\n${line}`;
+}
