@@ -66,6 +66,10 @@
 "billing_unavailable" = "Plans couldn’t be loaded. Make sure you’re signed in to the App Store and online.";
 "cancel" = "Cancel";
 "cast_auto" = "Assign automatically";
+"cast_check_body" = "Studio voices keep the voice each character has now. Make sure women and men have voices of their gender, then prepare.";
+"cast_check_confirm" = "Confirm and prepare";
+"cast_check_guessing" = "The director is reading the scene to tell the characters’ genders…";
+"cast_check_title" = "Check the voices first";
 "cast_intro" = "Pick a voice, tone and pace for each character. Installed voices work offline; online voices need an internet connection.";
 "cast_intro_ai" = "Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.";
 "cast_intro_studio" = "Pick a studio voice for each character. The director sets each line’s pace and mood. Tap play to hear them.";

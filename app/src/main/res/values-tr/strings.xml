@@ -543,6 +543,10 @@
     <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
     <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>
     <string name="cast_intro_studio">Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.</string>
+    <string name="cast_check_title">Önce sesleri kontrol et</string>
+    <string name="cast_check_body">Stüdyo sesleri her karakterin şu anki sesiyle hazırlanır. Kadın ve erkek karakterlerin kendi cinsiyetlerine uygun sesleri olduğundan emin ol, sonra hazırla.</string>
+    <string name="cast_check_guessing">Yönetmen karakterlerin cinsiyetini anlamak için sahneyi okuyor…</string>
+    <string name="cast_check_confirm">Onayla ve hazırla</string>
     <string name="cast_studio_voice_for">%1$s için stüdyo sesi</string>
     <string-array name="studio_voice_traits">
         <item>Kararlı</item>

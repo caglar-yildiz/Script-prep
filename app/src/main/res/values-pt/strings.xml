@@ -557,6 +557,10 @@
     <string name="studio_allowance">Dá para preparar vozes de estúdio para 2 roteiros por mês.</string>
     <string name="studio_script_limit">Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.</string>
     <string name="cast_intro_studio">Escolha uma voz de estúdio para cada personagem. O diretor define o ritmo e o tom de cada fala. Toque em reproduzir para ouvir.</string>
+    <string name="cast_check_title">Confira as vozes primeiro</string>
+    <string name="cast_check_body">As vozes de estúdio mantêm a voz que cada personagem tem agora. Garanta que mulheres e homens tenham vozes do seu gênero e depois prepare.</string>
+    <string name="cast_check_guessing">O diretor está lendo a cena para saber o gênero dos personagens…</string>
+    <string name="cast_check_confirm">Confirmar e preparar</string>
     <string name="cast_studio_voice_for">Voz de estúdio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>

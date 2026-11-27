@@ -2,13 +2,14 @@
  * Memo Everything studio voices. The apps send a scene or a line with the user's Firebase ID
  * token; this Worker checks the user and their monthly allowance, asks Gemini and answers.
  *
+ *   POST /v1/cast    a scene        -> the characters' likely genders, before the cast is chosen
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
  *   POST /v1/speak   one noted line -> Gemini's answer: candidates with base64 WAV (Google Cloud) or
  *                                      PCM (older voices), or an interaction whose steps hold WAV
  *   GET  /v1/usage                  -> this month's counts and limits
  */
 import { AuthError, verifyIdToken } from "./auth";
-import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
+import { CAST_SCHEMA, castPrompt, DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
 import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
   vertexGenerate, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
@@ -98,6 +99,20 @@ async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota
   return json({ lines: directions, cast, usage: { directed: used, limit } });
 }
 
+/** The characters' genders only; cheap, so it counts against no allowance. */
+async function cast(request: Request, env: Env): Promise<Response> {
+  const scene = parseDirectRequest(await readBody(request));
+  const response = await generate(DIRECTOR_MODELS, {
+    contents: [{ parts: [{ text: castPrompt(scene) }] }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: CAST_SCHEMA, temperature: 0.2 },
+  }, env.GEMINI_API_KEY);
+  try {
+    return json({ cast: normalizeCast(scene, JSON.parse(await answerText(response))) });
+  } catch (error) {
+    throw error instanceof UpstreamError ? error : new UpstreamError("The cast answer could not be used", 502);
+  }
+}
+
 async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
   const body = await readBody(request);
   const line = parseSpeakRequest(body);
@@ -160,7 +175,8 @@ export default {
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({ ok: true });
     }
-    const routes: Record<string, string> = { "/v1/direct": "POST", "/v1/speak": "POST", "/v1/usage": "GET" };
+    const routes: Record<string, string> = { "/v1/cast": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
+      "/v1/usage": "GET" };
     const method = routes[url.pathname];
     if (!method) {
       return problem(404, "not_found", "Unknown path");
@@ -179,6 +195,9 @@ export default {
         const used = await quota.usage();
         return json({ used, limits: { directed: limitFor(env, "directed"), spoken: limitFor(env, "spoken"),
           scripts: Number(env.MONTHLY_SCRIPTS) || 0 } });
+      }
+      if (url.pathname === "/v1/cast") {
+        return await cast(request, env);
       }
       return url.pathname === "/v1/direct" ? await direct(request, env, quota) : await speak(request, env, quota);
     } catch (error) {

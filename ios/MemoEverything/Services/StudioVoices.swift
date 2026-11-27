@@ -198,6 +198,46 @@ final class StudioVoices: ObservableObject {
         "gender:" + role.trimmingCharacters(in: .whitespaces).lowercased()
     }
 
+    /// Whether the director has given a gender for every character.
+    func knowsGenders(_ roles: [String]) -> Bool {
+        genders(roles).count >= roles.count
+    }
+
+    /// Asks the director for the characters' likely genders before the cast is chosen, so women and
+    /// men start with voices of their gender. Quiet on failure: the cast screen works without it.
+    /// `done` runs on the main thread.
+    func guessGenders(_ scene: ScriptScene, _ language: ScriptLanguage, title: String, done: @escaping () -> Void) {
+        if !running {
+            lock.lock()
+            cancelled = false
+            lock.unlock()
+        }
+        DispatchQueue.global(qos: .userInitiated).async {
+            // The opening of the scene, within the Worker's size limits, is enough to tell.
+            var lines: [[String: Any]] = []
+            var characters = 0
+            for line in scene.lines.prefix(80) where characters <= 12_000 {
+                characters += min(line.text.count, 400)
+                lines.append(["role": line.role, "text": String(line.text.prefix(400)),
+                              "notes": line.notes.map { String($0.prefix(300)) }])
+            }
+            let body: [String: Any] = ["language": language.code, "title": title, "lines": lines]
+            if let data = try? self.post("/v1/cast", body),
+               let answer = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                self.lock.lock()
+                var stored = self.loadNotes()
+                for member in answer["cast"] as? [[String: Any]] ?? [] {
+                    Self.putGender(&stored, member["role"] as? String ?? "", member["gender"] as? String ?? "")
+                }
+                self.notes = stored
+                let snapshot = stored
+                self.lock.unlock()
+                try? self.saveNotes(snapshot)
+            }
+            DispatchQueue.main.async(execute: done)
+        }
+    }
+
     /// The genders the director gave the characters ("female" or "male"), for the automatic cast.
     func genders(_ roles: [String]) -> [String: String] {
         lock.lock()
