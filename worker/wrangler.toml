@@ -1,0 +1,21 @@
+# Memo Everything studio voices: the Gemini key lives here as a secret, never in the apps.
+# Deployed by .github/workflows/worker.yml; GEMINI_API_KEY is set from the GitHub secret.
+name = "memo-studio"
+main = "src/index.ts"
+compatibility_date = "2026-11-01"
+workers_dev = true
+
+[vars]
+FIREBASE_PROJECT_ID = "memo-70a45"
+# Lines a user may send each calendar month (UTC).
+MONTHLY_DIRECTED_LINES = "3000"
+MONTHLY_SPOKEN_LINES = "2000"
+
+# One small SQLite-backed Durable Object per user keeps the monthly counts (free plan).
+[[durable_objects.bindings]]
+name = "QUOTA"
+class_name = "Quota"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Quota"]
