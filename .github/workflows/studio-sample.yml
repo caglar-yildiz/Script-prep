@@ -32,7 +32,8 @@ jobs:
         with:
           node-version: '22'
       - name: Install ffmpeg
-        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+        # A broken third-party apt source on the runner must not stop the install.
+        run: command -v ffmpeg || { sudo apt-get update || true; sudo apt-get install -y --no-install-recommends ffmpeg; }
       - name: Make the voice pack
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
