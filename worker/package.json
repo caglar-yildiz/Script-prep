@@ -12,5 +12,9 @@
     "typescript": "^7.0.2",
     "vitest": "^5.1.2",
     "wrangler": "^4.168.0"
+  },
+  "overrides": {
+    "@types/node": "26.6.11",
+    "undici-types": "8.9.0"
   }
 }
