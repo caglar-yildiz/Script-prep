@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       task:
-        description: 'pack: sample voices and voice samples; models: list the speech models the key can use'
+        description: 'pack: sample voices and voice samples; models: list the speech models the key can use; fallbacks: test the older speech models'
         required: false
         default: 'pack'
       languages:
@@ -46,8 +46,13 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: node worker/scripts/models.mjs
+      - name: Test the older speech models
+        if: github.event.inputs.task == 'fallbacks'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node worker/scripts/probe-fallbacks.mjs
       - name: Make the voice pack
-        if: github.event.inputs.task != 'models'
+        if: github.event.inputs.task != 'models' && github.event.inputs.task != 'fallbacks'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LANGUAGES: ${{ github.event.inputs.languages }}
