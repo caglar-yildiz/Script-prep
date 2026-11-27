@@ -259,6 +259,7 @@
 "notes_style" = "Stile dato: %1$@";
 "notes_subtext" = "Regista: %1$@";
 "notes_title" = "Note del regista";
+"notes_undertone" = "Sotto: %1$@";
 "notes_value" = "Come è recitata ogni battuta e come è stata fatta la sua voce";
 "notes_voiced" = "Voce %1$@ · %2$@ (%3$@)";
 "notes_voiced_unknown" = "Voce %1$@: preparata prima che i dettagli fossero salvati.";

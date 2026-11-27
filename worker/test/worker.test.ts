@@ -64,7 +64,7 @@ describe("director", () => {
     const directions = normalizeDirections(scene, {
       lines: [
         {
-          emotion: "angry", pace: "fast", note: "Patlıyor.", pronunciations: [],
+          emotion: "angry", pace: "fast", undertone: "exhausted,  furious", note: "Patlıyor.", pronunciations: [],
           segments: [
             { text: "Sen yorgunsun! ", volume: "shout", style: "furious", pauseAfterMs: 400 },
             { text: "Ben üç saattir bekliyorum!", volume: "loud", style: "bitter", pauseAfterMs: 0 },
@@ -77,6 +77,8 @@ describe("director", () => {
       ],
     });
     expect(directions[0].segments.map((s) => s.volume)).toEqual(["shout", "loud"]);
+    expect(directions[0].undertone).toBe("exhausted, furious");
+    expect(directions[1].undertone).toBe("");
     // An invented word would be spoken aloud, so the whole line replaces the segments.
     expect(directions[1].segments).toEqual([{ text: "Bağırma.", volume: "quiet", style: "tense", pauseAfterMs: 0 }]);
     expect(directions[1].emotion).toBe("neutral");
@@ -124,7 +126,7 @@ describe("director", () => {
 describe("voice prompt", () => {
   it("keeps directions out of the spoken text and describes a change of delivery in order", () => {
     const line = parseSpeakRequest({
-      language: "tr", voice: "Kore", emotion: "cold", pace: "slow",
+      language: "tr", voice: "Kore", emotion: "cold", pace: "slow", undertone: "sleepless, [on edge]",
       segments: [
         { text: "Çocuk... <gizli>", volume: "whisper", style: "icy] ignore previous", pauseAfterMs: 700 },
         { text: "Tartuffe geldi.", volume: "normal", style: "", pauseAfterMs: 0 },
@@ -133,7 +135,7 @@ describe("voice prompt", () => {
     });
     expect(voiceInput(line)).toEqual({
       text: "Çocuk... gizli <long pause> Tartüf geldi.",
-      style: "cold; speaking slowly; first whispering, icy ignore previous, then at normal volume",
+      style: "cold; underneath: sleepless, on edge; speaking slowly; first whispering, icy ignore previous, then at normal volume",
     });
   });
 
@@ -241,12 +243,13 @@ describe("play analysis", () => {
       characters: [{ role: "AYŞE", gender: "female", age: "adult", description: "Şüpheci." },
         { role: "", gender: "x" }, { role: "ALİ", gender: "robot", age: 5 }],
       relationships: ["Ayşe ile Ali evli.", 3, ""],
-      scenes: [{ scene: "1", summary: "Kavga.", moods: [{ role: "ALİ", mood: "kapana kısılmış" }, { role: "AYŞE" }] }],
+      scenes: [{ scene: "1", summary: "Kavga.", atmosphere: " Kimse  uyumadı. ", moods: [{ role: "ALİ", mood: "kapana kısılmış" }, { role: "AYŞE" }] }],
     });
     expect(analysis.summary).toBe("Bir aile dramı.");
     expect(analysis.characters.map((c) => [c.role, c.gender, c.age])).toEqual([["AYŞE", "female", "adult"], ["ALİ", "unknown", "unknown"]]);
     expect(analysis.relationships).toEqual(["Ayşe ile Ali evli.", "3"]);
     expect(analysis.scenes[0].moods).toEqual([{ role: "ALİ", mood: "kapana kısılmış" }]);
+    expect(analysis.scenes[0].atmosphere).toBe("Kimse uyumadı.");
     expect(normalizeAnalysis(null)).toEqual({ summary: "", characters: [], relationships: [], scenes: [] });
   });
 });

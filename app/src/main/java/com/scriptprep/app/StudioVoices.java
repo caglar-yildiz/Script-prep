@@ -435,6 +435,9 @@ final class StudioVoices {
         if (scene != null) {
             context.append("This scene").append(section.isEmpty() ? "" : " (" + section + ")").append(": ")
                 .append(scene.optString("summary")).append('\n');
+            if (!scene.optString("atmosphere").isEmpty()) {
+                context.append("Atmosphere everyone carries: ").append(scene.optString("atmosphere")).append('\n');
+            }
             JSONArray moods = scene.optJSONArray("moods");
             if (moods != null && moods.length() > 0) {
                 context.append("State of mind in this scene:\n");
@@ -641,6 +644,7 @@ final class StudioVoices {
             .put("voice", voice)
             .put("emotion", note.optString("emotion", "neutral"))
             .put("pace", note.optString("pace", "normal"))
+            .put("undertone", note.optString("undertone", ""))
             .put("segments", note.getJSONArray("segments"))
             .put("pronunciations", note.optJSONArray("pronunciations") == null ? new JSONArray()
                 : note.getJSONArray("pronunciations"));

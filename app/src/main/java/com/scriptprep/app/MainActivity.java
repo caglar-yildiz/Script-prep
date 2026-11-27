@@ -4536,6 +4536,9 @@ public final class MainActivity extends Activity {
             return text.append(getString(R.string.notes_not_directed)).toString();
         }
         text.append(getString(R.string.notes_delivery, note.optString("emotion"), note.optString("pace"))).append('\n');
+        if (!note.optString("undertone").isEmpty()) {
+            text.append(getString(R.string.notes_undertone, note.optString("undertone"))).append('\n');
+        }
         if (!note.optString("note").isEmpty()) {
             text.append(getString(R.string.notes_subtext, note.optString("note"))).append('\n');
         }

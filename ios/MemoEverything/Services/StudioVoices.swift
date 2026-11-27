@@ -391,6 +391,10 @@ final class StudioVoices: ObservableObject {
             let name = section.isEmpty ? "" : " (\(section))"
             let summary = scene["summary"] as? String ?? ""
             context += "This scene\(name): \(summary)\n"
+            let atmosphere = scene["atmosphere"] as? String ?? ""
+            if !atmosphere.isEmpty {
+                context += "Atmosphere everyone carries: \(atmosphere)\n"
+            }
             let moods = scene["moods"] as? [[String: Any]] ?? []
             if !moods.isEmpty {
                 context += "State of mind in this scene:\n"
@@ -545,6 +549,7 @@ final class StudioVoices: ObservableObject {
             "voice": voice,
             "emotion": note["emotion"] as? String ?? "neutral",
             "pace": note["pace"] as? String ?? "normal",
+            "undertone": note["undertone"] as? String ?? "",
             "segments": note["segments"] as? [Any] ?? [],
             "pronunciations": note["pronunciations"] as? [Any] ?? [],
         ]

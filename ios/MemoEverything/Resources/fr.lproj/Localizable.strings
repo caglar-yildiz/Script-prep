@@ -259,6 +259,7 @@
 "notes_style" = "Style donné : %1$@";
 "notes_subtext" = "Mise en scène : %1$@";
 "notes_title" = "Notes du metteur en scène";
+"notes_undertone" = "En dessous : %1$@";
 "notes_value" = "Comment chaque réplique est jouée et comment sa voix a été faite";
 "notes_voiced" = "Voix %1$@ · %2$@ (%3$@)";
 "notes_voiced_unknown" = "Voix %1$@ : préparée avant que les détails soient gardés.";

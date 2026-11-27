@@ -13,6 +13,8 @@ export interface SpeakRequest {
   voice: (typeof VOICES)[number];
   emotion: (typeof EMOTIONS)[number];
   pace: (typeof PACES)[number];
+  /** What the character carries underneath the line, e.g. "sleepless, on edge". */
+  undertone: string;
   segments: { text: string; volume: (typeof VOLUMES)[number]; style: string; pauseAfterMs: number }[];
   pronunciations: { word: string; say: string }[];
 }
@@ -58,6 +60,8 @@ export function parseSpeakRequest(body: unknown): SpeakRequest {
     voice: input.voice as SpeakRequest["voice"],
     emotion: EMOTIONS.includes(input.emotion as never) ? (input.emotion as SpeakRequest["emotion"]) : "neutral",
     pace: PACES.includes(input.pace as never) ? (input.pace as SpeakRequest["pace"]) : "normal",
+    // Only plain words reach the voice: like a segment's style.
+    undertone: String(input.undertone ?? "").replace(/[^\p{L}\p{N} ,'-]/gu, "").slice(0, 60).trim(),
     segments,
     pronunciations,
   };
@@ -100,7 +104,8 @@ export function voiceInput(request: SpeakRequest): VoiceInput {
     [segment.volume === "normal" && !many ? "" : VOLUME_WORDS[segment.volume], segment.style].filter(Boolean).join(", ");
   const many = request.segments.length > 1
     && new Set(request.segments.map((s) => `${s.volume}|${s.style}`)).size > 1;
-  const turn = [request.emotion !== "neutral" ? request.emotion : "", PACE_WORDS[request.pace]].filter(Boolean);
+  const turn = [request.emotion !== "neutral" ? request.emotion : "",
+    request.undertone ? `underneath: ${request.undertone}` : "", PACE_WORDS[request.pace]].filter(Boolean);
   if (many) {
     const steps = request.segments.map((s) => delivery(s, true));
     turn.push(steps.map((step, i) => (i === 0 ? `first ${step}` : `then ${step}`)).join(", "));

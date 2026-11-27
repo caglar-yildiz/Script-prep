@@ -259,6 +259,7 @@
 "notes_style" = "Estilo dado: %1$@";
 "notes_subtext" = "Diretor: %1$@";
 "notes_title" = "Notas do diretor";
+"notes_undertone" = "Por baixo: %1$@";
 "notes_value" = "Como cada fala é interpretada e como a voz foi feita";
 "notes_voiced" = "Voz %1$@ · %2$@ (%3$@)";
 "notes_voiced_unknown" = "Voz %1$@: preparada antes de os detalhes serem guardados.";

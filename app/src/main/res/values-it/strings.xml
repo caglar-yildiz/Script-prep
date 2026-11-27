@@ -569,6 +569,7 @@
     <string name="notes_not_directed">Non ancora diretta.</string>
     <string name="notes_delivery">Stato d’animo: %1$s · ritmo: %2$s</string>
     <string name="notes_subtext">Regista: %1$s</string>
+    <string name="notes_undertone">Sotto: %1$s</string>
     <string name="notes_pronounce">Dire “%1$s” come “%2$s”</string>
     <string name="notes_not_voiced">Voce %1$s: non ancora preparata.</string>
     <string name="notes_voiced_unknown">Voce %1$s: preparata prima che i dettagli fossero salvati.</string>

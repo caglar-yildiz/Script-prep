@@ -58,6 +58,8 @@ export interface Segment {
 export interface Direction {
   emotion: (typeof EMOTIONS)[number];
   pace: (typeof PACES)[number];
+  /** What the character carries underneath the line from the situation, e.g. "sleepless, on edge". */
+  undertone: string;
   note: string;
   segments: Segment[];
   pronunciations: { word: string; say: string }[];
@@ -140,11 +142,13 @@ export function directorPrompt(request: DirectRequest): string {
     : "";
   return `You are a theatre director preparing a voice actor to read the other characters' lines of a ${LANGUAGE_NAMES[request.language]} play.
 For every numbered line, decide how it should be performed, using what has happened in the play so far, the relationships, the situation of the scene and the stage directions in parentheses (stage directions after a line describe how it, or the next moment, is played).
-Most lines have no stage direction: then infer the delivery from the situation. A character who is trapped, cornered, lying, grieving, afraid or in danger must not sound relaxed; keep their tension through the lines of that moment. Use "neutral" only when the moment is truly calm.
+Most lines have no stage direction: then infer the delivery from the situation. A character who is trapped, cornered, lying, grieving, afraid or in danger must not sound relaxed; keep their tension through the lines of that moment.
+Every character also carries the scene's atmosphere (the hour, tiredness, fear, grief, suspicion, what has just happened) into every line, even a dry joke or a calm, practical remark: such a line is played through that weight, never casually. Use "neutral" only when the scene itself is truly calm.
 Rules:
 - Return exactly one entry per numbered line, in the same order.
 - segments: split a line only where the delivery changes (for example shouted, then whispered). The segment texts joined with spaces must reproduce the spoken line exactly, without the stage directions.
 - volume: whisper, quiet, normal, loud or shout. style: 2-6 English words for the voice actor, e.g. "icy, mocking" or "breaking, close to tears".
+- undertone: 2-5 English words for what the character carries underneath this line from the situation, whatever the surface emotion, e.g. "sleepless, on edge" or "grieving, numb" or "forced calm, frightened". Empty only when the scene is truly calm.
 - note: one short sentence in ${LANGUAGE_NAMES[request.language]} explaining the subtext to the actor.
 - cast: every character who speaks, with their likely gender from the name, the text and the stage directions (female, male, or unknown when it cannot be told).
 - pronunciations: only words a speech engine is likely to misread (foreign names, abbreviations, numbers), each with how to say it in ${LANGUAGE_NAMES[request.language]} spelling. Usually empty.
@@ -171,6 +175,7 @@ export const DIRECTION_SCHEMA = {
         properties: {
           emotion: { type: "string", enum: [...EMOTIONS] },
           pace: { type: "string", enum: [...PACES] },
+          undertone: { type: "string" },
           note: { type: "string" },
           segments: {
             type: "array",
@@ -194,7 +199,7 @@ export const DIRECTION_SCHEMA = {
             },
           },
         },
-        required: ["emotion", "pace", "note", "segments", "pronunciations"],
+        required: ["emotion", "pace", "undertone", "note", "segments", "pronunciations"],
       },
     },
   },
@@ -263,6 +268,7 @@ export function normalizeDirections(request: DirectRequest, answer: unknown): Di
     return {
       emotion: pick(EMOTIONS, entry.emotion, "neutral"),
       pace: pick(PACES, entry.pace, "normal"),
+      undertone: squash(String(entry.undertone ?? "")).slice(0, 60),
       note: squash(String(entry.note ?? "")).slice(0, 240),
       segments,
       pronunciations,
