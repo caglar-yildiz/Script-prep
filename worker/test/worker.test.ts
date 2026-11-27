@@ -64,7 +64,7 @@ describe("director", () => {
         {
           emotion: "angry", pace: "fast", note: "Patlıyor.", pronunciations: [],
           segments: [
-            { text: "Sen yorgunsun!", volume: "shout", style: "furious", pauseAfterMs: 400 },
+            { text: "Sen yorgunsun! ", volume: "shout", style: "furious", pauseAfterMs: 400 },
             { text: "Ben üç saattir bekliyorum!", volume: "loud", style: "bitter", pauseAfterMs: 0 },
           ],
         },

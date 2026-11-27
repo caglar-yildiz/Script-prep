@@ -183,7 +183,9 @@ export function normalizeDirections(request: DirectRequest, answer: unknown): Di
         pauseAfterMs: Math.max(0, Math.min(3000, Math.round(Number(segment.pauseAfterMs) || 0))),
       };
     }).filter((s) => s.text.length > 0);
-    if (segments.map((s) => s.text).join(" ") !== spoken) {
+    // Spacing between segments does not matter, only the words and punctuation.
+    const bare = (value: string) => value.replace(/\s+/g, "");
+    if (bare(segments.map((s) => s.text).join("")) !== bare(spoken)) {
       const first = segments[0];
       segments = [{ text: spoken, volume: first?.volume ?? "normal", style: first?.style ?? "", pauseAfterMs: 0 }];
     }
