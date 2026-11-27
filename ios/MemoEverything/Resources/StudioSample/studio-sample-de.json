@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "de",
+ "cast": {
+  "LENA": "female",
+  "JONAS": "male"
+ },
+ "lines": [
+  {
+   "role": "LENA",
+   "text": "Lass uns vor der Probe noch einmal das Licht prüfen.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lena schlägt vor, vor der Probe das Licht zu überprüfen.",
+    "segments": [
+     {
+      "text": "Lass uns vor der Probe noch einmal das Licht prüfen.",
+      "volume": "normal",
+      "style": "calm, professional, helpful",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-1.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Ich bin so weit. Wo trete ich auf?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Jonas ist bereit und fragt nach seiner Position.",
+    "segments": [
+     {
+      "text": "Ich bin so weit. Wo trete ich auf?",
+      "volume": "normal",
+      "style": "eager, ready, attentive",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-2.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Von links. Komm rein, wenn ich den Vorhang schließe.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lena erklärt ihm den genauen Auftritt.",
+    "segments": [
+     {
+      "text": "Von links. Komm rein, wenn ich den Vorhang schließe.",
+      "volume": "normal",
+      "style": "instructional, clear, confident",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-3.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Wer hat die erste Replik?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Jonas erkundigt sich nach dem Ablauf.",
+    "segments": [
+     {
+      "text": "Wer hat die erste Replik?",
+      "volume": "normal",
+      "style": "curious, focused",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-4.m4a"
+  },
+  {
+   "role": "LENA",
+   "text": "Du. Bleib dort, bis ich zu dir komme.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lena gibt ihm Regieanweisungen.",
+    "segments": [
+     {
+      "text": "Du. Bleib dort, bis ich zu dir komme.",
+      "volume": "normal",
+      "style": "direct, guiding",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-5.m4a"
+  },
+  {
+   "role": "JONAS",
+   "text": "Gut. Dann von vorn.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Jonas stimmt zu und will beginnen.",
+    "segments": [
+     {
+      "text": "Gut. Dann von vorn.",
+      "volume": "normal",
+      "style": "ready, upbeat, determined",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-de-6.m4a"
+  }
+ ]
+}

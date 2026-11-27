@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "tr",
+ "cast": {
+  "ECE": "female",
+  "MERT": "male"
+ },
+ "lines": [
+  {
+   "role": "ECE",
+   "text": "Prova başlamadan önce ışığı bir kez daha kontrol edelim.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Provaya başlamadan önceki hazırlık aşamasını sakin bir tonla yönetiyorsun.",
+    "segments": [
+     {
+      "text": "Prova başlamadan önce ışığı bir kez daha kontrol edelim.",
+      "volume": "normal",
+      "style": "calm, professional, direct",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-1.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Ben hazırım. Sahneye nereden giriyorum?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Oyuncu olarak rolüne odaklanmış ve yerini öğrenmeye çalışan meraklı bir ton.",
+    "segments": [
+     {
+      "text": "Ben hazırım. Sahneye nereden giriyorum?",
+      "volume": "normal",
+      "style": "ready, curious, bright",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-2.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Soldan. Ben perdeyi kapattığımda içeri gir.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Yönetmen edasıyla net ve yönlendirici talimatlar veriyorsun.",
+    "segments": [
+     {
+      "text": "Soldan. Ben perdeyi kapattığımda içeri gir.",
+      "volume": "normal",
+      "style": "instructive, firm, clear",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-3.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Peki ilk repliği kim söylüyor?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Akışın nasıl ilerleyeceğini öğrenmek isteyen bir oyuncu.",
+    "segments": [
+     {
+      "text": "Peki ilk repliği kim söylüyor?",
+      "volume": "normal",
+      "style": "casual, inquiring, relaxed",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-4.m4a"
+  },
+  {
+   "role": "ECE",
+   "text": "Sen. Ben yanına gelene kadar yerinde kal.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Oyuncuya net bir kural koyarak direktif veriyorsun.",
+    "segments": [
+     {
+      "text": "Sen. Ben yanına gelene kadar yerinde kal.",
+      "volume": "normal",
+      "style": "authoritative, calm, instructive",
+      "pauseAfterMs": 500
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-5.m4a"
+  },
+  {
+   "role": "MERT",
+   "text": "Tamam. Bu sefer baştan alalım.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Prova heyecanıyla işe baştan başlamaya hazır olumlu bir ruh hali.",
+    "segments": [
+     {
+      "text": "Tamam. Bu sefer baştan alalım.",
+      "volume": "normal",
+      "style": "enthusiastic, energetic, cooperative",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-tr-6.m4a"
+  }
+ ]
+}

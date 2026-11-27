@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "fr",
+ "cast": {
+  "CLAIRE": "female",
+  "HUGO": "male"
+ },
+ "lines": [
+  {
+   "role": "CLAIRE",
+   "text": "Vérifions encore une fois les lumières avant la répétition.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Claire montre sa rigueur et son souci du détail avant de commencer.",
+    "segments": [
+     {
+      "text": "Vérifions encore une fois les lumières avant la répétition.",
+      "volume": "normal",
+      "style": "professional, focused director",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-1.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Je suis prêt. Par où j’entre ?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Hugo est impatient et motivé de commencer le travail.",
+    "segments": [
+     {
+      "text": "Je suis prêt. Par où j’entre ?",
+      "volume": "normal",
+      "style": "eager, ready actor",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-2.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Par la gauche. Entre quand je ferme le rideau.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Claire donne des indications techniques précises avec calme.",
+    "segments": [
+     {
+      "text": "Par la gauche. Entre quand je ferme le rideau.",
+      "volume": "normal",
+      "style": "clear, guiding instructor",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-3.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "Qui a la première réplique ?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Hugo s'assure de ses repères pour ne pas se tromper.",
+    "segments": [
+     {
+      "text": "Qui a la première réplique ?",
+      "volume": "normal",
+      "style": "curious, attentive actor",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-4.m4a"
+  },
+  {
+   "role": "CLAIRE",
+   "text": "Toi. Reste là jusqu’à ce que je te rejoigne.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Claire confirme la position et recadre son acteur.",
+    "segments": [
+     {
+      "text": "Toi. Reste là jusqu’à ce que je te rejoigne.",
+      "volume": "normal",
+      "style": "authoritative, directing",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-5.m4a"
+  },
+  {
+   "role": "HUGO",
+   "text": "D’accord. On reprend depuis le début.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Hugo accepte avec enthousiasme et entre dans son rôle.",
+    "segments": [
+     {
+      "text": "D’accord. On reprend depuis le début.",
+      "volume": "normal",
+      "style": "confident, cooperative actor",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-fr-6.m4a"
+  }
+ ]
+}

@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "es",
+ "cast": {
+  "LUCÍA": "female",
+  "MATEO": "male"
+ },
+ "lines": [
+  {
+   "role": "LUCÍA",
+   "text": "Revisemos las luces una vez más antes del ensayo.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lucía toma la iniciativa con profesionalismo y concentración.",
+    "segments": [
+     {
+      "text": "Revisemos las luces una vez más antes del ensayo.",
+      "volume": "normal",
+      "style": "professional, organized, focused",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-1.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "Estoy listo. ¿Por dónde entro?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Mateo muestra disposición y espera la indicación espacial.",
+    "segments": [
+     {
+      "text": "Estoy listo. ¿Por dónde entro?",
+      "volume": "normal",
+      "style": "ready, inquiring, attentive",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-2.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Por la izquierda. Entra cuando cierre el telón.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lucía da instrucciones claras y precisas para la entrada.",
+    "segments": [
+     {
+      "text": "Por la izquierda. Entra cuando cierre el telón.",
+      "volume": "normal",
+      "style": "clear, guiding, firm",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-3.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "¿Quién tiene la primera réplica?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Mateo busca confirmar detalles técnicos antes de comenzar.",
+    "segments": [
+     {
+      "text": "¿Quién tiene la primera réplica?",
+      "volume": "normal",
+      "style": "curious, engaged, cautious",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-4.m4a"
+  },
+  {
+   "role": "LUCÍA",
+   "text": "Tú. Quédate ahí hasta que me acerque.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Lucía marca la posición exacta que debe mantener.",
+    "segments": [
+     {
+      "text": "Tú. Quédate ahí hasta que me acerque.",
+      "volume": "normal",
+      "style": "direct, commanding, reassuring",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-5.m4a"
+  },
+  {
+   "role": "MATEO",
+   "text": "De acuerdo. Empecemos desde el principio.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Mateo acepta con entusiasmo y da luz verde al ensayo.",
+    "segments": [
+     {
+      "text": "De acuerdo. Empecemos desde el principio.",
+      "volume": "normal",
+      "style": "cooperative, eager, energetic",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "es-6.m4a"
+  }
+ ]
+}

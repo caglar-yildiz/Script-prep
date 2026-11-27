@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "it",
+ "cast": {
+  "GIULIA": "female",
+  "MARCO": "male"
+ },
+ "lines": [
+  {
+   "role": "GIULIA",
+   "text": "Controlliamo ancora una volta le luci prima della prova.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Giulia dà istruzioni con calma e professionalità prima dell'inizio.",
+    "segments": [
+     {
+      "text": "Controlliamo ancora una volta le luci prima della prova.",
+      "volume": "normal",
+      "style": "calm, professional, focused",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-1.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Sono pronto. Da dove entro?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Marco è pronto e impaziente di iniziare la prova sul palco.",
+    "segments": [
+     {
+      "text": "Sono pronto. Da dove entro?",
+      "volume": "normal",
+      "style": "eager, attentive, ready",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-2.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Da sinistra. Entra quando chiudo il sipario.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Giulia spiega la dinamica dell'ingresso in modo chiaro.",
+    "segments": [
+     {
+      "text": "Da sinistra. Entra quando chiudo il sipario.",
+      "volume": "normal",
+      "style": "clear, instructive, guiding",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-3.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "Chi ha la prima battuta?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Marco chiede un chiarimento logistico per la scena.",
+    "segments": [
+     {
+      "text": "Chi ha la prima battuta?",
+      "volume": "normal",
+      "style": "curious, conversational, waiting",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-4.m4a"
+  },
+  {
+   "role": "GIULIA",
+   "text": "Tu. Resta lì finché non ti raggiungo.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Giulia assegna il turno e dà indicazioni sulla posizione.",
+    "segments": [
+     {
+      "text": "Tu. Resta lì finché non ti raggiungo.",
+      "volume": "normal",
+      "style": "decisive, direct, guiding",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-5.m4a"
+  },
+  {
+   "role": "MARCO",
+   "text": "D’accordo. Ripartiamo dall’inizio.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Marco accetta le indicazioni ed è pronto a ricominciare.",
+    "segments": [
+     {
+      "text": "D’accordo. Ripartiamo dall’inizio.",
+      "volume": "normal",
+      "style": "cooperative, upbeat, ready",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-it-6.m4a"
+  }
+ ]
+}

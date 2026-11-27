@@ -1,0 +1,130 @@
+{
+ "version": 1,
+ "language": "pt",
+ "cast": {
+  "ANA": "female",
+  "RAFAEL": "male"
+ },
+ "lines": [
+  {
+   "role": "ANA",
+   "text": "Vamos conferir as luzes mais uma vez antes do ensaio.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "excited",
+    "pace": "normal",
+    "note": "Ana demonstra entusiasmo e foco na preparação do ensaio.",
+    "segments": [
+     {
+      "text": "Vamos conferir as luzes mais uma vez antes do ensaio.",
+      "volume": "normal",
+      "style": "enthusiastic, focused director",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-1.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Estou pronto. Por onde eu entro?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Rafael demonstra prontidão e busca orientação espacial.",
+    "segments": [
+     {
+      "text": "Estou pronto. Por onde eu entro?",
+      "volume": "normal",
+      "style": "ready, inquiring tone",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-2.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Pela esquerda. Entre quando eu fechar a cortina.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Ana dá uma instrução clara e direta.",
+    "segments": [
+     {
+      "text": "Pela esquerda. Entre quando eu fechar a cortina.",
+      "volume": "normal",
+      "style": "direct, instructing",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-3.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Quem tem a primeira fala?",
+   "voice": "Charon",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Rafael confirma os detalhes da cena.",
+    "segments": [
+     {
+      "text": "Quem tem a primeira fala?",
+      "volume": "normal",
+      "style": "curious, engaged actor",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-4.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Você. Fique aí até eu chegar perto.",
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "normal",
+    "note": "Ana orienta sobre o posicionamento em cena.",
+    "segments": [
+     {
+      "text": "Você. Fique aí até eu chegar perto.",
+      "volume": "normal",
+      "style": "reassuring, directing",
+      "pauseAfterMs": 400
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-5.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Combinado. Vamos começar do início.",
+   "voice": "Charon",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Rafael demonstra disposição para iniciar o trabalho.",
+    "segments": [
+     {
+      "text": "Combinado. Vamos começar do início.",
+      "volume": "normal",
+      "style": "ready, enthusiastic",
+      "pauseAfterMs": 0
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "pt-6.m4a"
+  }
+ ]
+}
