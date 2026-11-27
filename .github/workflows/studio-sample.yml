@@ -4,13 +4,13 @@ name: Studio sample voices
 # commits it to the branch. A run stopped by a Gemini limit keeps what it made; run it again later.
 
 on:
-  push:
-    branches: [feature/gemini-studio-voices]
-    paths:
-      - '.github/workflows/studio-sample.yml'
-      - 'worker/scripts/**'
+  # Only by hand: every run uses the Gemini speech quota the app's users share.
   workflow_dispatch:
     inputs:
+      task:
+        description: 'pack: sample voices and voice samples; models: list the speech models the key can use'
+        required: false
+        default: 'pack'
       languages:
         description: 'Languages, comma separated (empty for all)'
         required: false
@@ -41,7 +41,13 @@ jobs:
       - name: Install ffmpeg
         # A broken third-party apt source on the runner must not stop the install.
         run: command -v ffmpeg || { sudo apt-get update || true; sudo apt-get install -y --no-install-recommends ffmpeg; }
+      - name: List speech models
+        if: github.event.inputs.task == 'models'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node worker/scripts/models.mjs
       - name: Make the voice pack
+        if: github.event.inputs.task != 'models'
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           LANGUAGES: ${{ github.event.inputs.languages }}
