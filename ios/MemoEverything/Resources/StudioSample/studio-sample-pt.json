@@ -8,18 +8,21 @@
  "lines": [
   {
    "role": "ANA",
-   "text": "Vamos conferir as luzes mais uma vez antes do ensaio.",
+   "text": "Rafael! Você está acordado? A cortina abre em dez minutos.",
+   "notes": [
+    "(sussurrando)"
+   ],
    "voice": "Kore",
    "note": {
     "emotion": "excited",
     "pace": "normal",
-    "note": "Ana demonstra entusiasmo e foco na preparação do ensaio.",
+    "note": "Ana avisa sobre a urgência do horário.",
     "segments": [
      {
-      "text": "Vamos conferir as luzes mais uma vez antes do ensaio.",
-      "volume": "normal",
-      "style": "enthusiastic, focused director",
-      "pauseAfterMs": 400
+      "text": "Rafael! Você está acordado? A cortina abre em dez minutos.",
+      "volume": "whisper",
+      "style": "urgent, whispering",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
@@ -28,18 +31,21 @@
   },
   {
    "role": "RAFAEL",
-   "text": "Estou pronto. Por onde eu entro?",
+   "text": "Dez minutos? Eu só estava descansando os olhos.",
+   "notes": [
+    "(sonolento)"
+   ],
    "voice": "Charon",
    "note": {
-    "emotion": "neutral",
-    "pace": "normal",
-    "note": "Rafael demonstra prontidão e busca orientação espacial.",
+    "emotion": "tired",
+    "pace": "slow",
+    "note": "Rafael acorda desnorteado e sonolento.",
     "segments": [
      {
-      "text": "Estou pronto. Por onde eu entro?",
+      "text": "Dez minutos? Eu só estava descansando os olhos.",
       "volume": "normal",
-      "style": "ready, inquiring tone",
-      "pauseAfterMs": 400
+      "style": "sleepy, groggy",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
@@ -48,18 +54,21 @@
   },
   {
    "role": "ANA",
-   "text": "Pela esquerda. Entre quando eu fechar a cortina.",
+   "text": "A diretora acabou de me contar. Os ingressos esgotaram!",
+   "notes": [
+    "(empolgada)"
+   ],
    "voice": "Kore",
    "note": {
-    "emotion": "neutral",
-    "pace": "normal",
-    "note": "Ana dá uma instrução clara e direta.",
+    "emotion": "excited",
+    "pace": "fast",
+    "note": "Ana traz uma ótima notícia com entusiasmo.",
     "segments": [
      {
-      "text": "Pela esquerda. Entre quando eu fechar a cortina.",
-      "volume": "normal",
-      "style": "direct, instructing",
-      "pauseAfterMs": 400
+      "text": "A diretora acabou de me contar. Os ingressos esgotaram!",
+      "volume": "loud",
+      "style": "excited, joyful",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
@@ -68,18 +77,21 @@
   },
   {
    "role": "RAFAEL",
-   "text": "Quem tem a primeira fala?",
+   "text": "Esgotaram? Todos os lugares?",
+   "notes": [
+    "(levantando num pulo)"
+   ],
    "voice": "Charon",
    "note": {
-    "emotion": "neutral",
+    "emotion": "excited",
     "pace": "normal",
-    "note": "Rafael confirma os detalhes da cena.",
+    "note": "Rafael se surpreende e levanta num pulo.",
     "segments": [
      {
-      "text": "Quem tem a primeira fala?",
-      "volume": "normal",
-      "style": "curious, engaged actor",
-      "pauseAfterMs": 400
+      "text": "Esgotaram? Todos os lugares?",
+      "volume": "loud",
+      "style": "surprised, jumping up",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
@@ -88,18 +100,19 @@
   },
   {
    "role": "ANA",
-   "text": "Você. Fique aí até eu chegar perto.",
+   "text": "Todos os lugares. Até o balcão.",
+   "notes": [],
    "voice": "Kore",
    "note": {
     "emotion": "neutral",
     "pace": "normal",
-    "note": "Ana orienta sobre o posicionamento em cena.",
+    "note": "Ana confirma o sucesso da bilheteria.",
     "segments": [
      {
-      "text": "Você. Fique aí até eu chegar perto.",
+      "text": "Todos os lugares. Até o balcão.",
       "volume": "normal",
-      "style": "reassuring, directing",
-      "pauseAfterMs": 400
+      "style": "reassuring, smiling",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
@@ -108,23 +121,234 @@
   },
   {
    "role": "RAFAEL",
-   "text": "Combinado. Vamos começar do início.",
+   "text": "Então cadê o meu chapéu? Eu não posso entrar em cena sem o meu chapéu!",
+   "notes": [
+    "(em pânico)"
+   ],
    "voice": "Charon",
    "note": {
-    "emotion": "happy",
-    "pace": "normal",
-    "note": "Rafael demonstra disposição para iniciar o trabalho.",
+    "emotion": "desperate",
+    "pace": "fast",
+    "note": "Rafael entra em pânico procurando o figurino.",
     "segments": [
      {
-      "text": "Combinado. Vamos começar do início.",
-      "volume": "normal",
-      "style": "ready, enthusiastic",
-      "pauseAfterMs": 0
+      "text": "Então cadê o meu chapéu? Eu não posso entrar em cena sem o meu chapéu!",
+      "volume": "shout",
+      "style": "panicked, frantic",
+      "pauseAfterMs": 300
      }
     ],
     "pronunciations": []
    },
    "audio": "studio-sample-pt-6.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Ah, claro. A peça inteira depende do seu chapéu.",
+   "notes": [
+    "(sarcástica)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "sarcastic",
+    "pace": "normal",
+    "note": "Ana ironiza a preocupação exagerada dele.",
+    "segments": [
+     {
+      "text": "Ah, claro. A peça inteira depende do seu chapéu.",
+      "volume": "normal",
+      "style": "sarcastic, mocking",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-7.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Depende, sim! O segundo ato é todo sobre o chapéu!",
+   "notes": [
+    "(gritando)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "angry",
+    "pace": "fast",
+    "note": "Rafael defende a importância do adereço.",
+    "segments": [
+     {
+      "text": "Depende, sim! O segundo ato é todo sobre o chapéu!",
+      "volume": "shout",
+      "style": "defensive, shouting",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-8.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Rafael. Respira. Ele está na sua cabeça.",
+   "notes": [
+    "(calma)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "neutral",
+    "pace": "slow",
+    "note": "Ana acalma o colega com firmeza e carinho.",
+    "segments": [
+     {
+      "text": "Rafael. Respira. Ele está na sua cabeça.",
+      "volume": "normal",
+      "style": "calm, soothing",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-9.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "…Ah.",
+   "notes": [
+    "(baixinho, envergonhado)",
+    "(As luzes piscam. Os dois ficam paralisados.)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "nervous",
+    "pace": "slow",
+    "note": "Rafael percebe o equívoco e fica envergonhado.",
+    "segments": [
+     {
+      "text": "…Ah.",
+      "volume": "quiet",
+      "style": "embarrassed, realizing",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-10.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Você ouviu isso? Tem alguém no palco.",
+   "notes": [
+    "(sussurrando)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "afraid",
+    "pace": "slow",
+    "note": "Ana percebe um barulho misterioso no escuro.",
+    "segments": [
+     {
+      "text": "Você ouviu isso? Tem alguém no palco.",
+      "volume": "whisper",
+      "style": "suspenseful, whispering",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-11.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Deve ser o contrarregra… né?",
+   "notes": [
+    "(sussurrando, com medo)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "afraid",
+    "pace": "normal",
+    "note": "Rafael tenta adivinhar o barulho com medo.",
+    "segments": [
+     {
+      "text": "Deve ser o contrarregra… né?",
+      "volume": "whisper",
+      "style": "fearful, hesitant",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-12.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "É o gato. O gato do teatro subiu no palco de novo.",
+   "notes": [
+    "(rindo)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "happy",
+    "pace": "normal",
+    "note": "Ana descobre que é apenas o animal de estimação.",
+    "segments": [
+     {
+      "text": "É o gato. O gato do teatro subiu no palco de novo.",
+      "volume": "normal",
+      "style": "amused, laughing",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-13.m4a"
+  },
+  {
+   "role": "RAFAEL",
+   "text": "Ana… obrigado. Antes de toda estreia eu fico nervoso assim.",
+   "notes": [
+    "(com carinho)"
+   ],
+   "voice": "Charon",
+   "note": {
+    "emotion": "tender",
+    "pace": "slow",
+    "note": "Rafael agradece o apoio emocional de Ana.",
+    "segments": [
+     {
+      "text": "Ana… obrigado. Antes de toda estreia eu fico nervoso assim.",
+      "volume": "normal",
+      "style": "warm, sincere",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-14.m4a"
+  },
+  {
+   "role": "ANA",
+   "text": "Eu sei. Por isso eu sempre venho te acordar. Agora vai, estão te esperando.",
+   "notes": [
+    "(com ternura)"
+   ],
+   "voice": "Kore",
+   "note": {
+    "emotion": "tender",
+    "pace": "normal",
+    "note": "Ana encoraja Rafael para entrar em cena.",
+    "segments": [
+     {
+      "text": "Eu sei. Por isso eu sempre venho te acordar. Agora vai, estão te esperando.",
+      "volume": "normal",
+      "style": "affectionate, encouraging",
+      "pauseAfterMs": 300
+     }
+    ],
+    "pronunciations": []
+   },
+   "audio": "studio-sample-pt-15.m4a"
   }
  ]
 }
