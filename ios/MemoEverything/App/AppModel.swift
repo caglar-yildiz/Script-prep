@@ -74,7 +74,12 @@ final class AppModel: ObservableObject {
     let library: ScriptLibrary
     let neural = NeuralVoice.shared
     let studio = StudioVoices.shared
-    private static let studioKey = "studio_voice"
+    /// Which voice reads the lines: one choice for device, on-device AI and studio voices.
+    private static let engineKey = "voice_engine"
+
+    enum Engine: String, CaseIterable {
+        case device = "DEVICE", ai = "AI", studio = "STUDIO"
+    }
     let billing = Billing()
     private let deviceVoice = DeviceVoice()
     private let handsFree = HandsFree()
@@ -158,6 +163,8 @@ final class AppModel: ObservableObject {
     /// Whether the line being read now is a studio voice recording.
     @Published var studioSpeaking = false
     private var recordingPlayer: AVAudioPlayer?
+    /// Plays a studio voice sample on the character voices screen.
+    private var previewPlayer: AVAudioPlayer?
     private var recordingDelegate: PlayerDone?
     private var castRecordings: EnsembleRules.Voices?
     private var castRecordingsFor: String?
@@ -1526,7 +1533,23 @@ final class AppModel: ObservableObject {
             }
             part.speaker = index
             self.updateCast(character, part)
+            self.previewStudioVoice(character, StudioVoices.castVoices[index])
         }
+    }
+
+    /// Plays how a character sounds with a studio voice: their own prepared line when there is one,
+    /// otherwise the voice's sample that comes with the app.
+    func previewStudioVoice(_ character: String, _ voice: String) {
+        cancelSpeech()
+        let prepared = fullScene?.lines.lazy.filter { $0.role == character }
+            .compactMap { self.studio.audio($0, self.language, voice: voice) }.first
+        guard let url = prepared ?? StudioVoices.previewURL(language, voice),
+              let player = try? AVAudioPlayer(contentsOf: url) else {
+            notifyKey("speech_failed")
+            return
+        }
+        previewPlayer = player
+        player.play()
     }
 
     func chooseCharacterVoice(_ character: String) {
@@ -1559,6 +1582,10 @@ final class AppModel: ObservableObject {
     }
 
     func previewCharacter(_ character: String) {
+        if studioCastShown {
+            previewStudioVoice(character, StudioVoices.voice(of: currentCast()[character]))
+            return
+        }
         if !deviceVoiceAvailable(language) && !useAiVoice {
             return
         }
@@ -1643,27 +1670,73 @@ final class AppModel: ObservableObject {
 
     // MARK: - Studio voices
 
-    var studioOn: Bool {
-        defaults.object(forKey: Self.studioKey) == nil ? true : defaults.bool(forKey: Self.studioKey)
+    /// The chosen voice; studio voices are the default, and until a scene is prepared the AI or device
+    /// voice reads.
+    var voiceEngine: Engine {
+        Engine(rawValue: defaults.string(forKey: Self.engineKey) ?? "") ?? .studio
     }
 
-    func toggleStudio() {
-        defaults.set(!studioOn, forKey: Self.studioKey)
+    /// Whether the studio voice choices apply here: on Premium, or in the sample scene for everyone.
+    var studioCastShown: Bool {
+        voiceEngine == .studio && (premium || scriptId == nil)
+    }
+
+    func chooseVoiceEngine() {
+        let titles = ["voice_engine_device", "ai_voice_title", "studio_title"]
+        let details = ["voice_engine_device_detail", "voice_engine_ai_detail", "voice_engine_studio_detail"]
+        let marked = details.enumerated().map { index, key -> String in
+            index > 0 && !premium && !(index == 2 && scriptId == nil) ? L(key) + " · " + L("premium_tab") : L(key)
+        }
+        choose(L("voice_engine_title"), titles.map { L($0) }, details: marked,
+               selected: Engine.allCases.firstIndex(of: voiceEngine)) { index in
+            self.pickVoiceEngine(Engine.allCases[index])
+        }
+    }
+
+    func pickVoiceEngine(_ engine: Engine) {
+        if engine == .ai {
+            guard premium else {
+                showPaywall("ai_voice_title")
+                return
+            }
+            guard NeuralVoice.isSupported else {
+                notifyKey("ai_voice_unsupported")
+                return
+            }
+            defaults.set(true, forKey: Self.aiVoiceKey)
+            if neural.state == .notInstalled {
+                confirmAiDownload()
+            } else {
+                neural.load()
+            }
+        }
+        if engine == .studio && !premium && scriptId != nil {
+            showPaywall("studio_title")
+            return
+        }
+        defaults.set(engine.rawValue, forKey: Self.engineKey)
         objectWillChange.send()
+    }
+
+    /// The engine row's value: the chosen voice and how far its preparation is.
+    var voiceEngineValue: String {
+        switch voiceEngine {
+        case .device: return L("voice_engine_device") + "\n" + L("voice_engine_device_detail")
+        case .ai: return L("ai_voice_title") + "\n" + L("voice_engine_ai_detail")
+        case .studio:
+            let detail = premium && category.hasRoles ? L("studio_ready", studioReady, studioTotal)
+                : scriptId == nil && studioReady > 0 ? L("studio_sample") : L("voice_engine_studio_detail")
+            return L("studio_title") + "\n" + detail
+        }
     }
 
     /// The studio voice audio of a line, when it is prepared and switched on. The sample scene's
     /// come with the app and play for everyone, so the studio voices can be heard before buying.
     func studioAudio(_ line: ScriptScene.Line) -> URL? {
-        guard premium || scriptId == nil, studioOn, fullScene != nil else {
+        guard premium || scriptId == nil, voiceEngine == .studio, fullScene != nil else {
             return nil
         }
         return studio.audio(line, language, voice: studioCasting()(line.role))
-    }
-
-    /// Whether the sample scene's studio voices can be heard without Premium.
-    var studioSampleReady: Bool {
-        !premium && scriptId == nil && fullScene != nil && studioReady > 0
     }
 
     /// Each character's studio voice follows their voice in the cast (female or male). Reads the saved
@@ -1680,14 +1753,14 @@ final class AppModel: ObservableObject {
     }
 
     var studioTotal: Int {
-        StudioVoices.partnerLines(scene, role: role).count
+        scene.lines.count
     }
 
     var studioReady: Int {
         guard fullScene != nil else {
             return 0
         }
-        return studio.running ? studio.done : studio.readyCount(scene, role: role, language, casting: studioCasting())
+        return studio.running ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
     }
 
     func confirmStudio() {
@@ -1701,10 +1774,11 @@ final class AppModel: ObservableObject {
         guard fullScene != nil, !studio.running else {
             return
         }
-        studio.prepare(scene, role: role, language: language, title: scriptTitle, casting: studioCasting()) { reason in
+        studio.prepare(scene, language: language, title: scriptTitle, script: castKey, casting: studioCasting()) { reason in
             switch reason {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")
+            case .scriptLimit: self.notifyKey("studio_script_limit")
             case .failed: self.notifyKey("studio_failed")
             default: break
             }
@@ -1715,27 +1789,15 @@ final class AppModel: ObservableObject {
     // MARK: - AI voice
 
     /// Whether lines are read by the on-device AI voice instead of the device voice.
+    /// With studio voices chosen, the AI voice (when the user has it) reads lines not yet prepared.
     var useAiVoice: Bool {
-        guard premium, NeuralVoice.isSupported, defaults.bool(forKey: Self.aiVoiceKey) else {
+        guard premium, NeuralVoice.isSupported, defaults.bool(forKey: Self.aiVoiceKey), voiceEngine != .device else {
             return false
         }
         switch neural.state {
         case .installed, .loading, .ready, .failed: return true
         default: return false
         }
-    }
-
-    var aiVoiceOn: Bool {
-        defaults.bool(forKey: Self.aiVoiceKey)
-    }
-
-    func toggleAiVoice() {
-        let on = aiVoiceOn
-        defaults.set(!on, forKey: Self.aiVoiceKey)
-        if !on {
-            neural.load()
-        }
-        objectWillChange.send()
     }
 
     var downloadMegabytes: Int {
@@ -1746,7 +1808,9 @@ final class AppModel: ObservableObject {
         alert(L("ai_voice_download"), L("ai_voice_download_message", downloadMegabytes), [
             DialogButton(label: L("ai_voice_download_confirm")) {
                 self.defaults.set(true, forKey: Self.aiVoiceKey)
+                self.defaults.set(Engine.ai.rawValue, forKey: Self.engineKey)
                 self.neural.download()
+                self.objectWillChange.send()
             },
             DialogButton(label: L("cancel"), role: .cancel),
         ])
@@ -1756,6 +1820,9 @@ final class AppModel: ObservableObject {
         alert(L("ai_voice_delete"), L("ai_voice_delete_message"), [
             DialogButton(label: L("action_delete"), role: .destructive) {
                 self.defaults.set(false, forKey: Self.aiVoiceKey)
+                if self.voiceEngine == .ai {
+                    self.defaults.set(Engine.device.rawValue, forKey: Self.engineKey)
+                }
                 self.neural.delete()
             },
             DialogButton(label: L("cancel"), role: .cancel),

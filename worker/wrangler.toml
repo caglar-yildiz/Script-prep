@@ -7,7 +7,9 @@ workers_dev = true
 
 [vars]
 FIREBASE_PROJECT_ID = "memo-70a45"
-# Lines a user may send each calendar month (UTC).
+# Each calendar month (UTC) a user may prepare studio voices for this many scripts...
+MONTHLY_SCRIPTS = "2"
+# ...and, as a cost guard, direct and voice at most this many lines in all.
 MONTHLY_DIRECTED_LINES = "3000"
 MONTHLY_SPOKEN_LINES = "2000"
 

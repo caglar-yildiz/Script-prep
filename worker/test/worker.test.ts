@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AuthError, verifyIdToken } from "../src/auth";
-import { directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError } from "../src/director";
+import { directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { generate, UpstreamError } from "../src/gemini";
 import { parseSpeakRequest, voiceInput } from "../src/speak";
 
@@ -87,6 +87,13 @@ describe("director", () => {
       { role: "AYŞE", gender: "male" },
     ] })).toEqual([{ role: "AYŞE", gender: "female" }, { role: "MEHMET", gender: "unknown" }]);
     expect(normalizeCast(scene, {})).toEqual([]);
+  });
+
+  it("takes a short script id, or one shared bucket without one", () => {
+    expect(scriptOf({ script: "a1b2-c3_d4" })).toBe("a1b2-c3_d4");
+    expect(scriptOf({})).toBe("unnamed");
+    expect(() => scriptOf({ script: "../../etc" })).toThrow(RequestError);
+    expect(() => scriptOf({ script: "x".repeat(65) })).toThrow(RequestError);
   });
 
   it("refuses an answer with the wrong number of lines", () => {

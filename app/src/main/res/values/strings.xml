@@ -543,7 +543,14 @@
     <string name="studio_progress">Preparing… %1$d of %2$d lines ready</string>
     <string name="studio_ready">%1$d of %2$d lines ready</string>
     <string name="studio_sample">Try the studio voices in this sample scene. Premium prepares them for your own scripts.</string>
-    <string name="cast_studio">Studio</string>
+    <string name="voice_engine_title">Reading voice</string>
+    <string name="voice_engine_device">Device voice</string>
+    <string name="voice_engine_device_detail">Your phone’s own voice, free</string>
+    <string name="voice_engine_ai_detail">A natural voice that runs on this phone, offline</string>
+    <string name="voice_engine_studio_detail">Acted, expressive voices prepared by an AI director</string>
+    <string name="studio_allowance">Studio voices can be prepared for 2 scripts a month.</string>
+    <string name="studio_script_limit">You have used this month’s 2 scripts for studio voices. Scripts already prepared keep playing; new ones open next month.</string>
+    <string name="cast_intro_studio">Pick a studio voice for each character. The director sets each line’s pace and mood. Tap play to hear them.</string>
     <string name="cast_studio_voice_for">Studio voice for %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firm</item>

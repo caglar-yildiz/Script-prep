@@ -48,7 +48,7 @@ final class StudioVoices {
     private static final int LINES_PER_REQUEST = 60;
     private static final String REFRESH = "studio_refresh_token";
 
-    enum Stop { DONE, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, FAILED }
+    enum Stop { DONE, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
 
     /** The Gemini voice of a character, from the script's cast. */
     interface Casting {
@@ -56,7 +56,7 @@ final class StudioVoices {
     }
 
     interface Progress {
-        /** Lines with studio audio so far, of all partner lines of the scene. */
+        /** Lines with studio audio so far, of all lines of the scene. */
         void progress(int done, int total);
 
         void finished(Stop reason);
@@ -100,6 +100,11 @@ final class StudioVoices {
 
     // ---------------------------------------------------------------- What is ready
 
+    /** The sample of a studio voice that comes with the app, in the app's assets. */
+    static String previewAsset(ScriptLanguage language, String voice) {
+        return "studio-voices/" + language.code + "-" + voice + ".m4a";
+    }
+
     /** The Gemini voice of a character voice of the cast. */
     static String voiceOf(VoiceCast.Part part) {
         return CAST_VOICES[Math.max(0, Math.min(CAST_VOICES.length - 1, part == null ? 0 : part.speaker))];
@@ -119,25 +124,18 @@ final class StudioVoices {
         return packed.isFile() ? packed : null;
     }
 
-    /** How many of the lines the actor does not say have studio audio. */
-    int readyCount(Scene scene, String role, ScriptLanguage language, Casting casting) {
+    /**
+     * How many lines of the scene have studio audio. Every line is prepared, the actor's own too,
+     * so listening, another part and a change of role all play studio voices.
+     */
+    int readyCount(Scene scene, ScriptLanguage language, Casting casting) {
         int ready = 0;
-        for (Scene.Line line : partnerLines(scene, role)) {
+        for (Scene.Line line : scene.lines) {
             if (audio(line, language, casting.voice(line.role)) != null) {
                 ready++;
             }
         }
         return ready;
-    }
-
-    static List<Scene.Line> partnerLines(Scene scene, String role) {
-        List<Scene.Line> lines = new ArrayList<>();
-        for (Scene.Line line : scene.lines) {
-            if (!line.role.equals(role)) {
-                lines.add(line);
-            }
-        }
-        return lines;
     }
 
     // ---------------------------------------------------------------- Preparing
@@ -146,7 +144,12 @@ final class StudioVoices {
      * Prepares the partner lines of a scene in the background: notes first, a whole scene at a
      * time, then each line's audio. Stops at the first limit or lasting error; what is done stays.
      */
-    void prepare(Scene scene, String role, ScriptLanguage language, String title, Casting casting, Progress progress) {
+    /**
+     * @param script an id of the script, so the Worker can count the scripts of the month; made
+     *               from the app's own id and not readable back to it
+     */
+    void prepare(Scene scene, ScriptLanguage language, String title, String script, Casting casting,
+        Progress progress) {
         if (running) {
             return;
         }
@@ -155,9 +158,9 @@ final class StudioVoices {
         worker.execute(() -> {
             Stop reason;
             try {
-                reason = run(scene, role, language, title, casting, progress);
+                reason = run(scene, language, title, sha(script), casting, progress);
             } catch (LimitException limit) {
-                reason = limit.monthly ? Stop.MONTHLY_LIMIT : Stop.DAILY_LIMIT;
+                reason = limit.reason;
             } catch (IOException | JSONException | RuntimeException error) {
                 if (cancelled) {
                     reason = Stop.CANCELLED;
@@ -172,19 +175,18 @@ final class StudioVoices {
         });
     }
 
-    private Stop run(Scene scene, String role, ScriptLanguage language, String title, Casting casting,
+    private Stop run(Scene scene, ScriptLanguage language, String title, String script, Casting casting,
         Progress progress) throws IOException, JSONException {
-        List<Scene.Line> partners = partnerLines(scene, role);
-        int total = partners.size();
-        post(progress, readyCount(scene, role, language, casting), total);
+        List<Scene.Line> lines = scene.lines;
+        int total = lines.size();
+        post(progress, readyCount(scene, language, casting), total);
 
         // Notes: whole scenes, so the director sees what comes before and after each line.
-        List<Scene.Line> lines = scene.lines;
         for (int start = 0; start < lines.size(); start += LINES_PER_REQUEST) {
             List<Scene.Line> chunk = lines.subList(start, Math.min(lines.size(), start + LINES_PER_REQUEST));
             boolean missing = false;
             for (Scene.Line line : chunk) {
-                missing |= !line.role.equals(role) && note(line, language) == null;
+                missing |= note(line, language) == null;
             }
             if (!missing) {
                 continue;
@@ -192,11 +194,11 @@ final class StudioVoices {
             if (cancelled) {
                 return Stop.CANCELLED;
             }
-            direct(chunk, language, title);
+            direct(chunk, language, title, script);
         }
 
         // Voices: one line at a time.
-        for (Scene.Line line : partners) {
+        for (Scene.Line line : lines) {
             if (cancelled) {
                 return Stop.CANCELLED;
             }
@@ -207,7 +209,7 @@ final class StudioVoices {
                 continue;
             }
             File target = audioFile(line, language, voice, note, ".wav");
-            byte[] wav = speak(note, language, voice);
+            byte[] wav = speak(note, language, voice, script);
             File partial = new File(target.getPath() + ".part");
             try (OutputStream output = new FileOutputStream(partial)) {
                 output.write(wav);
@@ -215,7 +217,7 @@ final class StudioVoices {
             if (!partial.renameTo(target)) {
                 throw new IOException("Could not save studio audio");
             }
-            post(progress, readyCount(scene, role, language, casting), total);
+            post(progress, readyCount(scene, language, casting), total);
         }
         return Stop.DONE;
     }
@@ -224,7 +226,8 @@ final class StudioVoices {
         main.post(() -> progress.progress(done, total));
     }
 
-    private void direct(List<Scene.Line> chunk, ScriptLanguage language, String title) throws IOException, JSONException {
+    private void direct(List<Scene.Line> chunk, ScriptLanguage language, String title, String script)
+        throws IOException, JSONException {
         JSONArray lines = new JSONArray();
         for (Scene.Line line : chunk) {
             JSONArray notes = new JSONArray();
@@ -233,7 +236,8 @@ final class StudioVoices {
             }
             lines.put(new JSONObject().put("role", line.role).put("text", line.text).put("notes", notes));
         }
-        JSONObject body = new JSONObject().put("language", language.code).put("title", title).put("lines", lines);
+        JSONObject body = new JSONObject().put("language", language.code).put("title", title).put("script", script)
+            .put("lines", lines);
         JSONObject answer = new JSONObject(new String(post("/v1/direct", body), StandardCharsets.UTF_8));
         JSONArray directions = answer.getJSONArray("lines");
         JSONArray cast = answer.optJSONArray("cast");
@@ -328,9 +332,11 @@ final class StudioVoices {
         }
     }
 
-    private byte[] speak(JSONObject note, ScriptLanguage language, String voice) throws IOException, JSONException {
+    private byte[] speak(JSONObject note, ScriptLanguage language, String voice, String script)
+        throws IOException, JSONException {
         JSONObject body = new JSONObject()
             .put("language", language.code)
+            .put("script", script)
             .put("voice", voice)
             .put("emotion", note.optString("emotion", "neutral"))
             .put("pace", note.optString("pace", "normal"))
@@ -402,10 +408,10 @@ final class StudioVoices {
     // ---------------------------------------------------------------- Requests
 
     static final class LimitException extends IOException {
-        final boolean monthly;
+        final Stop reason;
 
-        LimitException(boolean monthly) {
-            this.monthly = monthly;
+        LimitException(Stop reason) {
+            this.reason = reason;
         }
     }
 
@@ -434,7 +440,8 @@ final class StudioVoices {
                 String error = connection.getErrorStream() == null ? ""
                     : new String(readAll(connection.getErrorStream()), StandardCharsets.UTF_8);
                 if (code == 429) {
-                    throw new LimitException(error.contains("monthly_limit"));
+                    throw new LimitException(error.contains("script_limit") ? Stop.SCRIPT_LIMIT
+                        : error.contains("monthly_limit") ? Stop.MONTHLY_LIMIT : Stop.DAILY_LIMIT);
                 }
                 if (code == 401) {
                     idToken = null;

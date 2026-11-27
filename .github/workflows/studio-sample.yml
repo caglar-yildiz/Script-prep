@@ -60,7 +60,7 @@ jobs:
           if-no-files-found: ignore
       - name: Commit the pack
         run: |
-          git add app/src/main/assets/studio-sample ios/MemoEverything/Resources/StudioSample
+          git add app/src/main/assets/studio-sample app/src/main/assets/studio-voices ios/MemoEverything/Resources/StudioSample ios/MemoEverything/Resources/StudioVoices
           if git diff --cached --quiet; then echo "Nothing new"; exit 0; fi
           git -c user.name="github-actions[bot]" -c user.email="41898+github-actions[bot]@users.noreply.github.com" \
             commit -m "Add studio voices of the sample scene"

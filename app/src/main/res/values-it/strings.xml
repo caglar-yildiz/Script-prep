@@ -549,7 +549,14 @@
     <string name="studio_progress">Preparazione… %1$d battute pronte su %2$d</string>
     <string name="studio_ready">%1$d battute pronte su %2$d</string>
     <string name="studio_sample">Ascolta le voci da studio in questa scena di esempio. Premium le prepara per i tuoi testi.</string>
-    <string name="cast_studio">Studio</string>
+    <string name="voice_engine_title">Voce di lettura</string>
+    <string name="voice_engine_device">Voce del dispositivo</string>
+    <string name="voice_engine_device_detail">La voce del tuo telefono, gratis</string>
+    <string name="voice_engine_ai_detail">Una voce naturale che funziona su questo telefono, offline</string>
+    <string name="voice_engine_studio_detail">Voci recitate ed espressive preparate da un regista IA</string>
+    <string name="studio_allowance">Le voci da studio si possono preparare per 2 copioni al mese.</string>
+    <string name="studio_script_limit">Hai usato i 2 copioni di questo mese per le voci da studio. I copioni preparati continuano a suonare; i nuovi si aprono il mese prossimo.</string>
+    <string name="cast_intro_studio">Scegli una voce da studio per ogni personaggio. Il regista decide ritmo e tono di ogni battuta. Tocca riproduci per ascoltarle.</string>
     <string name="cast_studio_voice_for">Voce da studio per %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Decisa</item>

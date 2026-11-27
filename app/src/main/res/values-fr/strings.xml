@@ -549,7 +549,14 @@
     <string name="studio_progress">Préparation… %1$d répliques prêtes sur %2$d</string>
     <string name="studio_ready">%1$d répliques prêtes sur %2$d</string>
     <string name="studio_sample">Écoutez les voix studio dans cette scène d’exemple. Premium les prépare pour vos textes.</string>
-    <string name="cast_studio">Studio</string>
+    <string name="voice_engine_title">Voix de lecture</string>
+    <string name="voice_engine_device">Voix de l’appareil</string>
+    <string name="voice_engine_device_detail">La voix de ton téléphone, gratuite</string>
+    <string name="voice_engine_ai_detail">Une voix naturelle qui fonctionne sur ce téléphone, hors ligne</string>
+    <string name="voice_engine_studio_detail">Des voix jouées et expressives préparées par un metteur en scène IA</string>
+    <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
+    <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>
+    <string name="cast_intro_studio">Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.</string>
     <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Ferme</item>

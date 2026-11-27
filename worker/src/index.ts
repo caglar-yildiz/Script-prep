@@ -7,7 +7,7 @@
  *   GET  /v1/usage                  -> this month's counts and limits
  */
 import { AuthError, verifyIdToken } from "./auth";
-import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError } from "./director";
+import { DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
 import { answerText, DIRECTOR_MODELS, generate, interact, UpstreamError, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
 import { parseSpeakRequest, voiceInput } from "./speak";
@@ -19,6 +19,7 @@ export interface Env {
   FIREBASE_PROJECT_ID: string;
   MONTHLY_DIRECTED_LINES: string;
   MONTHLY_SPOKEN_LINES: string;
+  MONTHLY_SCRIPTS: string;
   QUOTA: DurableObjectNamespace<Quota>;
 }
 
@@ -55,8 +56,21 @@ function limitFor(env: Env, kind: QuotaKind): number {
   return Number(kind === "directed" ? env.MONTHLY_DIRECTED_LINES : env.MONTHLY_SPOKEN_LINES) || 0;
 }
 
+/** Refuses a script beyond the month's allowance of scripts. */
+async function openScript(body: unknown, env: Env, quota: DurableObjectStub<Quota>): Promise<Response | null> {
+  const limit = Number(env.MONTHLY_SCRIPTS) || 0;
+  const opened = await quota.openScript(scriptOf(body), limit);
+  return opened.allowed ? null
+    : problem(429, "script_limit", `Studio voices can be prepared for ${limit} scripts a month`, 86_400);
+}
+
 async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
-  const scene = parseDirectRequest(await readBody(request));
+  const body = await readBody(request);
+  const scene = parseDirectRequest(body);
+  const refused = await openScript(body, env, quota);
+  if (refused) {
+    return refused;
+  }
   const limit = limitFor(env, "directed");
   const allowance = await quota.check("directed", scene.lines.length, limit);
   if (!allowance.allowed) {
@@ -80,7 +94,12 @@ async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota
 }
 
 async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
-  const line = parseSpeakRequest(await readBody(request));
+  const body = await readBody(request);
+  const line = parseSpeakRequest(body);
+  const refused = await openScript(body, env, quota);
+  if (refused) {
+    return refused;
+  }
   const limit = limitFor(env, "spoken");
   const allowance = await quota.check("spoken", 1, limit);
   if (!allowance.allowed) {
@@ -121,7 +140,8 @@ export default {
       const quota = env.QUOTA.get(env.QUOTA.idFromName(uid));
       if (url.pathname === "/v1/usage") {
         const used = await quota.usage();
-        return json({ used, limits: { directed: limitFor(env, "directed"), spoken: limitFor(env, "spoken") } });
+        return json({ used, limits: { directed: limitFor(env, "directed"), spoken: limitFor(env, "spoken"),
+          scripts: Number(env.MONTHLY_SCRIPTS) || 0 } });
       }
       return url.pathname === "/v1/direct" ? await direct(request, env, quota) : await speak(request, env, quota);
     } catch (error) {

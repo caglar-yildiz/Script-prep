@@ -24,6 +24,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ANDROID = join(ROOT, "app/src/main/assets/studio-sample");
 const IOS = join(ROOT, "ios/MemoEverything/Resources/StudioSample");
 const LISTEN = join(ROOT, "worker/listen");
+const ANDROID_PREVIEWS = join(ROOT, "app/src/main/assets/studio-voices");
+const IOS_PREVIEWS = join(ROOT, "ios/MemoEverything/Resources/StudioVoices");
 const FOLDERS: Record<Language, string> = { en: "values", tr: "values-tr", de: "values-de", es: "values-es",
   fr: "values-fr", it: "values-it", pt: "values-pt" };
 const key = process.env.GEMINI_API_KEY ?? "";
@@ -190,6 +192,41 @@ async function makeSamplePack(language: Language): Promise<void> {
   joinScene(ANDROID, pack.lines.map((l) => l.audio), join(LISTEN, `scene-${language}.m4a`));
 }
 
+/** The sentence the apps preview voices with, from ScriptLanguage.java. */
+function previewSentence(language: Language): string {
+  const source = readFileSync(join(ROOT, "app/src/main/java/com/scriptprep/app/ScriptLanguage.java"), "utf8");
+  const sentence = new RegExp(`\\("${language}", "[^"]+", R\\.string\\.[a-z_]+, "([^"]+)"\\)`).exec(source)?.[1];
+  if (!sentence) {
+    throw new Error(`No preview sentence for ${language}`);
+  }
+  return sentence;
+}
+
+/** A short sample of every studio voice in every language, for the character voices screen. */
+async function makePreviews(language: Language): Promise<void> {
+  mkdirSync(ANDROID_PREVIEWS, { recursive: true });
+  mkdirSync(IOS_PREVIEWS, { recursive: true });
+  const text = previewSentence(language);
+  for (const voice of CAST_VOICES) {
+    const target = join(ANDROID_PREVIEWS, `${language}-${voice}.m4a`);
+    if (!existsSync(target)) {
+      console.log(`${language} preview: ${voice}`);
+      const interaction = await (await patiently(() => interact(VOICE_MODELS, (model) => ({
+        model,
+        input: [{ type: "user_input", content: [{ type: "text", text,
+          annotations: [{ type: "speech_metadata", style: "warm, friendly and natural, like an actor at a rehearsal" }] }] }],
+        response_format: { type: "audio" },
+        generation_config: { speech_config: [{ voice }] },
+      }), key))).json();
+      const wav = target.replace(/\.m4a$/, ".wav");
+      writeFileSync(wav, audioOf(interaction as never));
+      execFileSync("ffmpeg", ["-loglevel", "error", "-y", "-i", wav, "-ac", "1", "-c:a", "aac", "-b:a", "48k", target]);
+      rmSync(wav);
+    }
+    copyFileSync(target, join(IOS_PREVIEWS, `studio-voice-${language}-${voice}.m4a`));
+  }
+}
+
 async function makeCustom(script: string, language: Language): Promise<void> {
   const folder = join(LISTEN, "custom");
   const pack = await makePack(language, script, folder, `custom-${language}`);
@@ -205,7 +242,12 @@ const languages = custom ? [(process.env.CUSTOM_LANGUAGE || "tr") as Language]
 let stopped = false;
 for (const language of languages) {
   try {
-    await (custom ? makeCustom(custom, language) : makeSamplePack(language));
+    if (custom) {
+      await makeCustom(custom, language);
+    } else {
+      await makeSamplePack(language);
+      await makePreviews(language);
+    }
   } catch (error) {
     console.log(`${language}: stopped: ${error instanceof Error ? error.message : error}`);
     stopped = true;

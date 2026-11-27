@@ -27,11 +27,30 @@ export class Quota extends DurableObject {
     return used;
   }
 
-  async usage(): Promise<Record<QuotaKind, number>> {
+  /**
+   * Lets a script use studio voices this month: one already opened this month always may; a new one
+   * only while fewer than `limit` scripts have been opened. Returns the scripts opened this month.
+   */
+  async openScript(script: string, limit: number): Promise<{ allowed: boolean; scripts: number }> {
+    const key = `${monthKey()}:scripts`;
+    const scripts = (await this.ctx.storage.get<string[]>(key)) ?? [];
+    if (scripts.includes(script)) {
+      return { allowed: true, scripts: scripts.length };
+    }
+    if (scripts.length >= limit) {
+      return { allowed: false, scripts: scripts.length };
+    }
+    scripts.push(script);
+    await this.ctx.storage.put(key, scripts);
+    return { allowed: true, scripts: scripts.length };
+  }
+
+  async usage(): Promise<Record<QuotaKind | "scripts", number>> {
     const month = monthKey();
     return {
       directed: (await this.ctx.storage.get<number>(`${month}:directed`)) ?? 0,
       spoken: (await this.ctx.storage.get<number>(`${month}:spoken`)) ?? 0,
+      scripts: ((await this.ctx.storage.get<string[]>(`${month}:scripts`)) ?? []).length,
     };
   }
 }

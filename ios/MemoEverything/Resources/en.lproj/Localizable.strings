@@ -68,9 +68,9 @@
 "cast_auto" = "Assign automatically";
 "cast_intro" = "Pick a voice, tone and pace for each character. Installed voices work offline; online voices need an internet connection.";
 "cast_intro_ai" = "Pick one of the 10 AI voices and a pace for each character. Tap play to hear them.";
+"cast_intro_studio" = "Pick a studio voice for each character. The director sets each line’s pace and mood. Tap play to hear them.";
 "cast_pace" = "Pace";
 "cast_preview" = "Hear %1$@";
-"cast_studio" = "Studio";
 "cast_studio_voice_for" = "Studio voice for %1$@";
 "cast_title" = "Character voices";
 "cast_tone" = "Tone";
@@ -411,6 +411,7 @@
 "speed_title" = "Reading speed";
 "step_counter" = "Step %1$d of %2$d";
 "stop_line" = "Stop audio";
+"studio_allowance" = "Studio voices can be prepared for 2 scripts a month.";
 "studio_daily_limit" = "Today’s studio voice limit is reached. The prepared lines are kept; continue tomorrow.";
 "studio_failed" = "Couldn’t prepare the studio voices. Check your connection and try again.";
 "studio_monthly_limit" = "This month’s studio voice limit is reached.";
@@ -423,6 +424,7 @@
 "studio_progress" = "Preparing… %1$d of %2$d lines ready";
 "studio_ready" = "%1$d of %2$d lines ready";
 "studio_sample" = "Try the studio voices in this sample scene. Premium prepares them for your own scripts.";
+"studio_script_limit" = "You have used this month’s 2 scripts for studio voices. Scripts already prepared keep playing; new ones open next month.";
 "studio_start" = "Prepare";
 "studio_stop" = "Stop";
 "studio_title" = "Studio voices";
@@ -478,6 +480,11 @@
 "voice_change_failed" = "Couldn’t select this voice.";
 "voice_choose" = "Choose a voice";
 "voice_default" = "Default device voice";
+"voice_engine_ai_detail" = "A natural voice that runs on this phone, offline";
+"voice_engine_device" = "Device voice";
+"voice_engine_device_detail" = "Your phone’s own voice, free";
+"voice_engine_studio_detail" = "Acted, expressive voices prepared by an AI director";
+"voice_engine_title" = "Reading voice";
 "voice_female" = "Female";
 "voice_language" = "Voice language";
 "voice_male" = "Male";

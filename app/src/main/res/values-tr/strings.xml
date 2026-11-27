@@ -535,7 +535,14 @@
     <string name="studio_progress">Hazırlanıyor… %2$d replikten %1$d tanesi hazır</string>
     <string name="studio_ready">%2$d replikten %1$d tanesi hazır</string>
     <string name="studio_sample">Bu örnek sahnede stüdyo seslerini dinleyin. Premium, kendi metinleriniz için de hazırlar.</string>
-    <string name="cast_studio">Stüdyo</string>
+    <string name="voice_engine_title">Okuma sesi</string>
+    <string name="voice_engine_device">Cihaz sesi</string>
+    <string name="voice_engine_device_detail">Telefonun kendi sesi, ücretsiz</string>
+    <string name="voice_engine_ai_detail">Bu telefonda çalışan doğal ses, internetsiz</string>
+    <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
+    <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
+    <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>
+    <string name="cast_intro_studio">Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.</string>
     <string name="cast_studio_voice_for">%1$s için stüdyo sesi</string>
     <string-array name="studio_voice_traits">
         <item>Kararlı</item>

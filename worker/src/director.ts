@@ -57,6 +57,21 @@ export interface Direction {
 
 export class RequestError extends Error {}
 
+/**
+ * The script a request belongs to: an id the app makes from its own script id, so the monthly
+ * allowance can count scripts. Apps that send none share one bucket.
+ */
+export function scriptOf(body: unknown): string {
+  const value = (body as { script?: unknown } | null)?.script;
+  if (value === undefined) {
+    return "unnamed";
+  }
+  if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,64}$/.test(value)) {
+    throw new RequestError("script must be a short id");
+  }
+  return value;
+}
+
 function text(value: unknown, max: number, field: string): string {
   if (typeof value !== "string") {
     throw new RequestError(`${field} must be text`);

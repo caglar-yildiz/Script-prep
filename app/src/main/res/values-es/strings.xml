@@ -549,7 +549,14 @@
     <string name="studio_progress">Preparando… %1$d de %2$d frases listas</string>
     <string name="studio_ready">%1$d de %2$d frases listas</string>
     <string name="studio_sample">Escucha las voces de estudio en esta escena de ejemplo. Premium las prepara para tus textos.</string>
-    <string name="cast_studio">Estudio</string>
+    <string name="voice_engine_title">Voz de lectura</string>
+    <string name="voice_engine_device">Voz del dispositivo</string>
+    <string name="voice_engine_device_detail">La voz de tu teléfono, gratis</string>
+    <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
+    <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
+    <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <string name="studio_script_limit">Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.</string>
+    <string name="cast_intro_studio">Elige una voz de estudio para cada personaje. El director marca el ritmo y el tono de cada frase. Toca reproducir para oírlas.</string>
     <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>

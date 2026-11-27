@@ -19,11 +19,11 @@ final class StudioVoices: ObservableObject {
     private static let refreshKey = "studio_refresh_token"
 
     enum Stop {
-        case done, cancelled, dailyLimit, monthlyLimit, failed
+        case done, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
     }
 
     private enum Failure: Error {
-        case limit(monthly: Bool), refused(String), busy, notSignedIn, cancelled
+        case limit(Stop), refused(String), busy, notSignedIn, cancelled
     }
 
     @Published private(set) var running = false
@@ -63,8 +63,9 @@ final class StudioVoices: ObservableObject {
         castVoices[max(0, min(castVoices.count - 1, part?.speaker ?? 0))]
     }
 
-    static func partnerLines(_ scene: ScriptScene, role: String?) -> [ScriptScene.Line] {
-        scene.lines.filter { $0.role != role }
+    /// The sample of a studio voice that comes with the app.
+    static func previewURL(_ language: ScriptLanguage, _ voice: String) -> URL? {
+        Bundle.main.url(forResource: "studio-voice-\(language.code)-\(voice)", withExtension: "m4a")
     }
 
     /// The studio audio of a line in the given voice, or nil when it has not been prepared.
@@ -76,15 +77,19 @@ final class StudioVoices: ObservableObject {
             .first { FileManager.default.fileExists(atPath: $0.path) }
     }
 
-    func readyCount(_ scene: ScriptScene, role: String?, _ language: ScriptLanguage, casting: Casting) -> Int {
-        Self.partnerLines(scene, role: role).filter { audio($0, language, voice: casting($0.role)) != nil }.count
+    /// How many lines of the scene have studio audio. Every line is prepared, the actor's own too, so
+    /// listening, another part and a change of role all play studio voices.
+    func readyCount(_ scene: ScriptScene, _ language: ScriptLanguage, casting: Casting) -> Int {
+        scene.lines.filter { audio($0, language, voice: casting($0.role)) != nil }.count
     }
 
     // MARK: - Preparing
 
     /// Prepares the partner lines of a scene: notes a scene at a time, then each line's audio.
     /// Stops at the first limit or lasting error; what is done stays. `finished` runs on the main thread.
-    func prepare(_ scene: ScriptScene, role: String?, language: ScriptLanguage, title: String,
+    /// `script` is an id of the script, so the Worker can count the scripts of the month; it is hashed
+    /// before it leaves the phone.
+    func prepare(_ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
                  casting: @escaping Casting, finished: @escaping (Stop) -> Void) {
         guard !running else {
             return
@@ -93,14 +98,15 @@ final class StudioVoices: ObservableObject {
         lock.lock()
         cancelled = false
         lock.unlock()
-        total = Self.partnerLines(scene, role: role).count
-        done = readyCount(scene, role: role, language, casting: casting)
+        total = scene.lines.count
+        done = readyCount(scene, language, casting: casting)
+        let scriptId = Self.hash(script)
         DispatchQueue.global(qos: .userInitiated).async {
             let reason: Stop
             do {
-                reason = try self.run(scene, role: role, language: language, title: title, casting: casting)
-            } catch Failure.limit(let monthly) {
-                reason = monthly ? .monthlyLimit : .dailyLimit
+                reason = try self.run(scene, language: language, title: title, script: scriptId, casting: casting)
+            } catch Failure.limit(let stop) {
+                reason = stop
             } catch {
                 reason = self.isCancelled ? .cancelled : .failed
             }
@@ -111,22 +117,22 @@ final class StudioVoices: ObservableObject {
         }
     }
 
-    private func run(_ scene: ScriptScene, role: String?, language: ScriptLanguage, title: String,
+    private func run(_ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
                      casting: Casting) throws -> Stop {
         let lines = scene.lines
         var start = 0
         while start < lines.count {
             let chunk = Array(lines[start..<min(lines.count, start + Self.linesPerRequest)])
             start += Self.linesPerRequest
-            if !chunk.contains(where: { $0.role != role && note($0, language) == nil }) {
+            if !chunk.contains(where: { note($0, language) == nil }) {
                 continue
             }
             if isCancelled {
                 return .cancelled
             }
-            try direct(chunk, language, title)
+            try direct(chunk, language, title, script)
         }
-        for line in Self.partnerLines(scene, role: role) {
+        for line in lines {
             if isCancelled {
                 return .cancelled
             }
@@ -139,10 +145,10 @@ final class StudioVoices: ObservableObject {
                 continue
             }
             let target = audioFile(line, language, voice, note, "wav")
-            let audio = try speak(note, language, voice)
+            let audio = try speak(note, language, voice, script)
             try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
             try audio.write(to: target, options: [.atomic])
-            let ready = readyCount(scene, role: role, language, casting: casting)
+            let ready = readyCount(scene, language, casting: casting)
             DispatchQueue.main.async {
                 self.done = ready
             }
@@ -150,10 +156,12 @@ final class StudioVoices: ObservableObject {
         return .done
     }
 
-    private func direct(_ chunk: [ScriptScene.Line], _ language: ScriptLanguage, _ title: String) throws {
+    private func direct(_ chunk: [ScriptScene.Line], _ language: ScriptLanguage, _ title: String,
+                        _ script: String) throws {
         let body: [String: Any] = [
             "language": language.code,
             "title": title,
+            "script": script,
             "lines": chunk.map { ["role": $0.role, "text": $0.text, "notes": $0.notes] },
         ]
         let data = try post("/v1/direct", body)
@@ -251,9 +259,11 @@ final class StudioVoices: ObservableObject {
         }
     }
 
-    private func speak(_ note: [String: Any], _ language: ScriptLanguage, _ voice: String) throws -> Data {
+    private func speak(_ note: [String: Any], _ language: ScriptLanguage, _ voice: String,
+                       _ script: String) throws -> Data {
         let body: [String: Any] = [
             "language": language.code,
+            "script": script,
             "voice": voice,
             "emotion": note["emotion"] as? String ?? "neutral",
             "pace": note["pace"] as? String ?? "normal",
@@ -320,7 +330,9 @@ final class StudioVoices: ObservableObject {
             case 200:
                 return data
             case 429:
-                throw Failure.limit(monthly: String(decoding: data, as: UTF8.self).contains("monthly_limit"))
+                let answer = String(decoding: data, as: UTF8.self)
+                throw Failure.limit(answer.contains("script_limit") ? .scriptLimit
+                    : answer.contains("monthly_limit") ? .monthlyLimit : .dailyLimit)
             case 401:
                 idToken = nil
                 last = Failure.notSignedIn
@@ -415,6 +427,10 @@ final class StudioVoices: ObservableObject {
 
     private static func noteKey(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> String {
         language.code + ":" + EnsembleRules.lineKey(role: line.role, text: line.text)
+    }
+
+    static func hash(_ value: String) -> String {
+        SHA256.hash(data: Data(value.utf8)).prefix(16).map { String(format: "%02x", $0) }.joined()
     }
 
     /// A line's audio changes with its words, its note and its voice; each combination is one file.

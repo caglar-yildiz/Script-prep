@@ -68,9 +68,9 @@
 "cast_auto" = "Asignar automáticamente";
 "cast_intro" = "Elige una voz, un tono y un ritmo para cada personaje. Las voces instaladas funcionan sin conexión; las voces en línea necesitan internet.";
 "cast_intro_ai" = "Elige una de las 10 voces IA y un ritmo para cada personaje. Toca reproducir para escucharlas.";
+"cast_intro_studio" = "Elige una voz de estudio para cada personaje. El director marca el ritmo y el tono de cada frase. Toca reproducir para oírlas.";
 "cast_pace" = "Ritmo";
 "cast_preview" = "Escuchar a %1$@";
-"cast_studio" = "Estudio";
 "cast_studio_voice_for" = "Voz de estudio para %1$@";
 "cast_title" = "Voces de los personajes";
 "cast_tone" = "Tono";
@@ -411,6 +411,7 @@
 "speed_title" = "Velocidad de lectura";
 "step_counter" = "Paso %1$d de %2$d";
 "stop_line" = "Detener audio";
+"studio_allowance" = "Se pueden preparar voces de estudio para 2 guiones al mes.";
 "studio_daily_limit" = "Se alcanzó el límite diario de voces de estudio. Las frases preparadas se guardan; continúa mañana.";
 "studio_failed" = "No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.";
 "studio_monthly_limit" = "Se alcanzó el límite mensual de voces de estudio.";
@@ -423,6 +424,7 @@
 "studio_progress" = "Preparando… %1$d de %2$d frases listas";
 "studio_ready" = "%1$d de %2$d frases listas";
 "studio_sample" = "Escucha las voces de estudio en esta escena de ejemplo. Premium las prepara para tus textos.";
+"studio_script_limit" = "Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.";
 "studio_start" = "Preparar";
 "studio_stop" = "Detener";
 "studio_title" = "Voces de estudio";
@@ -478,6 +480,11 @@
 "voice_change_failed" = "No se pudo seleccionar esta voz.";
 "voice_choose" = "Elegir una voz";
 "voice_default" = "Voz predeterminada del dispositivo";
+"voice_engine_ai_detail" = "Una voz natural que funciona en este teléfono, sin conexión";
+"voice_engine_device" = "Voz del dispositivo";
+"voice_engine_device_detail" = "La voz de tu teléfono, gratis";
+"voice_engine_studio_detail" = "Voces interpretadas y expresivas preparadas por un director con IA";
+"voice_engine_title" = "Voz de lectura";
 "voice_female" = "Mujer";
 "voice_language" = "Idioma de la voz";
 "voice_male" = "Hombre";

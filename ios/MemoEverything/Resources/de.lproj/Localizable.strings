@@ -68,9 +68,9 @@
 "cast_auto" = "Automatisch verteilen";
 "cast_intro" = "Wähle für jede Figur Stimme, Tonlage und Tempo. Installierte Stimmen funktionieren offline, Online-Stimmen brauchen eine Internetverbindung.";
 "cast_intro_ai" = "Wähle für jede Figur eine der 10 KI-Stimmen und ein Tempo. Tippe auf Abspielen, um sie zu hören.";
+"cast_intro_studio" = "Wähle für jede Figur eine Studiostimme. Tempo und Stimmung jeder Replik bestimmt die Regie. Tippe auf Abspielen, um sie zu hören.";
 "cast_pace" = "Tempo";
 "cast_preview" = "%1$@ anhören";
-"cast_studio" = "Studio";
 "cast_studio_voice_for" = "Studiostimme für %1$@";
 "cast_title" = "Figurenstimmen";
 "cast_tone" = "Tonlage";
@@ -411,6 +411,7 @@
 "speed_title" = "Lesetempo";
 "step_counter" = "Schritt %1$d von %2$d";
 "stop_line" = "Audio stoppen";
+"studio_allowance" = "Studiostimmen lassen sich für 2 Texte im Monat vorbereiten.";
 "studio_daily_limit" = "Das heutige Limit für Studiostimmen ist erreicht. Die vorbereiteten Sätze bleiben; mach morgen weiter.";
 "studio_failed" = "Die Studiostimmen konnten nicht vorbereitet werden. Prüfe deine Verbindung und versuche es erneut.";
 "studio_monthly_limit" = "Das Monatslimit für Studiostimmen ist erreicht.";
@@ -423,6 +424,7 @@
 "studio_progress" = "Wird vorbereitet… %1$d von %2$d Sätzen fertig";
 "studio_ready" = "%1$d von %2$d Sätzen fertig";
 "studio_sample" = "Hör dir die Studiostimmen in dieser Beispielszene an. Premium bereitet sie für deine Texte vor.";
+"studio_script_limit" = "Du hast die 2 Texte dieses Monats für Studiostimmen genutzt. Vorbereitete Texte spielen weiter; neue gehen nächsten Monat.";
 "studio_start" = "Vorbereiten";
 "studio_stop" = "Stoppen";
 "studio_title" = "Studiostimmen";
@@ -478,6 +480,11 @@
 "voice_change_failed" = "Diese Stimme konnte nicht ausgewählt werden.";
 "voice_choose" = "Stimme wählen";
 "voice_default" = "Standardstimme des Geräts";
+"voice_engine_ai_detail" = "Eine natürliche Stimme, die offline auf diesem Handy läuft";
+"voice_engine_device" = "Gerätestimme";
+"voice_engine_device_detail" = "Die eigene Stimme deines Handys, kostenlos";
+"voice_engine_studio_detail" = "Gespielte, ausdrucksstarke Stimmen, vorbereitet von einer KI-Regie";
+"voice_engine_title" = "Vorlesestimme";
 "voice_female" = "Frau";
 "voice_language" = "Sprache der Stimme";
 "voice_male" = "Mann";

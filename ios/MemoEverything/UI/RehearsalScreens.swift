@@ -150,8 +150,7 @@ struct SetupScreen: View {
 
             SectionLabel(key: "premium_tab")
             RowGroup {
-                AiVoiceRow()
-                RowDivider()
+                VoiceRows()
                 if hasRoles {
                     premiumRow("ic_volume", "cast_title", L("cast_value")) { model.show(.voices) }
                     RowDivider()
@@ -166,10 +165,6 @@ struct SetupScreen: View {
                         premiumRow("ic_mic", "premium_voice_cue", L(on ? "hands_free_on" : "hands_free_off"),
                                    open: model.toggleHandsFree)
                     }
-                    RowDivider()
-                }
-                if hasRoles {
-                    StudioRow()
                     RowDivider()
                 }
                 premiumRow("ic_video", "selftape_title", L("video_value"), open: model.openVideo)
@@ -237,40 +232,48 @@ struct AiVoiceRow: View {
                         value: L("ai_voice_failed_detail", neural.lastError) + "\n" + L("ai_voice_retry"),
                         action: neural.retry)
             default:
-                ListRow(icon: "ic_star", title: L("ai_voice_title"),
-                        value: L(model.aiVoiceOn ? "ai_voice_on" : "ai_voice_off"),
-                        action: model.toggleAiVoice) { ToggleKnob(on: model.aiVoiceOn) }
+                ListRow(icon: "ic_star", title: L("ai_voice_title"), value: L("ai_voice_on"), action: model.chooseVoiceEngine)
             }
         }
     }
 }
 
-/// Practice options row: prepare the scene's studio voices, and use them once they are ready.
-struct StudioRow: View {
+/// Practice options: the one choice of voice, then what that voice needs (download, preparing).
+struct VoiceRows: View {
     @EnvironmentObject var model: AppModel
     @ObservedObject var studio = StudioVoices.shared
+    @ObservedObject var neural = NeuralVoice.shared
 
     var body: some View {
-        let total = model.studioTotal
-        let done = model.studioReady
-        if model.studioSampleReady {
-            ListRow(icon: "ic_star", title: L("studio_title"),
-                    value: L(model.studioOn ? "studio_on" : "studio_off") + "\n" + L("studio_sample"),
-                    action: model.toggleStudio) { ToggleKnob(on: model.studioOn) }
-        } else if !model.premium {
-            ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_value"),
-                    action: { model.showPaywall("studio_title") }) { PremiumBadge() }
-        } else if studio.running {
-            ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
-                MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+        let engine = model.voiceEngine
+        ListRow(icon: "ic_star", title: L("voice_engine_title"), value: model.voiceEngineValue,
+                action: model.chooseVoiceEngine)
+        RowDivider()
+        if engine == .ai && model.premium && NeuralVoice.isSupported
+            && ![.installed, .loading, .ready].contains(neural.state) {
+            AiVoiceRow()
+            RowDivider()
+        }
+        if engine == .studio && model.category.hasRoles {
+            let total = model.studioTotal
+            let done = model.studioReady
+            if !model.premium {
+                if model.scriptId != nil {
+                    ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_value"),
+                            action: { model.showPaywall("studio_title") }) { PremiumBadge() }
+                    RowDivider()
+                }
+            } else if studio.running {
+                ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
+                    MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+                }
+                RowDivider()
+            } else if done < total {
+                ListRow(icon: "ic_star", title: L("studio_prepare"),
+                        value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
+                        action: model.confirmStudio)
+                RowDivider()
             }
-        } else if total > 0 && done >= total {
-            ListRow(icon: "ic_star", title: L("studio_title"),
-                    value: L(model.studioOn ? "studio_on" : "studio_off") + "\n" + L("studio_ready", done, total),
-                    action: model.toggleStudio) { ToggleKnob(on: model.studioOn) }
-        } else {
-            ListRow(icon: "ic_star", title: L("studio_prepare"),
-                    value: done == 0 ? L("studio_none") : L("studio_ready", done, total), action: model.confirmStudio)
         }
     }
 }
@@ -635,27 +638,30 @@ struct VoicesScreen: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        let ai = model.useAiVoice
+        // One voice reads the lines, so only its choices are shown: studio, AI or device voices.
+        let studioCast = model.studioCastShown
+        let ai = !studioCast && model.useAiVoice
         ScreenFrame(bar: {
             TopBar(icon: "ic_back", title: L("cast_title"), navigate: { model.show(.setup) }) {
                 BarAction(icon: "ic_replay", label: "cast_auto", action: model.resetCast)
             }
         }, content: {
-            Styled(L(ai ? "cast_intro_ai" : "cast_intro"), .body, Palette.textSecondary).padding(.top, 8)
-            if !ai && !model.deviceVoiceAvailable(model.language) {
+            Styled(L(studioCast ? "cast_intro_studio" : ai ? "cast_intro_ai" : "cast_intro"), .body, Palette.textSecondary)
+                .padding(.top, 8)
+            if !studioCast && !ai && !model.deviceVoiceAvailable(model.language) {
                 Styled(L("speech_unavailable"), .bodyLarge).padding(.top, 20)
             } else {
                 let cast = model.currentCast()
                 ForEach(model.fullScene?.roles ?? [], id: \.self) { character in
                     if let part = cast[character] {
-                        characterCard(character, part, ai: ai).padding(.top, 12)
+                        characterCard(character, part, ai: ai, studio: studioCast).padding(.top, 12)
                     }
                 }
             }
         })
     }
 
-    private func characterCard(_ character: String, _ part: VoiceCast.Part, ai: Bool) -> some View {
+    private func characterCard(_ character: String, _ part: VoiceCast.Part, ai: Bool, studio: Bool) -> some View {
         Card(padding: EdgeInsets(top: 10, leading: 16, bottom: 16, trailing: 8)) {
             HStack(spacing: 6) {
                 Text(character).font(.system(size: 18, weight: .medium)).foregroundColor(Palette.text).lineLimit(1)
@@ -669,10 +675,15 @@ struct VoicesScreen: View {
             }
             HStack(spacing: 0) {
                 Styled(L("cast_voice"), .label, Palette.textSecondary).frame(width: 56, alignment: .leading)
-                MemoButton(ai ? model.aiVoiceName(part.speaker) + " · " + model.aiVoiceGender(part.speaker)
-                              : model.voiceLabel(part.voice), icon: ai ? nil : "ic_volume", kind: .tonal, fill: true,
-                           height: 44) {
-                    model.chooseCharacterVoice(character)
+                MemoButton(studio ? model.studioVoiceLabel(part.speaker)
+                              : ai ? model.aiVoiceName(part.speaker) + " · " + model.aiVoiceGender(part.speaker)
+                              : model.voiceLabel(part.voice), icon: ai || studio ? nil : "ic_volume", kind: .tonal,
+                           fill: true, height: 44) {
+                    if studio {
+                        model.chooseStudioVoice(character)
+                    } else {
+                        model.chooseCharacterVoice(character)
+                    }
                 }
             }
             .padding(.trailing, 8)
@@ -680,18 +691,8 @@ struct VoicesScreen: View {
             if ai {
                 Styled(model.aiVoiceTrait(part.speaker), .caption, Palette.textTertiary).padding(.leading, 56).padding(.top, 4)
             }
-            if model.premium || model.scriptId == nil {
-                // The studio voice follows the character's speaker, so choosing it also sets the gender.
-                HStack(spacing: 0) {
-                    Styled(L("cast_studio"), .label, Palette.textSecondary).frame(width: 56, alignment: .leading)
-                    MemoButton(model.studioVoiceLabel(part.speaker), kind: .tonal, fill: true, height: 44) {
-                        model.chooseStudioVoice(character)
-                    }
-                }
-                .padding(.trailing, 8)
-                .padding(.top, 8)
-            }
-            if !ai {
+            // The director sets each line's pace, so studio voices have no tone or pace to choose.
+            if !ai && !studio {
                 optionRow("cast_tone", ["tone_low", "tone_normal", "tone_high"],
                           VoiceCast.Tone.allCases.firstIndex(of: part.tone) ?? 1) { index in
                     var changed = part
@@ -700,13 +701,15 @@ struct VoicesScreen: View {
                 }
                 .padding(.top, 12)
             }
-            optionRow("cast_pace", ["pace_slow", "pace_normal", "pace_fast"],
-                      VoiceCast.Pace.allCases.firstIndex(of: part.pace) ?? 1) { index in
-                var changed = part
-                changed.pace = VoiceCast.Pace.allCases[index]
-                model.updateCast(character, changed)
+            if !studio {
+                optionRow("cast_pace", ["pace_slow", "pace_normal", "pace_fast"],
+                          VoiceCast.Pace.allCases.firstIndex(of: part.pace) ?? 1) { index in
+                    var changed = part
+                    changed.pace = VoiceCast.Pace.allCases[index]
+                    model.updateCast(character, changed)
+                }
+                .padding(.top, 10)
             }
-            .padding(.top, 10)
         }
     }
 
