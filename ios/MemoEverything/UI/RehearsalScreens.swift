@@ -268,7 +268,12 @@ struct VoiceRows: View {
                     MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
                 }
                 RowDivider()
-            } else if done < total {
+            }
+            if model.premium && !studio.running && done > 0 {
+                ListRow(icon: "ic_list", title: L("notes_title"), value: L("notes_value"), action: { model.show(.notes) })
+                RowDivider()
+            }
+            if model.premium && !studio.running && done < total {
                 ListRow(icon: "ic_star", title: L("studio_prepare"),
                         value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
                         action: model.startStudio)
@@ -754,5 +759,45 @@ struct VoicesScreen: View {
             .background(Capsule().fill(Palette.surfaceHigh))
         }
         .padding(.trailing, 8)
+    }
+}
+
+/// Every line of the scene with what the director decided and how its voice was made.
+struct NotesScreen: View {
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        ScreenFrame(bar: {
+            TopBar(icon: "ic_back", title: L("notes_title"), navigate: { model.show(.setup) }) {
+                ShareLink(item: model.notesText) {
+                    Icon(name: "ic_share", color: Palette.textSecondary, size: 24).frame(width: 48, height: 48)
+                }
+                .accessibilityLabel(L("notes_share"))
+            }
+        }, content: {
+            Styled(L("notes_intro"), .body, Palette.textSecondary).padding(.top, 8)
+            Card(color: Palette.accentContainer, stroke: Palette.accent.opacity(0.25),
+                 padding: EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16)) {
+                Styled(L("notes_reading"), .subtitle, Palette.onAccentContainer)
+                Styled(model.readingText, .caption, Palette.onAccentContainer).padding(.top, 6).textSelection(.enabled)
+            }
+            .padding(.top, 10)
+            ForEach(Array(model.scene.lines.enumerated()), id: \.offset) { _, line in
+                Card(padding: EdgeInsets(top: 12, leading: 16, bottom: 14, trailing: 16)) {
+                    Styled(line.role, .label, Palette.accent)
+                    Styled(line.text, .bodyLarge, Palette.text).padding(.top, 2)
+                    Styled(model.noteText(line), .caption, Palette.textSecondary).padding(.top, 8)
+                        .textSelection(.enabled)
+                }
+                .padding(.top, 10)
+            }
+        }, footer: {
+            if !StudioVoices.shared.running {
+                FooterBar {
+                    MemoButton(L("notes_redirect"), icon: "ic_replay", kind: .tonal, fill: true, height: 56,
+                               action: model.confirmRedirect)
+                }
+            }
+        })
     }
 }

@@ -21,10 +21,14 @@ export interface CastMember {
 
 export const MAX_LINES = 80;
 const MAX_LINE_CHARS = 1500;
-const MAX_SCENE_CHARS = 20_000;
+const MAX_SCENE_CHARS = 60_000;
+/** The director's reading of the whole play, sent with every part of it. */
+const MAX_CONTEXT_CHARS = 16_000;
+/** Lines just before a part, so the director knows the moment it starts in. */
+const MAX_BEFORE_LINES = 40;
 const MAX_NOTE_CHARS = 300;
 
-const LANGUAGE_NAMES: Record<Language, string> = {
+export const LANGUAGE_NAMES: Record<Language, string> = {
   tr: "Turkish", en: "English", es: "Spanish", de: "German", fr: "French", pt: "Portuguese", it: "Italian",
 };
 
@@ -38,6 +42,10 @@ export interface DirectRequest {
   language: Language;
   title: string;
   lines: SceneLine[];
+  /** What the director made of the whole play: story, characters, relationships, this scene. */
+  context: string;
+  /** Lines before these, for context only. */
+  before: SceneLine[];
 }
 
 export interface Segment {
@@ -96,33 +104,43 @@ export function parseDirectRequest(body: unknown): DirectRequest {
     throw new RequestError(`Send between 1 and ${MAX_LINES} lines`);
   }
   let total = 0;
-  const lines = input.lines.map((raw, i) => {
-    const line = raw as Record<string, unknown>;
+  const parseLine = (raw: unknown, field: string): SceneLine => {
+    const line = (raw ?? {}) as Record<string, unknown>;
     const notes = Array.isArray(line.notes) ? line.notes.slice(0, 10).map((n) => text(n, MAX_NOTE_CHARS, "note")) : [];
     const entry = {
-      role: text(line.role, 60, `lines[${i}].role`).trim(),
-      text: text(line.text, MAX_LINE_CHARS, `lines[${i}].text`).trim(),
+      role: text(line.role, 60, `${field}.role`).trim(),
+      text: text(line.text, MAX_LINE_CHARS, `${field}.text`).trim(),
       notes,
     };
     if (!entry.text) {
-      throw new RequestError(`lines[${i}] has no text`);
+      throw new RequestError(`${field} has no text`);
     }
     total += entry.text.length + notes.join(" ").length;
     return entry;
-  });
+  };
+  const lines = input.lines.map((raw, i) => parseLine(raw, `lines[${i}]`));
+  const before = (Array.isArray(input.before) ? input.before.slice(-MAX_BEFORE_LINES) : [])
+    .map((raw, i) => parseLine(raw, `before[${i}]`));
   if (total > MAX_SCENE_CHARS) {
     throw new RequestError("Scene is too long");
   }
-  return { language, title: typeof input.title === "string" ? input.title.slice(0, 200) : "", lines };
+  const context = typeof input.context === "string" ? input.context.slice(0, MAX_CONTEXT_CHARS).trim() : "";
+  return { language, title: typeof input.title === "string" ? input.title.slice(0, 200) : "", lines, context, before };
+}
+
+function withDirections(line: SceneLine): string {
+  return line.text + line.notes.map((n) => (/^[([]/.test(n) ? ` ${n}` : ` (${n})`)).join("");
 }
 
 export function directorPrompt(request: DirectRequest): string {
-  const scene = request.lines.map((line, i) => {
-    const directions = line.notes.map((n) => (/^[([]/.test(n) ? ` ${n}` : ` (${n})`)).join("");
-    return `${i + 1}. ${line.role}: ${line.text}${directions}`;
-  }).join("\n");
+  const scene = request.lines.map((line, i) => `${i + 1}. ${line.role}: ${withDirections(line)}`).join("\n");
+  const about = request.context ? `\nABOUT THE PLAY (your own reading of the whole script):\n${request.context}\n` : "";
+  const before = request.before.length
+    ? `\nEARLIER LINES (context only; do not direct them):\n${request.before.map((l) => `${l.role}: ${withDirections(l)}`).join("\n")}\n`
+    : "";
   return `You are a theatre director preparing a voice actor to read the other characters' lines of a ${LANGUAGE_NAMES[request.language]} play.
-For every numbered line, decide how it should be performed, using the whole scene, the relationships and the stage directions in parentheses (stage directions after a line describe how it, or the next moment, is played).
+For every numbered line, decide how it should be performed, using what has happened in the play so far, the relationships, the situation of the scene and the stage directions in parentheses (stage directions after a line describe how it, or the next moment, is played).
+Most lines have no stage direction: then infer the delivery from the situation. A character who is trapped, cornered, lying, grieving, afraid or in danger must not sound relaxed; keep their tension through the lines of that moment. Use "neutral" only when the moment is truly calm.
 Rules:
 - Return exactly one entry per numbered line, in the same order.
 - segments: split a line only where the delivery changes (for example shouted, then whispered). The segment texts joined with spaces must reproduce the spoken line exactly, without the stage directions.
@@ -130,7 +148,7 @@ Rules:
 - note: one short sentence in ${LANGUAGE_NAMES[request.language]} explaining the subtext to the actor.
 - cast: every character who speaks, with their likely gender from the name, the text and the stage directions (female, male, or unknown when it cannot be told).
 - pronunciations: only words a speech engine is likely to misread (foreign names, abbreviations, numbers), each with how to say it in ${LANGUAGE_NAMES[request.language]} spelling. Usually empty.
-${request.title ? `Play: ${request.title}\n` : ""}
+${request.title ? `Play: ${request.title}\n` : ""}${about}${before}
 SCENE:
 ${scene}`;
 }

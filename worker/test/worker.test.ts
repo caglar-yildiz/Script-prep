@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { analyzePrompt, normalizeAnalysis, parseAnalyzeRequest } from "../src/analysis";
 import { AuthError, verifyIdToken } from "../src/auth";
 import { castPrompt, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { generate, UpstreamError } from "../src/gemini";
@@ -88,6 +89,19 @@ describe("director", () => {
       { role: "AYŞE", gender: "male" },
     ] })).toEqual([{ role: "AYŞE", gender: "female" }, { role: "MEHMET", gender: "unknown" }]);
     expect(normalizeCast(scene, {})).toEqual([]);
+  });
+
+  it("gives the director the play's reading and the lines before a part", () => {
+    const part = parseDirectRequest({
+      language: "tr", context: "Ayşe kocasından şüpheleniyor.",
+      before: [{ role: "MEHMET", text: "Geç kaldım.", notes: [] }],
+      lines: [{ role: "AYŞE", text: "Neredeydin?", notes: [] }],
+    });
+    const prompt = directorPrompt(part);
+    expect(prompt).toContain("ABOUT THE PLAY (your own reading of the whole script):\nAyşe kocasından şüpheleniyor.");
+    expect(prompt).toContain("EARLIER LINES (context only; do not direct them):\nMEHMET: Geç kaldım.");
+    expect(prompt).toContain("1. AYŞE: Neredeydin?");
+    expect(directorPrompt(scene)).not.toContain("EARLIER LINES");
   });
 
   it("asks for the genders with the lines and their directions", () => {
@@ -210,5 +224,29 @@ describe("Google Cloud service account", () => {
     expect(await accessToken(service, fetcher, now)).toBe("t1");
     expect(await accessToken(service, fetcher, now + 3000)).toBe("t1");
     expect(await accessToken(service, fetcher, now + 3500)).toBe("t2");
+  });
+});
+
+describe("play analysis", () => {
+  it("takes the play as text and checks its language and size", () => {
+    expect(() => parseAnalyzeRequest("xx", "", "A: b")).toThrow(RequestError);
+    expect(() => parseAnalyzeRequest("tr", "", "  ")).toThrow(RequestError);
+    expect(() => parseAnalyzeRequest("tr", "", "x".repeat(600_001))).toThrow(RequestError);
+    expect(analyzePrompt(parseAnalyzeRequest("tr", "Oyun", "## SCENE: 1\nAYŞE: Selam."))).toContain("PLAY:\n## SCENE: 1\nAYŞE: Selam.");
+  });
+
+  it("keeps the answer's shape whatever the model sends", () => {
+    const analysis = normalizeAnalysis({
+      summary: " Bir  aile dramı. ",
+      characters: [{ role: "AYŞE", gender: "female", age: "adult", description: "Şüpheci." },
+        { role: "", gender: "x" }, { role: "ALİ", gender: "robot", age: 5 }],
+      relationships: ["Ayşe ile Ali evli.", 3, ""],
+      scenes: [{ scene: "1", summary: "Kavga.", moods: [{ role: "ALİ", mood: "kapana kısılmış" }, { role: "AYŞE" }] }],
+    });
+    expect(analysis.summary).toBe("Bir aile dramı.");
+    expect(analysis.characters.map((c) => [c.role, c.gender, c.age])).toEqual([["AYŞE", "female", "adult"], ["ALİ", "unknown", "unknown"]]);
+    expect(analysis.relationships).toEqual(["Ayşe ile Ali evli.", "3"]);
+    expect(analysis.scenes[0].moods).toEqual([{ role: "ALİ", mood: "kapana kısılmış" }]);
+    expect(normalizeAnalysis(null)).toEqual({ summary: "", characters: [], relationships: [], scenes: [] });
   });
 });

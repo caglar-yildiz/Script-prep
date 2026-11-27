@@ -115,7 +115,7 @@ public final class MainActivity extends Activity {
     private static final double LINE_SAID = 0.6;
     private static final double LINE_CLEAN = 0.8;
     private static final int LISTEN_RETRIES = 6;
-    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM, LINES }
+    private enum Screen { HOME, CATEGORIES, SOURCE, EDITOR, SECTIONS, SETUP, READER, REHEARSAL, VOICES, SETTINGS, PREMIUM, LINES, NOTES }
     private enum SpeechState { LOADING, READY, UNAVAILABLE }
 
     private final Handler main = new Handler(Looper.getMainLooper());
@@ -426,7 +426,8 @@ public final class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() {
-        if (screen == Screen.REHEARSAL || screen == Screen.READER || screen == Screen.VOICES) {
+        if (screen == Screen.REHEARSAL || screen == Screen.READER || screen == Screen.VOICES
+            || screen == Screen.NOTES) {
             show(Screen.SETUP);
         } else if (screen == Screen.SOURCE) {
             show(Screen.CATEGORIES);
@@ -1076,6 +1077,7 @@ public final class MainActivity extends Activity {
             case REHEARSAL -> renderRehearsal();
             case VOICES -> renderVoices();
             case LINES -> renderLines();
+            case NOTES -> renderNotes();
         }
         if (snackbarMessage != null) {
             addSnackbar();
@@ -4482,12 +4484,136 @@ public final class MainActivity extends Activity {
             studioProgressLabels.add(rowDetail(progressRow));
             extras.addView(progressRow, Ui.matchWidth());
             extras.addView(ui.divider(70));
-        } else if (done < total) {
+        }
+        if (!studio.isRunning() && done > 0) {
+            extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title),
+                getString(R.string.notes_value), view -> show(Screen.NOTES)), Ui.matchWidth());
+            extras.addView(ui.divider(70));
+        }
+        if (!studio.isRunning() && done < total) {
             String detail = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
             extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare),
                 detail + "\n" + getString(R.string.studio_allowance), view -> startStudio()), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
+    }
+
+    // ---------------------------------------------------------------- Director's notes
+
+    /** Every line of the scene with what the director decided and how its voice was made. */
+    private void renderNotes() {
+        LinearLayout bar = topBar(R.drawable.ic_back, getString(R.string.notes_title), () -> show(Screen.SETUP));
+        barAction(bar, R.drawable.ic_share, R.string.notes_share, view -> shareNotes());
+        content.addView(ui.text(getString(R.string.notes_intro), Type.BODY, TEXT_SECONDARY), ui.spaced(8));
+        LinearLayout reading = ui.card(ACCENT_CONTAINER, null);
+        reading.setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(14));
+        reading.addView(ui.text(getString(R.string.notes_reading), Type.SUBTITLE, ON_ACCENT_CONTAINER));
+        reading.addView(ui.text(readingText(), Type.CAPTION, ON_ACCENT_CONTAINER), ui.spaced(6));
+        content.addView(reading, ui.spaced(10));
+        if (!studio.isRunning()) {
+            LinearLayout actions = footerBar();
+            actions.addView(ui.button(getString(R.string.notes_redirect), R.drawable.ic_replay, Kind.TONAL,
+                view -> confirmRedirect()), Ui.matchWidth());
+        }
+        for (Scene.Line line : scene.lines) {
+            LinearLayout card = ui.card(SURFACE, null);
+            card.setPadding(ui.dp(16), ui.dp(12), ui.dp(16), ui.dp(14));
+            card.addView(ui.text(line.role, Type.LABEL, ACCENT));
+            card.addView(ui.text(line.text, Type.BODY_LARGE, TEXT), ui.spaced(2));
+            card.addView(ui.text(noteText(line), Type.CAPTION, TEXT_SECONDARY), ui.spaced(8));
+            content.addView(card, ui.spaced(10));
+        }
+    }
+
+    /** A line's note and voicing as plain text, for the screen and for sharing. */
+    private String noteText(Scene.Line line) {
+        StringBuilder text = new StringBuilder();
+        for (String direction : line.notes) {
+            text.append(getString(R.string.notes_script_direction, direction)).append('\n');
+        }
+        org.json.JSONObject note = studio.noteOf(line, language);
+        if (note == null) {
+            return text.append(getString(R.string.notes_not_directed)).toString();
+        }
+        text.append(getString(R.string.notes_delivery, note.optString("emotion"), note.optString("pace"))).append('\n');
+        if (!note.optString("note").isEmpty()) {
+            text.append(getString(R.string.notes_subtext, note.optString("note"))).append('\n');
+        }
+        org.json.JSONArray segments = note.optJSONArray("segments");
+        for (int i = 0; segments != null && i < segments.length(); i++) {
+            org.json.JSONObject segment = segments.optJSONObject(i);
+            if (segment == null) {
+                continue;
+            }
+            text.append("• [").append(segment.optString("volume"));
+            if (!segment.optString("style").isEmpty()) {
+                text.append(", ").append(segment.optString("style"));
+            }
+            text.append("] ").append(segment.optString("text"));
+            if (segment.optInt("pauseAfterMs") > 0) {
+                text.append(" (").append(segment.optInt("pauseAfterMs")).append(" ms)");
+            }
+            text.append('\n');
+        }
+        org.json.JSONArray sayings = note.optJSONArray("pronunciations");
+        for (int i = 0; sayings != null && i < sayings.length(); i++) {
+            org.json.JSONObject saying = sayings.optJSONObject(i);
+            if (saying != null) {
+                text.append(getString(R.string.notes_pronounce, saying.optString("word"), saying.optString("say")))
+                    .append('\n');
+            }
+        }
+        String voice = studioCasting().voice(line.role);
+        org.json.JSONObject voiced = studio.voicedOf(line, language, voice);
+        if (voiced == null) {
+            text.append(studio.audio(line, language, voice) == null ? getString(R.string.notes_not_voiced, voice)
+                : getString(R.string.notes_voiced_unknown, voice));
+        } else {
+            text.append(getString(R.string.notes_voiced, voiced.optString("voice", voice),
+                voiced.optString("model", "?"), voiced.optString("source", "?")));
+            if (!voiced.optString("style").isEmpty()) {
+                text.append('\n').append(getString(R.string.notes_style, voiced.optString("style")));
+            }
+            if (!voiced.optString("text").isEmpty()) {
+                text.append('\n').append(getString(R.string.notes_sent, voiced.optString("text")));
+            }
+        }
+        return text.toString();
+    }
+
+    /** What the director made of the play and of this scene, or why there is nothing yet. */
+    private String readingText() {
+        org.json.JSONObject analysis = studio.analysis(fullScene, language, StudioVoices.scriptId(castKey()));
+        if (analysis == null) {
+            return getString(R.string.notes_no_reading);
+        }
+        String context = StudioVoices.contextFor(analysis, scene.lines.isEmpty() ? "" : scene.lines.get(0).section);
+        return context.isEmpty() ? getString(R.string.notes_no_reading) : context.trim();
+    }
+
+    /** Directs and voices the scene again, after the play is read again. */
+    private void confirmRedirect() {
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.notes_redirect)
+            .setMessage(R.string.notes_redirect_message)
+            .setPositiveButton(R.string.notes_redirect, (dialog, which) -> {
+                studio.forget(fullScene, scene, language, castKey());
+                show(Screen.SETUP);
+                prepareStudio();
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    private void shareNotes() {
+        StringBuilder all = new StringBuilder(getString(R.string.notes_title)).append(" · ").append(scriptTitle)
+            .append(" · ").append(language.code).append("\n\n").append(getString(R.string.notes_reading))
+            .append(":\n").append(readingText()).append("\n\n");
+        for (Scene.Line line : scene.lines) {
+            all.append(line.role).append(": ").append(line.text).append('\n').append(noteText(line)).append("\n\n");
+        }
+        Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, all.toString());
+        startActivity(Intent.createChooser(send, getString(R.string.notes_share)));
     }
 
     /** The value text of a list row, to change it without drawing the screen again. */
@@ -4523,9 +4649,9 @@ public final class MainActivity extends Activity {
             confirmStudio();
             return;
         }
-        if (!studio.knowsGenders(fullScene.roles) && !guessingCast) {
+        if (studio.analysis(fullScene, language, StudioVoices.scriptId(castKey())) == null && !guessingCast) {
             guessingCast = true;
-            studio.guessGenders(fullScene, language, scriptTitle, () -> {
+            studio.analyzeFirst(fullScene, language, scriptTitle, castKey(), () -> {
                 guessingCast = false;
                 if (screen == Screen.VOICES && !isDestroyed()) {
                     render();
@@ -4608,7 +4734,7 @@ public final class MainActivity extends Activity {
             return;
         }
         studioDone = -1;
-        studio.prepare(scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
+        studio.prepare(fullScene, scene, language, scriptTitle, castKey(), studioCasting(), new StudioVoices.Progress() {
             @Override
             public void progress(int done, int total) {
                 studioDone = done;

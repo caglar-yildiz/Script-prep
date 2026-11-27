@@ -142,6 +142,7 @@ struct RootView: View {
         case .settings: SettingsScreen()
         case .premium: PremiumScreen()
         case .lines: LinesScreen()
+        case .notes: NotesScreen()
         }
     }
 

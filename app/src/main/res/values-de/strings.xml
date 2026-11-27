@@ -547,6 +547,24 @@
     <string name="cast_check_body">Die Studiostimmen behalten die Stimme, die jede Figur jetzt hat. Achte darauf, dass Frauen und Männer passende Stimmen haben, dann bereite sie vor.</string>
     <string name="cast_check_guessing">Die Regie liest die Szene, um das Geschlecht der Figuren zu erkennen …</string>
     <string name="cast_check_confirm">Bestätigen und vorbereiten</string>
+    <string name="notes_title">Regienotizen</string>
+    <string name="notes_value">Wie jede Replik gespielt und ihre Stimme gemacht wurde</string>
+    <string name="notes_share">Notizen teilen</string>
+    <string name="notes_intro">Was die KI-Regie für jede Replik entschieden hat und was die Studiostimme bekommen hat.</string>
+    <string name="notes_script_direction">Im Text: %1$s</string>
+    <string name="notes_not_directed">Noch nicht inszeniert.</string>
+    <string name="notes_delivery">Stimmung: %1$s · Tempo: %2$s</string>
+    <string name="notes_subtext">Regie: %1$s</string>
+    <string name="notes_pronounce">„%1$s“ wie „%2$s“ sprechen</string>
+    <string name="notes_not_voiced">Stimme %1$s: noch nicht vorbereitet.</string>
+    <string name="notes_voiced_unknown">Stimme %1$s: vorbereitet, bevor Details gespeichert wurden.</string>
+    <string name="notes_voiced">Stimme %1$s · %2$s (%3$s)</string>
+    <string name="notes_style">Vorgabe: %1$s</string>
+    <string name="notes_sent">Gesendeter Text: %1$s</string>
+    <string name="notes_reading">Wie die Regie das Stück liest</string>
+    <string name="notes_no_reading">Noch nicht gelesen: Das Stück wird beim nächsten Vorbereiten der Studiostimmen ganz gelesen.</string>
+    <string name="notes_redirect">Neu inszenieren</string>
+    <string name="notes_redirect_message">Die Regie liest das ganze Stück noch einmal und inszeniert und vertont die Repliken dieser Szene damit neu. Das zählt zu den Studiostimmen dieses Monats.</string>
     <string name="cast_studio_voice_for">Studiostimme für %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Bestimmt</item>

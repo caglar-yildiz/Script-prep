@@ -547,6 +547,24 @@
     <string name="cast_check_body">Stüdyo sesleri her karakterin şu anki sesiyle hazırlanır. Kadın ve erkek karakterlerin kendi cinsiyetlerine uygun sesleri olduğundan emin ol, sonra hazırla.</string>
     <string name="cast_check_guessing">Yönetmen karakterlerin cinsiyetini anlamak için sahneyi okuyor…</string>
     <string name="cast_check_confirm">Onayla ve hazırla</string>
+    <string name="notes_title">Yönetmen notları</string>
+    <string name="notes_value">Her repliğin nasıl oynandığı ve sesinin nasıl üretildiği</string>
+    <string name="notes_share">Notları paylaş</string>
+    <string name="notes_intro">Yapay zekâ yönetmenin her replik için kararı ve stüdyo sesine verilen yönerge.</string>
+    <string name="notes_script_direction">Metindeki yönerge: %1$s</string>
+    <string name="notes_not_directed">Henüz yönetilmedi.</string>
+    <string name="notes_delivery">Duygu: %1$s · hız: %2$s</string>
+    <string name="notes_subtext">Yönetmen: %1$s</string>
+    <string name="notes_pronounce">“%1$s” → “%2$s” diye söylenir</string>
+    <string name="notes_not_voiced">%1$s sesi: henüz hazırlanmadı.</string>
+    <string name="notes_voiced_unknown">%1$s sesi: ayrıntılar saklanmadan önce hazırlandı.</string>
+    <string name="notes_voiced">Ses %1$s · %2$s (%3$s)</string>
+    <string name="notes_style">Verilen tarz: %1$s</string>
+    <string name="notes_sent">Verilen metin: %1$s</string>
+    <string name="notes_reading">Yönetmenin okuması</string>
+    <string name="notes_no_reading">Henüz okunmadı: stüdyo sesleri bir sonraki hazırlanışta oyun baştan sona okunur.</string>
+    <string name="notes_redirect">Yeniden yönet</string>
+    <string name="notes_redirect_message">Yönetmen oyunu baştan sona yeniden okur ve bu sahnenin repliklerini bu okumayla yeniden yönetip seslendirir. Bu ayki stüdyo sesi hakkından kullanır.</string>
     <string name="cast_studio_voice_for">%1$s için stüdyo sesi</string>
     <string-array name="studio_voice_traits">
         <item>Kararlı</item>

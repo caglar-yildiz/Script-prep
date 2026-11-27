@@ -561,6 +561,24 @@
     <string name="cast_check_body">As vozes de estúdio mantêm a voz que cada personagem tem agora. Garanta que mulheres e homens tenham vozes do seu gênero e depois prepare.</string>
     <string name="cast_check_guessing">O diretor está lendo a cena para saber o gênero dos personagens…</string>
     <string name="cast_check_confirm">Confirmar e preparar</string>
+    <string name="notes_title">Notas do diretor</string>
+    <string name="notes_value">Como cada fala é interpretada e como a voz foi feita</string>
+    <string name="notes_share">Compartilhar as notas</string>
+    <string name="notes_intro">O que o diretor com IA decidiu para cada fala e o que a voz de estúdio recebeu.</string>
+    <string name="notes_script_direction">No texto: %1$s</string>
+    <string name="notes_not_directed">Ainda sem direção.</string>
+    <string name="notes_delivery">Clima: %1$s · ritmo: %2$s</string>
+    <string name="notes_subtext">Diretor: %1$s</string>
+    <string name="notes_pronounce">Dizer “%1$s” como “%2$s”</string>
+    <string name="notes_not_voiced">Voz %1$s: ainda não preparada.</string>
+    <string name="notes_voiced_unknown">Voz %1$s: preparada antes de os detalhes serem guardados.</string>
+    <string name="notes_voiced">Voz %1$s · %2$s (%3$s)</string>
+    <string name="notes_style">Estilo dado: %1$s</string>
+    <string name="notes_sent">Texto dado: %1$s</string>
+    <string name="notes_reading">A leitura do diretor</string>
+    <string name="notes_no_reading">Ainda não lida: a peça é lida inteira na próxima vez que as vozes de estúdio forem preparadas.</string>
+    <string name="notes_redirect">Dirigir de novo</string>
+    <string name="notes_redirect_message">O diretor relê a peça inteira e, com isso, dirige e dá voz de novo às falas desta cena. Conta nas vozes de estúdio deste mês.</string>
     <string name="cast_studio_voice_for">Voz de estúdio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>
