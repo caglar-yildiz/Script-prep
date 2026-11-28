@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers";
+import { AllowanceState, decide, Decision } from "./allowance";
 
 export type QuotaKind = "directed" | "spoken";
 
@@ -27,22 +28,52 @@ export class Quota extends DurableObject {
     return used;
   }
 
+  private async allowance(): Promise<AllowanceState> {
+    return {
+      month: (await this.ctx.storage.get<string[]>(`${monthKey()}:scripts`)) ?? [],
+      kept: (await this.ctx.storage.get<string[]>("kept")) ?? [],
+      credits: (await this.ctx.storage.get<number>("credits")) ?? 0,
+      premiumUntil: (await this.ctx.storage.get<number>("premiumUntil")) ?? 0,
+    };
+  }
+
   /**
-   * Lets a script use studio voices this month: one already opened this month always may; a new one
-   * only while fewer than `limit` scripts have been opened. Returns the scripts opened this month.
+   * Lets a script use studio voices. With purchases enforced the rules of allowance.ts apply;
+   * without, any signed-in user may open up to `monthly` scripts a month (while testing).
    */
-  async openScript(script: string, limit: number): Promise<{ allowed: boolean; scripts: number }> {
-    const key = `${monthKey()}:scripts`;
-    const scripts = (await this.ctx.storage.get<string[]>(key)) ?? [];
-    if (scripts.includes(script)) {
-      return { allowed: true, scripts: scripts.length };
+  async openScript(script: string, monthly: number, enforce: boolean): Promise<Decision> {
+    const state = await this.allowance();
+    const decision = enforce ? decide(state, script, monthly, Date.now())
+      : decide({ ...state, premiumUntil: Number.MAX_SAFE_INTEGER, credits: 0 }, script, monthly, 0);
+    if (decision.allowed && decision.changed) {
+      await this.ctx.storage.put(`${monthKey()}:scripts`, decision.state.month);
+      await this.ctx.storage.put("kept", decision.state.kept);
+      if (enforce) {
+        await this.ctx.storage.put("credits", decision.state.credits);
+      }
     }
-    if (scripts.length >= limit) {
-      return { allowed: false, scripts: scripts.length };
+    return decision;
+  }
+
+  /** What the stores said about the user's Premium: until when it runs (0 when it does not). */
+  async setPremium(until: number): Promise<void> {
+    await this.ctx.storage.put("premiumUntil", until);
+  }
+
+  /** Counts a paid extra script once, by its purchase id; true when it was new. */
+  async addCredit(purchase: string): Promise<boolean> {
+    const redeemed = (await this.ctx.storage.get<string[]>("redeemed")) ?? [];
+    if (redeemed.includes(purchase)) {
+      return false;
     }
-    scripts.push(script);
-    await this.ctx.storage.put(key, scripts);
-    return { allowed: true, scripts: scripts.length };
+    await this.ctx.storage.put("redeemed", [...redeemed, purchase].slice(-500));
+    await this.ctx.storage.put("credits", ((await this.ctx.storage.get<number>("credits")) ?? 0) + 1);
+    return true;
+  }
+
+  async entitlement(): Promise<{ premiumUntil: number; credits: number; kept: number }> {
+    const state = await this.allowance();
+    return { premiumUntil: state.premiumUntil, credits: state.credits, kept: state.kept.length };
   }
 
   async usage(): Promise<Record<QuotaKind | "scripts", number>> {

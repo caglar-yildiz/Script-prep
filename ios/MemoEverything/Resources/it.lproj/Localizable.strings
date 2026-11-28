@@ -187,6 +187,13 @@
 "ensemble_unnamed" = "Membro senza nome";
 "ensemble_you" = "%1$@ (tu)";
 "entire_script" = "Prova tutto il testo";
+"extra_added" = "Copione extra aggiunto; la preparazione inizia.";
+"extra_buy" = "Acquista";
+"extra_message" = "Hai usato i copioni di questo mese. Aggiungi questo copione per %1$@: si compra una volta e resta sempre preparabile.";
+"extra_not_counted" = "Non è stato ancora possibile verificare l’acquisto. L’app riproverà alla prossima apertura.";
+"extra_price" = "49,99 TL";
+"extra_title" = "Copione extra";
+"extra_unavailable" = "Non è stato possibile aprire lo store ora. Riprova tra poco.";
 "fix_action" = "Correggi";
 "fix_angrier" = "Più arrabbiata";
 "fix_calmer" = "Più calma";

@@ -187,6 +187,13 @@
 "ensemble_unnamed" = "Membro sem nome";
 "ensemble_you" = "%1$@ (você)";
 "entire_script" = "Ensaiar o texto inteiro";
+"extra_added" = "Roteiro extra adicionado; a preparação começa.";
+"extra_buy" = "Comprar";
+"extra_message" = "Você já usou os roteiros deste mês. Adicione este roteiro por %1$@: compra uma vez e ele fica sempre pronto para preparar.";
+"extra_not_counted" = "Ainda não foi possível verificar a compra. O app tenta de novo na próxima vez que abrir.";
+"extra_price" = "49,99 TL";
+"extra_title" = "Roteiro extra";
+"extra_unavailable" = "Não foi possível abrir a loja agora. Tente daqui a pouco.";
 "fix_action" = "Corrigir";
 "fix_angrier" = "Mais brava";
 "fix_calmer" = "Mais calma";

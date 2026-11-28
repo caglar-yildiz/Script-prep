@@ -549,6 +549,13 @@
     <string name="voice_engine_ai_detail">A natural voice that runs on this phone, offline</string>
     <string name="voice_engine_studio_detail">Acted, expressive voices prepared by an AI director</string>
     <string name="studio_allowance">Studio voices can be prepared for 2 scripts a month.</string>
+    <string name="extra_title">Extra script</string>
+    <string name="extra_message">This month’s scripts are used. Add this script for %1$s: you buy it once and it stays ready to prepare.</string>
+    <string name="extra_buy">Buy</string>
+    <string name="extra_price">49.99 TL</string>
+    <string name="extra_unavailable">The store couldn’t open right now. Try again in a little while.</string>
+    <string name="extra_added">Extra script added; preparing starts.</string>
+    <string name="extra_not_counted">The purchase couldn’t be checked yet. The app tries again the next time it opens.</string>
     <string name="studio_waiting">Waiting: another scene is being prepared first</string>
     <string name="studio_stopping">Stopping… (%1$d of %2$d lines ready)</string>
     <string name="studio_notification_title">Preparing studio voices</string>

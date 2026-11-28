@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
     <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
     <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <string name="extra_title">Guion extra</string>
+    <string name="extra_message">Ya usaste los guiones de este mes. Añade este guion por %1$s: se compra una vez y siempre se puede preparar.</string>
+    <string name="extra_buy">Comprar</string>
+    <string name="extra_price">49,99 TL</string>
+    <string name="extra_unavailable">No se pudo abrir la tienda ahora. Inténtalo en un rato.</string>
+    <string name="extra_added">Guion extra añadido; empieza la preparación.</string>
+    <string name="extra_not_counted">Aún no se pudo comprobar la compra. La app lo volverá a intentar la próxima vez que se abra.</string>
     <string name="studio_waiting">En espera: primero se prepara otra escena</string>
     <string name="studio_stopping">Deteniendo… (%1$d de %2$d frases listas)</string>
     <string name="studio_notification_title">Preparando voces de estudio</string>

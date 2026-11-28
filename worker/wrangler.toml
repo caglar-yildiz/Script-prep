@@ -7,6 +7,12 @@ workers_dev = true
 
 [vars]
 FIREBASE_PROJECT_ID = "memo-70a45"
+# Once the store products exist ("memo_premium" subscription and the one-time "memo_extra_script"
+# on both stores), set ENFORCE_PURCHASES = "true" and MONTHLY_SCRIPTS = "2": then only Premium
+# users get studio voices, with extra scripts bought one at a time.
+ENFORCE_PURCHASES = "false"
+ANDROID_PACKAGE = "com.memoeverything.app"
+IOS_BUNDLE = "com.memoeverything.app"
 # Each calendar month (UTC) a user may prepare studio voices for this many scripts...
 # While testing there is no practical limit; the planned allowance is "2".
 MONTHLY_SCRIPTS = "1000"

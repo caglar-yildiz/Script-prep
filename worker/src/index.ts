@@ -19,6 +19,8 @@ import { Quota, QuotaKind } from "./quota";
 import { parseReviseRequest, revisedDirection, revisePrompt } from "./revise";
 import { legacyPrompt, parseSpeakRequest, SpeakRequest, VoiceInput, voiceInput } from "./speak";
 import { accessToken, parseServiceAccount } from "./vertex";
+import { APPLE_PREMIUM, AppleKey, Checked, checkAppleTransaction, checkPlayProduct, checkPlaySubscription,
+  EXTRA_SCRIPT } from "./store";
 
 export { Quota };
 
@@ -30,6 +32,14 @@ export interface Env {
   MONTHLY_DIRECTED_LINES: string;
   MONTHLY_SPOKEN_LINES: string;
   MONTHLY_SCRIPTS: string;
+  /** "true" once the store products exist: only paying users get studio voices. */
+  ENFORCE_PURCHASES?: string;
+  ANDROID_PACKAGE?: string;
+  IOS_BUNDLE?: string;
+  /** App Store Connect In-App Purchase key, for the App Store Server API. */
+  APPSTORE_KEY_ID?: string;
+  APPSTORE_ISSUER_ID?: string;
+  APPSTORE_PRIVATE_KEY?: string;
   QUOTA: DurableObjectNamespace<Quota>;
 }
 
@@ -66,12 +76,84 @@ function limitFor(env: Env, kind: QuotaKind): number {
   return Number(kind === "directed" ? env.MONTHLY_DIRECTED_LINES : env.MONTHLY_SPOKEN_LINES) || 0;
 }
 
-/** Refuses a script beyond the month's allowance of scripts. */
+/**
+ * Refuses a script the user may not prepare: without Premium (402 premium_required), or beyond the
+ * month's scripts with no extra script bought (402 extra_script_needed). While purchases are not
+ * enforced, only the monthly number of scripts applies (429 script_limit).
+ */
 async function openScript(body: unknown, env: Env, quota: DurableObjectStub<Quota>): Promise<Response | null> {
   const limit = Number(env.MONTHLY_SCRIPTS) || 0;
-  const opened = await quota.openScript(scriptOf(body), limit);
-  return opened.allowed ? null
-    : problem(429, "script_limit", `Studio voices can be prepared for ${limit} scripts a month`, 86_400);
+  const enforce = env.ENFORCE_PURCHASES === "true";
+  const decision = await quota.openScript(scriptOf(body), limit, enforce);
+  if (decision.allowed) {
+    return null;
+  }
+  if (!enforce) {
+    return problem(429, "script_limit", `Studio voices can be prepared for ${limit} scripts a month`, 86_400);
+  }
+  return decision.reason === "premium_required"
+    ? problem(402, "premium_required", "Studio voices come with Premium")
+    : problem(402, "extra_script_needed", `This month's ${limit} scripts are used; an extra script can be added`);
+}
+
+/**
+ * The apps send what the stores gave them (Play purchase tokens, App Store transaction ids); the
+ * Worker asks the store about each, keeps when Premium ends and counts paid extra scripts once.
+ * The answer lists the extra scripts it accepted, which the apps may then consume.
+ */
+async function entitlement(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
+  const body = (await readBody(request)) as Record<string, unknown>;
+  const platform = body?.platform;
+  const list = (value: unknown) => (Array.isArray(value) ? value : [])
+    .filter((v): v is string => typeof v === "string" && v.length > 0 && v.length < 2000).slice(0, 5);
+  const subscriptions = list(body?.subscriptions);
+  const extras = list(body?.extras);
+  let check: (purchase: string, oneTime: boolean) => Promise<Checked>;
+  if (platform === "android") {
+    const account = parseServiceAccount(env.GCP_SERVICE_ACCOUNT_JSON);
+    const packageName = env.ANDROID_PACKAGE ?? "com.memoeverything.app";
+    if (!account) {
+      return problem(503, "store_unavailable", "Google Play purchases cannot be checked yet");
+    }
+    check = (purchase, oneTime) => oneTime ? checkPlayProduct(account, packageName, EXTRA_SCRIPT, purchase)
+      : checkPlaySubscription(account, packageName, purchase);
+  } else if (platform === "ios") {
+    if (!env.APPSTORE_KEY_ID || !env.APPSTORE_ISSUER_ID || !env.APPSTORE_PRIVATE_KEY) {
+      return problem(503, "store_unavailable", "App Store purchases cannot be checked yet");
+    }
+    const key: AppleKey = { keyId: env.APPSTORE_KEY_ID, issuerId: env.APPSTORE_ISSUER_ID,
+      privateKey: env.APPSTORE_PRIVATE_KEY, bundleId: env.IOS_BUNDLE ?? "com.memoeverything.app" };
+    check = (purchase) => checkAppleTransaction(key, purchase);
+  } else {
+    throw new RequestError("platform must be android or ios");
+  }
+  if (subscriptions.length) {
+    let until = 0;
+    for (const purchase of subscriptions) {
+      try {
+        const checked = await check(purchase, false);
+        if (platform === "android" || APPLE_PREMIUM.includes(checked.product)) {
+          until = Math.max(until, checked.until);
+        }
+      } catch (error) {
+        console.error("A subscription could not be checked", error);
+      }
+    }
+    await quota.setPremium(until);
+  }
+  const accepted: string[] = [];
+  for (const purchase of extras) {
+    try {
+      const checked = await check(purchase, true);
+      if (checked.paid && checked.product === EXTRA_SCRIPT) {
+        await quota.addCredit(checked.id);
+        accepted.push(purchase);
+      }
+    } catch (error) {
+      console.error("An extra script could not be checked", error);
+    }
+  }
+  return json({ ...(await quota.entitlement()), accepted, enforced: env.ENFORCE_PURCHASES === "true" });
 }
 
 async function direct(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
@@ -250,7 +332,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({ ok: true });
     }
-    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/revise": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
+    const routes: Record<string, string> = { "/v1/entitlement": "POST", "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/revise": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
       "/v1/usage": "GET" };
     const method = routes[url.pathname];
     if (!method) {
@@ -273,6 +355,9 @@ export default {
       }
       if (url.pathname === "/v1/analyze") {
         return await analyze(request, env, quota);
+      }
+      if (url.pathname === "/v1/entitlement") {
+        return await entitlement(request, env, quota);
       }
       if (url.pathname === "/v1/revise") {
         return await revise(request, env, quota);

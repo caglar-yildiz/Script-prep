@@ -541,6 +541,13 @@
     <string name="voice_engine_ai_detail">Bu telefonda çalışan doğal ses, internetsiz</string>
     <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
     <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
+    <string name="extra_title">Ek senaryo</string>
+    <string name="extra_message">Bu ayki senaryo hakkını kullandın. Bu senaryoyu %1$s karşılığında ekleyebilirsin: bir kez alınır ve bu senaryo hep hazırlanabilir kalır.</string>
+    <string name="extra_buy">Satın al</string>
+    <string name="extra_price">49,99 TL</string>
+    <string name="extra_unavailable">Mağaza şu an açılamadı. Biraz sonra tekrar dene.</string>
+    <string name="extra_added">Ek senaryo eklendi; hazırlık başlıyor.</string>
+    <string name="extra_not_counted">Satın alma henüz doğrulanamadı. Uygulama bir sonraki açılışta tekrar deneyecek.</string>
     <string name="studio_waiting">Sırada: önce başka bir sahne hazırlanıyor</string>
     <string name="studio_stopping">Durduruluyor… (%2$d replikten %1$d tanesi hazır)</string>
     <string name="studio_notification_title">Stüdyo sesleri hazırlanıyor</string>

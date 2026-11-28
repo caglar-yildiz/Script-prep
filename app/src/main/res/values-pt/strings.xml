@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Uma voz natural que funciona neste celular, offline</string>
     <string name="voice_engine_studio_detail">Vozes interpretadas e expressivas preparadas por um diretor com IA</string>
     <string name="studio_allowance">Dá para preparar vozes de estúdio para 2 roteiros por mês.</string>
+    <string name="extra_title">Roteiro extra</string>
+    <string name="extra_message">Você já usou os roteiros deste mês. Adicione este roteiro por %1$s: compra uma vez e ele fica sempre pronto para preparar.</string>
+    <string name="extra_buy">Comprar</string>
+    <string name="extra_price">49,99 TL</string>
+    <string name="extra_unavailable">Não foi possível abrir a loja agora. Tente daqui a pouco.</string>
+    <string name="extra_added">Roteiro extra adicionado; a preparação começa.</string>
+    <string name="extra_not_counted">Ainda não foi possível verificar a compra. O app tenta de novo na próxima vez que abrir.</string>
     <string name="studio_waiting">Na fila: outra cena está sendo preparada primeiro</string>
     <string name="studio_stopping">Parando… (%1$d de %2$d falas prontas)</string>
     <string name="studio_notification_title">Preparando vozes de estúdio</string>

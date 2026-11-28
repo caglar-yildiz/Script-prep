@@ -6,7 +6,12 @@ name: Studio voice worker
 #   CLOUDFLARE_ACCOUNT_ID  the Cloudflare account
 #   GEMINI_API_KEY         stored in the Worker as a secret, never in the apps
 #   GCP_SERVICE_ACCOUNT_JSON  JSON key of a Google Cloud service account with the Vertex AI User
-#                          role; the Worker voices lines through Google Cloud with it
+#                          role; the Worker voices lines through Google Cloud with it. Invited in the
+#                          Play Console (Users and permissions) with "View financial data" and
+#                          "Manage orders and subscriptions", it also checks Google Play purchases.
+# For App Store purchases, once an In-App Purchase key exists in App Store Connect, add the secrets
+# APPSTORE_KEY_ID, APPSTORE_ISSUER_ID and APPSTORE_PRIVATE_KEY (the .p8 file's text) and list them
+# below under env and secrets.
 
 on:
   push:

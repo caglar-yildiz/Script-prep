@@ -187,6 +187,13 @@
 "ensemble_unnamed" = "Membre sans nom";
 "ensemble_you" = "%1$@ (toi)";
 "entire_script" = "Répéter tout le texte";
+"extra_added" = "Texte supplémentaire ajouté ; la préparation commence.";
+"extra_buy" = "Acheter";
+"extra_message" = "Les textes de ce mois sont utilisés. Ajoute ce texte pour %1$@ : acheté une fois, il reste toujours préparable.";
+"extra_not_counted" = "L’achat n’a pas encore pu être vérifié. L’app réessaiera à la prochaine ouverture.";
+"extra_price" = "49,99 TL";
+"extra_title" = "Texte supplémentaire";
+"extra_unavailable" = "Impossible d’ouvrir la boutique pour l’instant. Réessaie dans un moment.";
 "fix_action" = "Corriger";
 "fix_angrier" = "Plus en colère";
 "fix_calmer" = "Plus calme";

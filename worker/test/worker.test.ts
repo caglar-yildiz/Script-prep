@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { analyzePrompt, normalizeAnalysis, parseAnalyzeRequest } from "../src/analysis";
+import { decide } from "../src/allowance";
 import { AuthError, verifyIdToken } from "../src/auth";
+import { appleToken, checkAppleTransaction, jwsPayload } from "../src/store";
 import { castPrompt, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { audioAnswer, generate, UpstreamError } from "../src/gemini";
 import { parseReviseRequest, revisedDirection, revisePrompt } from "../src/revise";
@@ -298,5 +300,65 @@ describe("fixing one line", () => {
     }] });
     expect(direction.emotion).toBe("tired");
     expect(direction.pronunciations).toEqual([{ word: "İçki", say: "İçkı" }]);
+  });
+});
+
+describe("who may prepare a script", () => {
+  const now = 1_800_000_000_000;
+  const premium = { month: [], kept: [], credits: 0, premiumUntil: now + 1000 };
+
+  it("needs Premium, then gives the month's scripts, then extra scripts bought", () => {
+    expect(decide({ ...premium, premiumUntil: 0 }, "a", 2, now)).toEqual({ allowed: false, reason: "premium_required" });
+    const first = decide(premium, "a", 2, now);
+    expect(first.allowed && first.state.month).toEqual(["a"]);
+    const full = { ...premium, month: ["a", "b"] };
+    expect(decide(full, "a", 2, now)).toMatchObject({ allowed: true, changed: false });
+    expect(decide(full, "c", 2, now)).toEqual({ allowed: false, reason: "extra_script_needed" });
+    const bought = decide({ ...full, credits: 1 }, "c", 2, now);
+    expect(bought.allowed && [bought.state.kept, bought.state.credits]).toEqual([["c"], 0]);
+  });
+
+  it("keeps a script bought open even after Premium ends", () => {
+    expect(decide({ ...premium, premiumUntil: 0, kept: ["c"] }, "c", 2, now)).toMatchObject({ allowed: true });
+  });
+});
+
+describe("store checks", () => {
+  async function appleKey() {
+    const pair = (await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"])) as CryptoKeyPair;
+    const der = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey) as ArrayBuffer);
+    let binary = "";
+    der.forEach((b) => (binary += String.fromCharCode(b)));
+    return { key: { keyId: "K1", issuerId: "I1", privateKey: btoa(binary), bundleId: "com.memoeverything.app" },
+      publicKey: pair.publicKey };
+  }
+
+  it("signs App Store requests with ES256", async () => {
+    const { key, publicKey } = await appleKey();
+    const [head, claims, signature] = (await appleToken(key, now)).split(".");
+    const decode = (part: string) => Uint8Array.from(atob(part.replace(/-/g, "+").replace(/_/g, "/")), (c) => c.charCodeAt(0));
+    expect(await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, publicKey, decode(signature),
+      new TextEncoder().encode(`${head}.${claims}`))).toBe(true);
+    expect(JSON.parse(atob(claims.replace(/-/g, "+").replace(/_/g, "/")))).toMatchObject({
+      iss: "I1", aud: "appstoreconnect-v1", bid: "com.memoeverything.app" });
+  });
+
+  it("reads an App Store transaction, from the sandbox when production does not know it", async () => {
+    const { key } = await appleKey();
+    const info = { transactionId: "2000", productId: "memo_extra_script", bundleId: "com.memoeverything.app" };
+    const jws = `x.${btoa(JSON.stringify(info)).replace(/=+$/, "")}.y`;
+    expect(jwsPayload(jws)).toEqual(info);
+    const hosts: string[] = [];
+    const fetcher = async (url: string) => {
+      hosts.push(new URL(url).host);
+      return url.includes("sandbox") ? new Response(JSON.stringify({ signedTransactionInfo: jws }))
+        : new Response("", { status: 404 });
+    };
+    expect(await checkAppleTransaction(key, "2000", fetcher)).toEqual({
+      id: "2000", product: "memo_extra_script", until: 0, paid: true });
+    expect(hosts).toEqual(["api.storekit.itunes.apple.com", "api.storekit-sandbox.itunes.apple.com"]);
+    const other = `x.${btoa(JSON.stringify({ ...info, bundleId: "other" })).replace(/=+$/, "")}.y`;
+    await expect(checkAppleTransaction(key, "2000", async () => new Response(JSON.stringify({ signedTransactionInfo: other }))))
+      .rejects.toThrow("another app");
   });
 });
