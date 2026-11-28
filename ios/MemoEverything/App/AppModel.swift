@@ -2038,7 +2038,7 @@ final class AppModel: ObservableObject {
     /// A paid extra script: the Worker checks and counts it, then the transaction is finished.
     private func onExtraPaid(_ ids: [String]) {
         studio.redeemExtras(ids) { accepted in
-            self.billing.finishExtras(accepted)
+            Task { @MainActor in self.billing.finishExtras(accepted) }
             guard !accepted.isEmpty else {
                 self.notifyKey("extra_not_counted")
                 return
