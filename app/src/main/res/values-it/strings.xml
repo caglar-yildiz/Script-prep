@@ -555,6 +555,10 @@
     <string name="voice_engine_ai_detail">Una voce naturale che funziona su questo telefono, offline</string>
     <string name="voice_engine_studio_detail">Voci recitate ed espressive preparate da un regista IA</string>
     <string name="studio_allowance">Le voci da studio si possono preparare per 2 copioni al mese.</string>
+    <string name="studio_waiting">In attesa: prima si prepara un’altra scena</string>
+    <string name="studio_stopping">Arresto in corso… (%1$d battute pronte su %2$d)</string>
+    <string name="studio_notification_title">Preparazione delle voci da studio</string>
+    <string name="studio_notification_done">Le voci da studio sono pronte. Apri l’app per provare.</string>
     <string name="studio_script_limit">Hai usato i 2 copioni di questo mese per le voci da studio. I copioni preparati continuano a suonare; i nuovi si aprono il mese prossimo.</string>
     <string name="cast_intro_studio">Scegli una voce da studio per ogni personaggio. Il regista decide ritmo e tono di ogni battuta. Tocca riproduci per ascoltarle.</string>
     <string name="cast_check_title">Controlla prima le voci</string>
@@ -580,6 +584,31 @@
     <string name="notes_no_reading">Non ancora letta: l’opera viene letta per intero la prossima volta che si preparano le voci da studio.</string>
     <string name="notes_redirect">Dirigi di nuovo</string>
     <string name="notes_redirect_message">Il regista rilegge tutta l’opera e con essa dirige e dà voce di nuovo alle battute di questa scena. Conta nelle voci da studio di questo mese.</string>
+    <string name="fix_title">Correggi questa battuta</string>
+    <string name="fix_action">Correggi</string>
+    <string name="fix_now">Ora: %1$s</string>
+    <string name="fix_angrier">Più arrabbiata</string>
+    <string name="fix_calmer">Più calma</string>
+    <string name="fix_whisper">Sussurrata</string>
+    <string name="fix_shout">Urlata</string>
+    <string name="fix_tired">Più stanca</string>
+    <string name="fix_scared">Più spaventata</string>
+    <string name="fix_sadder">Più triste</string>
+    <string name="fix_slower">Più lenta</string>
+    <string name="fix_faster">Più veloce</string>
+    <string name="fix_request_hint">Come va detta? (facoltativo)</string>
+    <string name="fix_word_hint">Parola letta male</string>
+    <string name="fix_say_hint">Dilla come</string>
+    <string name="fix_tries">Ti restano %1$d tentativi per questa battuta</string>
+    <string name="fix_go">Registra di nuovo</string>
+    <string name="fix_working">Il regista e la voce ci stanno lavorando…</string>
+    <string name="fix_ready_title">La nuova ripresa è pronta</string>
+    <string name="fix_listen">Ascolta</string>
+    <string name="fix_keep">Usa questa</string>
+    <string name="fix_revert">Tieni la vecchia</string>
+    <string name="fix_failed">Non è stato possibile registrare di nuovo questa battuta. Riprova tra poco.</string>
+    <string name="fix_no_tries">Nessun tentativo rimasto per questa battuta.</string>
+    <string name="fix_empty">Scegli o scrivi come deve cambiare la battuta.</string>
     <string name="cast_studio_voice_for">Voce da studio per %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Decisa</item>
@@ -602,5 +631,6 @@
     <string name="studio_playing">La voce da studio sta leggendo la battuta…</string>
     <string name="studio_daily_limit">Il limite giornaliero delle voci da studio è stato raggiunto. Le battute preparate restano salvate; continua domani.</string>
     <string name="studio_monthly_limit">Il limite mensile delle voci da studio è stato raggiunto.</string>
-    <string name="studio_failed">Impossibile preparare le voci da studio. Controlla la connessione e riprova.</string>
+    <string name="studio_failed">Non è stato possibile continuare a preparare le voci da studio. Le battute già pronte restano; riprova tra poco.</string>
+    <string name="studio_partial">%1$d battute non sono state registrate; le leggono le altre voci. Prepara di nuovo le voci da studio per riprovare solo quelle.</string>
 </resources>

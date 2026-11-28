@@ -19,7 +19,7 @@ final class StudioVoices: ObservableObject {
     private static let refreshKey = "studio_refresh_token"
 
     enum Stop {
-        case done, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
+        case done, partial, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
     }
 
     private enum Failure: Error {
@@ -29,6 +29,8 @@ final class StudioVoices: ObservableObject {
     @Published private(set) var running = false
     @Published private(set) var done = 0
     @Published private(set) var total = 0
+    /// Lines the last preparation could not voice; they are tried again next time.
+    @Published private(set) var skippedLines = 0
 
     private let folder: URL
     private let notesFile: URL
@@ -37,10 +39,37 @@ final class StudioVoices: ObservableObject {
     private var idToken: String?
     private var idTokenExpires = Date.distantPast
     private var cancelled = false
-    /// Headers of the last answer, read on the preparing queue only.
-    private var lastHeaders: [AnyHashable: Any] = [:]
-    /// How the last line was voiced: model, route, style and text the voice was given.
-    private var lastVoiced: [String: Any] = [:]
+    /// Headers of the last answer on this thread: lines are voiced several at a time.
+    private var lastHeaders: [AnyHashable: Any] {
+        get { Thread.current.threadDictionary["memo.studio.headers"] as? [AnyHashable: Any] ?? [:] }
+        set { Thread.current.threadDictionary["memo.studio.headers"] = newValue }
+    }
+    /// How the last line on this thread was voiced: model, route, style and text the voice was given.
+    private var lastVoiced: [String: Any] {
+        get { Thread.current.threadDictionary["memo.studio.voiced"] as? [String: Any] ?? [:] }
+        set { Thread.current.threadDictionary["memo.studio.voiced"] = newValue }
+    }
+    private let saveLock = NSLock()
+
+    /// One scene to prepare: what it is, and who to tell how it goes.
+    private struct Job {
+        let key: String
+        let fullScene: ScriptScene
+        let scene: ScriptScene
+        let language: ScriptLanguage
+        let title: String
+        let script: String
+        let casting: Casting
+        let finished: (Stop) -> Void
+    }
+
+    private var queue: [Job] = []
+    /// The scene being prepared and those waiting their turn, for each screen to show its own state.
+    @Published private(set) var currentKey: String?
+    @Published private(set) var waitingKeys: [String] = []
+    /// Requests at once: Google Cloud took six voices at a time without complaint on CI.
+    private static let linesAtOnce = 6
+    private static let partsAtOnce = 3
     private static let voicedPrefix = "voiced:"
 
     private init() {
@@ -49,10 +78,53 @@ final class StudioVoices: ObservableObject {
         notesFile = folder.appendingPathComponent("notes.json")
     }
 
+    /// Runs of lines with no note yet, at most a part long.
+    private func undirected(_ lines: [ScriptScene.Line], _ language: ScriptLanguage) -> [[ScriptScene.Line]] {
+        var runs: [[ScriptScene.Line]] = []
+        var run: [ScriptScene.Line] = []
+        for line in lines {
+            if note(line, language) == nil {
+                run.append(line)
+                if run.count >= Self.linesPerRequest {
+                    runs.append(run)
+                    run = []
+                }
+            } else if !run.isEmpty {
+                runs.append(run)
+                run = []
+            }
+        }
+        if !run.isEmpty {
+            runs.append(run)
+        }
+        return runs
+    }
+
+    /// Whether the scene being prepared was asked to stop and is finishing what is on the way.
+    var stopping: Bool {
+        running && isCancelled
+    }
+
+    /// Requests on the way, so stopping does not wait for them.
+    private static let tasksLock = NSLock()
+    private static var openTasks: [Int: URLSessionTask] = [:]
+
+    /// Stops the scene being prepared and forgets the ones waiting; requests on the way are cut off.
     func cancel() {
         lock.lock()
         cancelled = true
+        let dropped = queue
+        queue = []
         lock.unlock()
+        Self.tasksLock.lock()
+        let open = Array(Self.openTasks.values)
+        Self.tasksLock.unlock()
+        open.forEach { $0.cancel() }
+        objectWillChange.send()
+        DispatchQueue.main.async {
+            self.waitingKeys = []
+            dropped.forEach { $0.finished(.cancelled) }
+        }
     }
 
     private var isCancelled: Bool {
@@ -93,32 +165,58 @@ final class StudioVoices: ObservableObject {
     /// Prepares the partner lines of a scene: notes a scene at a time, then each line's audio.
     /// Stops at the first limit or lasting error; what is done stays. `finished` runs on the main thread.
     /// `script` is an id of the script, so the Worker can count the scripts of the month; it is hashed
-    /// before it leaves the phone.
-    func prepare(_ fullScene: ScriptScene, _ scene: ScriptScene, language: ScriptLanguage, title: String, script: String,
-                 casting: @escaping Casting, finished: @escaping (Stop) -> Void) {
-        guard !running else {
+    /// Prepares a scene: the play's reading, notes in parts, then each line's audio, several at a
+    /// time. A scene asked while another is being prepared waits its turn. `key` names the scene so
+    /// each screen shows its own progress; `script` is hashed before it leaves the phone.
+    /// `finished` runs on the main thread.
+    func prepare(key: String, _ fullScene: ScriptScene, _ scene: ScriptScene, language: ScriptLanguage, title: String,
+                 script: String, casting: @escaping Casting, finished: @escaping (Stop) -> Void) {
+        guard currentKey != key, !waitingKeys.contains(key) else {
             return
         }
+        let job = Job(key: key, fullScene: fullScene, scene: scene, language: language, title: title,
+                      script: Self.hash(script), casting: casting, finished: finished)
+        if running {
+            lock.lock()
+            queue.append(job)
+            lock.unlock()
+            waitingKeys.append(key)
+            return
+        }
+        start(job)
+    }
+
+    /// Main thread.
+    private func start(_ job: Job) {
         running = true
+        currentKey = job.key
         lock.lock()
         cancelled = false
         lock.unlock()
-        total = scene.lines.count
-        done = readyCount(scene, language, casting: casting)
-        let scriptId = Self.hash(script)
+        total = job.scene.lines.count
+        done = readyCount(job.scene, job.language, casting: job.casting)
         DispatchQueue.global(qos: .userInitiated).async {
             let reason: Stop
             do {
-                reason = try self.run(fullScene, scene, language: language, title: title, script: scriptId,
-                                      casting: casting)
+                reason = try self.run(job.fullScene, job.scene, language: job.language, title: job.title,
+                                      script: job.script, casting: job.casting)
             } catch Failure.limit(let stop) {
                 reason = stop
             } catch {
                 reason = self.isCancelled ? .cancelled : .failed
             }
             DispatchQueue.main.async {
-                self.running = false
-                finished(reason)
+                job.finished(reason)
+                self.lock.lock()
+                let next = reason == .cancelled || self.queue.isEmpty ? nil : self.queue.removeFirst()
+                self.lock.unlock()
+                if let next {
+                    self.waitingKeys.removeAll { $0 == next.key }
+                    self.start(next)
+                } else {
+                    self.running = false
+                    self.currentKey = nil
+                }
             }
         }
     }
@@ -137,48 +235,75 @@ final class StudioVoices: ObservableObject {
                 // Directed scene by scene without the reading.
             }
         }
-        var start = 0
-        while start < lines.count {
-            let chunk = Array(lines[start..<min(lines.count, start + Self.linesPerRequest)])
-            start += Self.linesPerRequest
-            if !chunk.contains(where: { note($0, language) == nil }) {
-                continue
+        // Parts and lines go several at a time. One that fails is skipped and tried again next time;
+        // only failures in a row stop preparing, as the connection or the service is then down.
+        let failures = Failures()
+        let readingForParts = reading
+        let parts = OperationQueue()
+        parts.maxConcurrentOperationCount = Self.partsAtOnce
+        // Notes: only lines that have none, in runs of up to a part, each with the lines before it for
+        // context. Lines already directed keep their notes, so their audio stays theirs.
+        for chunk in undirected(lines, language) {
+            parts.addOperation {
+                _ = failures.attempt(cancelled: { self.isCancelled }) {
+                    try self.direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
+                                    context: Self.contextFor(readingForParts, section: chunk[0].section), language, title, script)
+                }
             }
-            if isCancelled {
-                return .cancelled
-            }
-            try direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
-                       context: Self.contextFor(reading, section: chunk[0].section), language, title, script)
         }
+        parts.waitUntilAllOperationsAreFinished()
+        try failures.rethrow()
+        if isCancelled {
+            return .cancelled
+        }
+
+        let voices = OperationQueue()
+        voices.maxConcurrentOperationCount = Self.linesAtOnce
+        let readyLock = NSLock()
+        var ready = readyCount(scene, language, casting: casting)
         for line in lines {
-            if isCancelled {
-                return .cancelled
-            }
             guard let note = note(line, language) else {
                 continue
             }
-            // Asked line by line: the director's genders can change the automatic cast.
+            // The director's genders can change the automatic cast, so the voice is asked now.
             let voice = casting(line.role)
             if audio(line, language, voice: voice) != nil {
                 continue
             }
-            let target = audioFile(line, language, voice, note, "wav")
-            let audio = try speak(note, language, voice, script)
-            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-            try audio.write(to: target, options: [.atomic])
-            lock.lock()
-            var stored = loadNotes()
-            stored[Self.voicedPrefix + target.lastPathComponent] = lastVoiced
-            notes = stored
-            let snapshot = stored
-            lock.unlock()
-            try saveNotes(snapshot)
-            let ready = readyCount(scene, language, casting: casting)
-            DispatchQueue.main.async {
-                self.done = ready
+            voices.addOperation {
+                let voiced = failures.attempt(cancelled: { self.isCancelled }) {
+                    let target = self.audioFile(line, language, voice, note, "wav")
+                    let audio = try self.speak(note, language, voice, script)
+                    try FileManager.default.createDirectory(at: self.folder, withIntermediateDirectories: true)
+                    try audio.write(to: target, options: [.atomic])
+                    self.lock.lock()
+                    var stored = self.loadNotes()
+                    stored[Self.voicedPrefix + target.lastPathComponent] = self.lastVoiced
+                    self.notes = stored
+                    self.lock.unlock()
+                    try self.saveNotes(stored)
+                }
+                if voiced {
+                    readyLock.lock()
+                    ready += 1
+                    let now = ready
+                    readyLock.unlock()
+                    DispatchQueue.main.async {
+                        self.done = now
+                    }
+                }
             }
         }
-        return .done
+        voices.waitUntilAllOperationsAreFinished()
+        try failures.rethrow()
+        if isCancelled {
+            return .cancelled
+        }
+        let skipped = lines.count - readyCount(scene, language, casting: casting)
+        DispatchQueue.main.async {
+            self.skippedLines = skipped
+        }
+        return skipped > 0 ? .partial : .done
     }
 
     private static func linesJson(_ lines: [ScriptScene.Line]) -> [[String: Any]] {
@@ -202,7 +327,8 @@ final class StudioVoices: ObservableObject {
         }
         lock.lock()
         var stored = loadNotes()
-        for (line, direction) in zip(chunk, directions) {
+        for (line, direction) in zip(chunk, directions) where stored[Self.noteKey(line, language)] == nil {
+            // A note is never replaced here: the line's audio belongs to it.
             stored[Self.noteKey(line, language)] = direction
         }
         for member in answer["cast"] as? [[String: Any]] ?? [] {
@@ -214,9 +340,15 @@ final class StudioVoices: ObservableObject {
         try saveNotes(snapshot)
     }
 
+    /// Writes the notes as they are now; writers take turns, so the file never goes back to an older state.
     private func saveNotes(_ snapshot: [String: Any]) throws {
+        saveLock.lock()
+        defer { saveLock.unlock() }
+        lock.lock()
+        let latest = notes ?? snapshot
+        lock.unlock()
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try JSONSerialization.data(withJSONObject: snapshot).write(to: notesFile, options: [.atomic])
+        try JSONSerialization.data(withJSONObject: latest).write(to: notesFile, options: [.atomic])
     }
 
     private static func putGender(_ notes: inout [String: Any], _ role: String, _ gender: String) {
@@ -422,6 +554,10 @@ final class StudioVoices: ObservableObject {
         lock.lock()
         var stored = loadNotes()
         for line in scene.lines {
+            if let note = stored[Self.noteKey(line, language)] as? [String: Any], note["byActor"] as? Bool == true {
+                // The actor's own fix stays, with its audio.
+                continue
+            }
             if let note = stored[Self.noteKey(line, language)] as? [String: Any] {
                 for voice in Self.castVoices {
                     for fileExtension in ["wav", "m4a"] {
@@ -438,6 +574,110 @@ final class StudioVoices: ObservableObject {
         let snapshot = stored
         lock.unlock()
         try? saveNotes(snapshot)
+    }
+
+    // MARK: - Fixing one line
+
+    /// Tries per line, so a line cannot be asked for again and again without end.
+    static let fixesPerLine = 5
+    private static let fixesPrefix = "fixes:"
+    private let fixer = DispatchQueue(label: "studio-fix")
+
+    /// A new take of one line: its direction and audio, kept aside until the actor chooses it.
+    struct Take {
+        let note: [String: Any]
+        let audio: URL
+        let voice: String
+        let voiced: [String: Any]
+    }
+
+    func fixesLeft(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        let used = (loadNotes()[Self.fixesPrefix + Self.noteKey(line, language)] as? NSNumber)?.intValue ?? 0
+        return max(0, Self.fixesPerLine - used)
+    }
+
+    /// Has the director direct one line again the way the actor asked, and voices it, as a take the
+    /// actor can hear before keeping it. `done` runs on the main thread, with the take or why it failed.
+    func fix(_ fullScene: ScriptScene, _ line: ScriptScene.Line, _ language: ScriptLanguage, title: String,
+             castKey: String, voice: String, wishes: [String], request: String, word: String, say: String,
+             done: @escaping (Result<Take, Error>) -> Void) {
+        let script = Self.scriptId(castKey)
+        fixer.async {
+            do {
+                if !self.running {
+                    self.lock.lock()
+                    self.cancelled = false
+                    self.lock.unlock()
+                }
+                self.lock.lock()
+                var stored = self.loadNotes()
+                let key = Self.fixesPrefix + Self.noteKey(line, language)
+                stored[key] = ((stored[key] as? NSNumber)?.intValue ?? 0) + 1
+                self.notes = stored
+                self.lock.unlock()
+                try self.saveNotes(stored)
+                let sayings: [[String: String]] = word.isEmpty || say.isEmpty ? [] : [["word": word, "say": say]]
+                let body: [String: Any] = [
+                    "language": language.code, "title": title, "script": script,
+                    "lines": Self.linesJson([line]), "before": Self.linesJson(Self.linesBefore(fullScene, line)),
+                    "context": Self.contextFor(self.analysis(fullScene, language, script: script), section: line.section),
+                    "current": self.note(line, language) ?? [:],
+                    "wishes": wishes, "request": request, "pronunciations": sayings,
+                ]
+                let data = try self.post("/v1/revise", body)
+                guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      var note = answer["line"] as? [String: Any] else {
+                    throw Failure.busy
+                }
+                note["byActor"] = true
+                note["request"] = request
+                let audio = try self.speak(note, language, voice, script)
+                let take = FileManager.default.temporaryDirectory.appendingPathComponent("studio-take-\(UUID().uuidString).wav")
+                try audio.write(to: take, options: [.atomic])
+                let made = Take(note: note, audio: take, voice: voice, voiced: self.lastVoiced)
+                DispatchQueue.main.async { done(.success(made)) }
+            } catch {
+                DispatchQueue.main.async { done(.failure(error)) }
+            }
+        }
+    }
+
+    /// Why a fix failed, as the message key to show.
+    static func fixFailureKey(_ error: Error) -> String {
+        if let failure = error as? Failure, case .limit(let stop) = failure {
+            return stop == .scriptLimit ? "studio_script_limit" : "studio_monthly_limit"
+        }
+        return "fix_failed"
+    }
+
+    /// Keeps a take: it becomes the line's direction and audio, and the old audio goes.
+    func keep(_ take: Take, _ line: ScriptScene.Line, _ language: ScriptLanguage) {
+        lock.lock()
+        var stored = loadNotes()
+        if let old = stored[Self.noteKey(line, language)] as? [String: Any] {
+            for fileExtension in ["wav", "m4a"] {
+                let previous = audioFile(line, language, take.voice, old, fileExtension)
+                stored.removeValue(forKey: Self.voicedPrefix + previous.lastPathComponent)
+                try? FileManager.default.removeItem(at: previous)
+            }
+        }
+        stored[Self.noteKey(line, language)] = take.note
+        let target = audioFile(line, language, take.voice, take.note, "wav")
+        stored[Self.voicedPrefix + target.lastPathComponent] = take.voiced
+        notes = stored
+        lock.unlock()
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try? FileManager.default.removeItem(at: target)
+        try? FileManager.default.copyItem(at: take.audio, to: target)
+        try? saveNotes(stored)
+        discard(take)
+        objectWillChange.send()
+    }
+
+    func discard(_ take: Take) {
+        try? FileManager.default.removeItem(at: take.audio)
     }
 
     /// Whether the director has given a gender for every character.
@@ -636,6 +876,9 @@ final class StudioVoices: ObservableObject {
             case 401:
                 idToken = nil
                 last = Failure.notSignedIn
+            case 500... where String(decoding: data, as: UTF8.self).contains("without audio"):
+                // The voice gave no audio for this line; asking again would not change that.
+                throw Failure.refused(String(decoding: data, as: UTF8.self))
             case 500...:
                 last = Failure.busy
             default:
@@ -690,7 +933,7 @@ final class StudioVoices: ObservableObject {
         let semaphore = DispatchSemaphore(value: 0)
         var result: (Data, Int, [AnyHashable: Any])?
         var failure: Error?
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
                 failure = error
             } else {
@@ -698,8 +941,15 @@ final class StudioVoices: ObservableObject {
                 result = (data ?? Data(), http?.statusCode ?? 0, http?.allHeaderFields ?? [:])
             }
             semaphore.signal()
-        }.resume()
+        }
+        tasksLock.lock()
+        openTasks[task.taskIdentifier] = task
+        tasksLock.unlock()
+        task.resume()
         semaphore.wait()
+        tasksLock.lock()
+        openTasks.removeValue(forKey: task.taskIdentifier)
+        tasksLock.unlock()
         if let failure {
             throw failure
         }
@@ -730,6 +980,13 @@ final class StudioVoices: ObservableObject {
         language.code + ":" + EnsembleRules.lineKey(role: line.role, text: line.text)
     }
 
+    static func isLimit(_ error: Error) -> Bool {
+        if let failure = error as? Failure, case .limit(_) = failure {
+            return true
+        }
+        return false
+    }
+
     static func hash(_ value: String) -> String {
         SHA256.hash(data: Data(value.utf8)).prefix(16).map { String(format: "%02x", $0) }.joined()
     }
@@ -742,5 +999,47 @@ final class StudioVoices: ObservableObject {
         let digest = SHA256.hash(data: Data("\(language.code)\n\(voice)\n\(line.text)\n\(noteText)".utf8))
         let name = digest.prefix(16).map { String(format: "%02x", $0) }.joined()
         return folder.appendingPathComponent(name + "." + fileExtension)
+    }
+}
+
+/// Failures of work done side by side: a limit, or failures in a row, end the run for all.
+private final class Failures {
+    private let lock = NSLock()
+    private var inARow = 0
+    private var fatal: Error?
+    private static let limit = 3
+
+    /// Runs one piece unless the run is over; true when it worked.
+    func attempt(cancelled: () -> Bool, _ work: () throws -> Void) -> Bool {
+        lock.lock()
+        let over = fatal != nil
+        lock.unlock()
+        if over || cancelled() {
+            return false
+        }
+        do {
+            try work()
+            lock.lock()
+            inARow = 0
+            lock.unlock()
+            return true
+        } catch {
+            lock.lock()
+            inARow += 1
+            if StudioVoices.isLimit(error) || inARow >= Self.limit {
+                fatal = fatal ?? error
+            }
+            lock.unlock()
+            return false
+        }
+    }
+
+    func rethrow() throws {
+        lock.lock()
+        let error = fatal
+        lock.unlock()
+        if let error {
+            throw error
+        }
     }
 }

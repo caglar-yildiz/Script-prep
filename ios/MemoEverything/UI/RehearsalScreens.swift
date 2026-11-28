@@ -263,17 +263,26 @@ struct VoiceRows: View {
                             action: { model.showPaywall("studio_title") }) { PremiumBadge() }
                     RowDivider()
                 }
-            } else if studio.running {
-                ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
-                    MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+            } else if model.studioPreparingHere {
+                // Only this scene's own preparation shows here; another scene's may run, or this one may wait.
+                if studio.stopping {
+                    ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_stopping", done, total), action: nil)
+                } else {
+                    ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
+                        MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+                    }
                 }
                 RowDivider()
+            } else if model.studioWaitingHere {
+                ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_waiting"), action: nil)
+                RowDivider()
             }
-            if model.premium && !studio.running && done > 0 {
+            let idle = !model.studioPreparingHere && !model.studioWaitingHere
+            if model.premium && idle && done > 0 {
                 ListRow(icon: "ic_list", title: L("notes_title"), value: L("notes_value"), action: { model.show(.notes) })
                 RowDivider()
             }
-            if model.premium && !studio.running && done < total {
+            if model.premium && idle && done < total {
                 ListRow(icon: "ic_star", title: L("studio_prepare"),
                         value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
                         action: model.startStudio)
@@ -527,6 +536,14 @@ struct RehearsalScreen: View {
                 if !myTurn && model.canPlay {
                     IconButton(icon: playing ? "ic_stop" : "ic_play", label: L(playing ? "stop_line" : "play_line"),
                                tint: Palette.accent, background: Palette.accentContainer, size: 56, action: model.togglePlay)
+                }
+                // A studio line that did not come out right can be fixed from here.
+                if model.premium, model.position < model.scene.lines.count,
+                   model.studioAudio(model.scene.lines[model.position]) != nil {
+                    let line = model.scene.lines[model.position]
+                    IconButton(icon: "ic_edit", label: L("fix_title"), tint: Palette.textSecondary, size: 48) {
+                        model.openFix(line)
+                    }
                 }
                 MemoButton(L("next_line"), icon: "ic_next", kind: .primary, fill: true, height: 56) {
                     model.moveTo(model.position + 1, autoPlay: true)
@@ -788,16 +805,87 @@ struct NotesScreen: View {
                     Styled(line.text, .bodyLarge, Palette.text).padding(.top, 2)
                     Styled(model.noteText(line), .caption, Palette.textSecondary).padding(.top, 8)
                         .textSelection(.enabled)
+                    if model.premium && model.studioAudio(line) != nil {
+                        MemoButton(L("fix_action"), icon: "ic_edit", kind: .text) { model.openFix(line) }
+                            .padding(.top, 4)
+                    }
                 }
                 .padding(.top, 10)
             }
         }, footer: {
-            if !StudioVoices.shared.running {
+            if !model.studioPreparingHere && !model.studioWaitingHere {
                 FooterBar {
                     MemoButton(L("notes_redirect"), icon: "ic_replay", kind: .tonal, fill: true, height: 56,
                                action: model.confirmRedirect)
                 }
             }
         })
+    }
+}
+
+/// "Fix this line": quick wishes, the actor's own words and a word said another way; then the new take
+/// plays and the actor keeps it or keeps the old one.
+struct FixSheet: View {
+    @EnvironmentObject var model: AppModel
+    @State private var chosen: Set<String> = []
+    @State private var request = ""
+    @State private var word = ""
+    @State private var say = ""
+
+    var body: some View {
+        if let line = model.fixingLine {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 12) {
+                    Styled(L("fix_title"), .title)
+                    Styled(line.role + ": " + line.text, .body)
+                    if let take = model.fixTake {
+                        Styled(L("fix_ready_title"), .subtitle, Palette.accent)
+                        Styled(L("fix_now", model.currentReading(take.note)), .caption, Palette.textSecondary)
+                        MemoButton(L("fix_listen"), icon: "ic_play", kind: .tonal, fill: true, action: model.playTake)
+                        MemoButton(L("fix_keep"), kind: .primary, fill: true, action: model.keepTake)
+                        MemoButton(L("fix_revert"), kind: .text, fill: true, action: model.closeFix)
+                    } else if model.fixWorking {
+                        HStack(spacing: 10) {
+                            ProgressView()
+                            Styled(L("fix_working"), .body, Palette.textSecondary)
+                        }
+                    } else {
+                        let reading = model.currentReading(model.studio.noteOf(line, model.language))
+                        if !reading.isEmpty {
+                            Styled(L("fix_now", reading), .caption, Palette.textSecondary)
+                        }
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
+                            ForEach(AppModel.fixWishes, id: \.self) { wish in
+                                let on = chosen.contains(wish)
+                                Button {
+                                    if on { chosen.remove(wish) } else { chosen.insert(wish) }
+                                } label: {
+                                    Text(L("fix_" + wish)).font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(on ? Palette.onAccent : Palette.textSecondary)
+                                        .frame(maxWidth: .infinity, minHeight: 38)
+                                        .background(Capsule().fill(on ? Palette.accent : Palette.surfaceHigh))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        TextField(L("fix_request_hint"), text: $request, axis: .vertical)
+                            .textFieldStyle(.roundedBorder)
+                        HStack {
+                            TextField(L("fix_word_hint"), text: $word).textFieldStyle(.roundedBorder)
+                            TextField(L("fix_say_hint"), text: $say).textFieldStyle(.roundedBorder)
+                        }
+                        Styled(L("fix_tries", model.studio.fixesLeft(line, model.language)), .caption, Palette.textTertiary)
+                        MemoButton(L("fix_go"), kind: .primary, fill: true) {
+                            model.makeTake(wishes: AppModel.fixWishes.filter { chosen.contains($0) },
+                                           request: request.trimmingCharacters(in: .whitespacesAndNewlines),
+                                           word: word.trimmingCharacters(in: .whitespaces),
+                                           say: say.trimmingCharacters(in: .whitespaces))
+                        }
+                        MemoButton(L("cancel"), kind: .text, fill: true, action: model.closeFix)
+                    }
+                }
+                .padding(20)
+            }
+        }
     }
 }

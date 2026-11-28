@@ -5,6 +5,7 @@
  *   POST /v1/analyze the whole play     -> the director's reading: story, characters, relationships, scenes
  *   POST /v1/cast    a scene        -> the characters' likely genders, before the cast is chosen
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
+ *   POST /v1/revise  one line and how the actor wants it -> that line's new direction
  *   POST /v1/speak   one noted line -> Gemini's answer: candidates with base64 WAV (Google Cloud) or
  *                                      PCM (older voices), or an interaction whose steps hold WAV
  *   GET  /v1/usage                  -> this month's counts and limits
@@ -12,9 +13,10 @@
 import { ANALYSIS_SCHEMA, analyzePrompt, MAX_PLAY_CHARS, normalizeAnalysis, parseAnalyzeRequest } from "./analysis";
 import { AuthError, verifyIdToken } from "./auth";
 import { CAST_SCHEMA, castPrompt, DIRECTION_SCHEMA, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "./director";
-import { answerText, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
+import { answerText, audioAnswer, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
   vertexGenerate, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
+import { parseReviseRequest, revisedDirection, revisePrompt } from "./revise";
 import { legacyPrompt, parseSpeakRequest, SpeakRequest, VoiceInput, voiceInput } from "./speak";
 import { accessToken, parseServiceAccount } from "./vertex";
 
@@ -131,6 +133,32 @@ async function analyze(request: Request, env: Env, quota: DurableObjectStub<Quot
   }
 }
 
+/** One line directed again the way the actor asked; counts as one directed line. */
+async function revise(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
+  const body = await readBody(request);
+  const wish = parseReviseRequest(body);
+  const refused = await openScript(body, env, quota);
+  if (refused) {
+    return refused;
+  }
+  const limit = limitFor(env, "directed");
+  if (!(await quota.check("directed", 1, limit)).allowed) {
+    return problem(429, "monthly_limit", "Monthly limit for performance notes reached", 86_400);
+  }
+  const response = await generate(DIRECTOR_MODELS, {
+    contents: [{ parts: [{ text: revisePrompt(wish) }] }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: DIRECTION_SCHEMA, temperature: 0.7 },
+  }, env.GEMINI_API_KEY);
+  let line;
+  try {
+    line = revisedDirection(wish, JSON.parse(await answerText(response)));
+  } catch (error) {
+    throw error instanceof UpstreamError ? error : new UpstreamError("The director's answer could not be used", 502);
+  }
+  await quota.add("directed", 1);
+  return json({ line });
+}
+
 /** The characters' genders only; cheap, so it counts against no allowance. */
 async function cast(request: Request, env: Env): Promise<Response> {
   const scene = parseDirectRequest(await readBody(request));
@@ -158,11 +186,11 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
     return problem(429, "monthly_limit", "Monthly limit for studio voices reached", 86_400);
   }
   const input = voiceInput(line);
-  const { response, source } = await voice(line, input, env);
+  const { body: answer, source } = await voice(line, input, env);
   await quota.add("spoken", 1);
-  // The audio answer is large; it is passed through unread to keep the Worker within its CPU budget.
-  // What the voice was asked goes along in headers, so the apps can show how a line was made.
-  return new Response(response.body, { headers: {
+  // The audio answer is passed on as it came. What the voice was asked goes along in headers, so the
+  // apps can show how a line was made.
+  return new Response(answer, { headers: {
     "Content-Type": "application/json; charset=utf-8",
     "X-Memo-Source": source,
     "X-Memo-Style": encodeURIComponent(input.style),
@@ -174,7 +202,11 @@ async function speak(request: Request, env: Env, quota: DurableObjectStub<Quota>
  * The line's audio: first through Google Cloud, which has no daily request cap; then the Gemini
  * API's 3.8 voices; then, when those are used up for the day, its older voices.
  */
-async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<{ response: Response; source: string }> {
+/**
+ * The line's audio: first through Google Cloud, which has no daily request cap; then the Gemini
+ * API's 3.8 voices; then, when those are used up for the day or give no audio, its older voices.
+ */
+async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<{ body: string; source: string }> {
   const speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: line.voice } } };
   const account = parseServiceAccount(env.GCP_SERVICE_ACCOUNT_JSON);
   if (account) {
@@ -183,7 +215,7 @@ async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<{
         contents: [{ role: "user", parts: [{ text: input.text, speechMetadata: { style: input.style } }] }],
         generationConfig: { responseModalities: ["AUDIO"], speechConfig },
       }, account.project_id, await accessToken(account));
-      return { response, source: "vertex" };
+      return { body: await audioAnswer(response, "vertex"), source: "vertex" };
     } catch (error) {
       console.error("Google Cloud voice failed, using the Gemini API", error);
     }
@@ -196,18 +228,19 @@ async function voice(line: SpeakRequest, input: VoiceInput, env: Env): Promise<{
       response_format: { type: "audio" },
       generation_config: { speech_config: [{ voice: line.voice }] },
     }), env.GEMINI_API_KEY);
-    return { response, source: "gemini" };
+    return { body: await audioAnswer(response, "gemini"), source: "gemini" };
   } catch (error) {
-    if (!(error instanceof UpstreamError && error.status === 429)) {
+    const usedUp = error instanceof UpstreamError && error.status === 429;
+    const noAudio = error instanceof UpstreamError && error.message.startsWith("The voice answered without audio");
+    if (!usedUp && !noAudio) {
       throw error;
     }
-    // The newer voices are used up for today: older ones answer in generateContent's form
-    // (candidates with raw PCM), which the apps read as well.
+    // Older voices answer in generateContent's form (candidates with raw PCM), which the apps read too.
     const response = await generate(LEGACY_VOICE_MODELS, {
       contents: [{ parts: [{ text: legacyPrompt(input) }] }],
       generationConfig: { responseModalities: ["AUDIO"], speechConfig },
     }, env.GEMINI_API_KEY);
-    return { response, source: "legacy" };
+    return { body: await audioAnswer(response, "legacy"), source: "legacy" };
   }
 }
 
@@ -217,7 +250,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({ ok: true });
     }
-    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
+    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/revise": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
       "/v1/usage": "GET" };
     const method = routes[url.pathname];
     if (!method) {
@@ -240,6 +273,9 @@ export default {
       }
       if (url.pathname === "/v1/analyze") {
         return await analyze(request, env, quota);
+      }
+      if (url.pathname === "/v1/revise") {
+        return await revise(request, env, quota);
       }
       if (url.pathname === "/v1/cast") {
         return await cast(request, env);

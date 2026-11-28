@@ -555,6 +555,10 @@
     <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
     <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
     <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <string name="studio_waiting">En espera: primero se prepara otra escena</string>
+    <string name="studio_stopping">Deteniendo… (%1$d de %2$d frases listas)</string>
+    <string name="studio_notification_title">Preparando voces de estudio</string>
+    <string name="studio_notification_done">Las voces de estudio están listas. Abre la app para ensayar.</string>
     <string name="studio_script_limit">Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.</string>
     <string name="cast_intro_studio">Elige una voz de estudio para cada personaje. El director marca el ritmo y el tono de cada frase. Toca reproducir para oírlas.</string>
     <string name="cast_check_title">Revisa primero las voces</string>
@@ -580,6 +584,31 @@
     <string name="notes_no_reading">Aún sin leer: la obra se lee entera la próxima vez que se preparen las voces de estudio.</string>
     <string name="notes_redirect">Dirigir de nuevo</string>
     <string name="notes_redirect_message">El director vuelve a leer toda la obra y con eso dirige y pone voz de nuevo a las frases de esta escena. Cuenta para las voces de estudio de este mes.</string>
+    <string name="fix_title">Corregir esta frase</string>
+    <string name="fix_action">Corregir</string>
+    <string name="fix_now">Ahora: %1$s</string>
+    <string name="fix_angrier">Más enfadada</string>
+    <string name="fix_calmer">Más calmada</string>
+    <string name="fix_whisper">Susurrada</string>
+    <string name="fix_shout">Gritada</string>
+    <string name="fix_tired">Más cansada</string>
+    <string name="fix_scared">Más asustada</string>
+    <string name="fix_sadder">Más triste</string>
+    <string name="fix_slower">Más lenta</string>
+    <string name="fix_faster">Más rápida</string>
+    <string name="fix_request_hint">¿Cómo debería decirse? (opcional)</string>
+    <string name="fix_word_hint">Palabra mal leída</string>
+    <string name="fix_say_hint">Decirla como</string>
+    <string name="fix_tries">Te quedan %1$d intentos para esta frase</string>
+    <string name="fix_go">Grabar de nuevo</string>
+    <string name="fix_working">El director y la voz están en ello…</string>
+    <string name="fix_ready_title">La nueva toma está lista</string>
+    <string name="fix_listen">Escuchar</string>
+    <string name="fix_keep">Usar esta</string>
+    <string name="fix_revert">Quedarme con la anterior</string>
+    <string name="fix_failed">No se pudo grabar de nuevo esta frase. Inténtalo en un rato.</string>
+    <string name="fix_no_tries">No quedan intentos para esta frase.</string>
+    <string name="fix_empty">Elige o escribe cómo debe cambiar la frase.</string>
     <string name="cast_studio_voice_for">Voz de estudio para %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Firme</item>
@@ -602,5 +631,6 @@
     <string name="studio_playing">La voz de estudio está leyendo la frase…</string>
     <string name="studio_daily_limit">Se alcanzó el límite diario de voces de estudio. Las frases preparadas se guardan; continúa mañana.</string>
     <string name="studio_monthly_limit">Se alcanzó el límite mensual de voces de estudio.</string>
-    <string name="studio_failed">No se pudieron preparar las voces de estudio. Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="studio_failed">No se pudo seguir preparando las voces de estudio. Las frases ya preparadas se guardan; inténtalo de nuevo en un rato.</string>
+    <string name="studio_partial">%1$d frases no se pudieron grabar; las leen las otras voces. Prepara de nuevo las voces de estudio para reintentar solo esas.</string>
 </resources>

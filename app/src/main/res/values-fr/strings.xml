@@ -555,6 +555,10 @@
     <string name="voice_engine_ai_detail">Une voix naturelle qui fonctionne sur ce téléphone, hors ligne</string>
     <string name="voice_engine_studio_detail">Des voix jouées et expressives préparées par un metteur en scène IA</string>
     <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
+    <string name="studio_waiting">En attente : une autre scène est préparée d’abord</string>
+    <string name="studio_stopping">Arrêt en cours… (%1$d répliques prêtes sur %2$d)</string>
+    <string name="studio_notification_title">Préparation des voix studio</string>
+    <string name="studio_notification_done">Les voix studio sont prêtes. Ouvre l’app pour répéter.</string>
     <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>
     <string name="cast_intro_studio">Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.</string>
     <string name="cast_check_title">Vérifie d’abord les voix</string>
@@ -580,6 +584,31 @@
     <string name="notes_no_reading">Pas encore lue : la pièce est lue en entier la prochaine fois que les voix studio sont préparées.</string>
     <string name="notes_redirect">Remettre en scène</string>
     <string name="notes_redirect_message">Le metteur en scène relit toute la pièce et remet en scène et en voix les répliques de cette scène. Cela compte dans les voix studio du mois.</string>
+    <string name="fix_title">Corriger cette réplique</string>
+    <string name="fix_action">Corriger</string>
+    <string name="fix_now">Maintenant : %1$s</string>
+    <string name="fix_angrier">Plus en colère</string>
+    <string name="fix_calmer">Plus calme</string>
+    <string name="fix_whisper">Chuchotée</string>
+    <string name="fix_shout">Criée</string>
+    <string name="fix_tired">Plus fatiguée</string>
+    <string name="fix_scared">Plus effrayée</string>
+    <string name="fix_sadder">Plus triste</string>
+    <string name="fix_slower">Plus lente</string>
+    <string name="fix_faster">Plus rapide</string>
+    <string name="fix_request_hint">Comment la dire ? (facultatif)</string>
+    <string name="fix_word_hint">Mot mal lu</string>
+    <string name="fix_say_hint">Le dire comme</string>
+    <string name="fix_tries">Encore %1$d essais pour cette réplique</string>
+    <string name="fix_go">Réenregistrer</string>
+    <string name="fix_working">Le metteur en scène et la voix s’en occupent…</string>
+    <string name="fix_ready_title">La nouvelle prise est prête</string>
+    <string name="fix_listen">Écouter</string>
+    <string name="fix_keep">Garder celle-ci</string>
+    <string name="fix_revert">Garder l’ancienne</string>
+    <string name="fix_failed">Cette réplique n’a pas pu être réenregistrée. Réessaie dans un moment.</string>
+    <string name="fix_no_tries">Plus d’essais pour cette réplique.</string>
+    <string name="fix_empty">Choisis ou écris comment la réplique doit changer.</string>
     <string name="cast_studio_voice_for">Voix studio pour %1$s</string>
     <string-array name="studio_voice_traits">
         <item>Ferme</item>
@@ -602,5 +631,6 @@
     <string name="studio_playing">La voix studio lit la réplique…</string>
     <string name="studio_daily_limit">La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.</string>
     <string name="studio_monthly_limit">La limite mensuelle des voix studio est atteinte.</string>
-    <string name="studio_failed">Impossible de préparer les voix studio. Vérifie ta connexion et réessaie.</string>
+    <string name="studio_failed">Impossible de continuer à préparer les voix studio. Les répliques déjà prêtes sont gardées ; réessaie dans un moment.</string>
+    <string name="studio_partial">%1$d répliques n’ont pas pu être enregistrées ; les autres voix les lisent. Prépare à nouveau les voix studio pour réessayer seulement celles-là.</string>
 </resources>

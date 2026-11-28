@@ -162,6 +162,15 @@ final class AppModel: ObservableObject {
     @Published var recordingSpeaking = false
     /// The character voices screen was opened to check the cast before studio voices are prepared.
     @Published var castCheck = false
+    /// "Fix this line": the line being fixed, the fix being made, and the new take to choose.
+    @Published var fixingLine: ScriptScene.Line?
+    @Published var fixWorking = false
+    @Published var fixTake: StudioVoices.Take?
+    /// iOS stops an app's work soon after it leaves the screen: preparing studio voices that was cut
+    /// off there starts again by itself when the user comes back to the same script.
+    private var studioLeftWhileRunning = false
+    private var studioResumeScript: String?
+    private var studioBackgroundTask: UIBackgroundTaskIdentifier = .invalid
     @Published var guessingCast = false
     /// Whether the line being read now is a studio voice recording.
     @Published var studioSpeaking = false
@@ -212,6 +221,12 @@ final class AppModel: ObservableObject {
         billing.onChange = { [weak self] _ in
             self?.onBillingChanged()
         }
+        NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
+            .sink { [weak self] _ in self?.studioLeftWhileRunning = self?.studio.running ?? false }
+            .store(in: &cancellables)
+        NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)
+            .sink { [weak self] _ in self?.resumeStudioIfInterrupted() }
+            .store(in: &cancellables)
         studio.objectWillChange.receive(on: DispatchQueue.main).sink { [weak self] _ in
             self?.objectWillChange.send()
         }.store(in: &cancellables)
@@ -1758,15 +1773,22 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// The lines studio voices are made for: in an ensemble, lines a cast member has recorded play that
+    /// recording, so they are not voiced (nor paid for).
+    var studioScene: ScriptScene {
+        scene.only { castRecording($0) == nil }
+    }
+
     var studioTotal: Int {
-        scene.lines.count
+        studioScene.lines.count
     }
 
     var studioReady: Int {
         guard fullScene != nil else {
             return 0
         }
-        return studio.running ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
+        return studio.currentKey == studioJobKey ? studio.done
+            : studio.readyCount(studioScene, language, casting: studioCasting())
     }
 
     // MARK: - Director's notes
@@ -1838,6 +1860,92 @@ final class AppModel: ObservableObject {
         ])
     }
 
+    // MARK: - Fixing one line
+
+    static let fixWishes = ["angrier", "calmer", "whisper", "shout", "tired", "scared", "sadder", "slower", "faster"]
+
+    /// How a line is played now, in a few words: mood, undertone and each part's style.
+    func currentReading(_ note: [String: Any]?) -> String {
+        guard let note else {
+            return ""
+        }
+        var parts = [note["emotion"] as? String ?? ""]
+        if let undertone = note["undertone"] as? String, !undertone.isEmpty {
+            parts.append(undertone)
+        }
+        for segment in note["segments"] as? [[String: Any]] ?? [] {
+            if let style = segment["style"] as? String, !style.isEmpty {
+                parts.append(style)
+            }
+        }
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    func openFix(_ line: ScriptScene.Line) {
+        cancelSpeech()
+        guard studio.fixesLeft(line, language) > 0 else {
+            notifyKey("fix_no_tries")
+            return
+        }
+        fixTake = nil
+        fixWorking = false
+        fixingLine = line
+    }
+
+    func makeTake(wishes: [String], request: String, word: String, say: String) {
+        guard let line = fixingLine, let fullScene else {
+            return
+        }
+        guard !wishes.isEmpty || !request.isEmpty || (!word.isEmpty && !say.isEmpty) else {
+            notifyKey("fix_empty")
+            return
+        }
+        fixWorking = true
+        studio.fix(fullScene, line, language, title: scriptTitle, castKey: castKey, voice: studioCasting()(line.role),
+                   wishes: wishes, request: request, word: word, say: say) { result in
+            self.fixWorking = false
+            switch result {
+            case .success(let take):
+                guard self.fixingLine == line else {
+                    self.studio.discard(take)
+                    return
+                }
+                self.fixTake = take
+                self.playTake()
+            case .failure(let error):
+                self.fixingLine = nil
+                self.notifyKey(StudioVoices.fixFailureKey(error))
+            }
+        }
+    }
+
+    func playTake() {
+        guard let take = fixTake, let player = try? AVAudioPlayer(contentsOf: take.audio) else {
+            return
+        }
+        previewPlayer = player
+        player.play()
+    }
+
+    func keepTake() {
+        previewPlayer?.stop()
+        if let take = fixTake, let line = fixingLine {
+            studio.keep(take, line, language)
+        }
+        fixTake = nil
+        fixingLine = nil
+    }
+
+    /// Closes the fix; a take not kept is thrown away.
+    func closeFix() {
+        previewPlayer?.stop()
+        if let take = fixTake {
+            studio.discard(take)
+        }
+        fixTake = nil
+        fixingLine = nil
+    }
+
     /// Every line's note, to share.
     var notesText: String {
         let head = "\(L("notes_title")) · \(scriptTitle) · \(language.code)\n\n\(L("notes_reading")):\n\(readingText)\n\n"
@@ -1871,6 +1979,22 @@ final class AppModel: ObservableObject {
         castCheck = true
     }
 
+    private func endStudioBackgroundTask() {
+        if studioBackgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(studioBackgroundTask)
+            studioBackgroundTask = .invalid
+        }
+    }
+
+    private func resumeStudioIfInterrupted() {
+        studioLeftWhileRunning = false
+        guard let script = studioResumeScript, script == castKey, studio.currentKey != studioJobKey,
+              !studio.waitingKeys.contains(studioJobKey), fullScene != nil else {
+            return
+        }
+        prepareStudio()
+    }
+
     /// Keeps the checked cast, so later guesses cannot change a voice, and goes on to prepare.
     func confirmCastAndPrepare() {
         saveCast(currentCast())
@@ -1886,16 +2010,42 @@ final class AppModel: ObservableObject {
         ])
     }
 
+    /// The scene on screen as studio voices see it: script, section and language.
+    var studioJobKey: String {
+        "\(castKey)#\(sectionIndex)#\(language.code)"
+    }
+
+    var studioPreparingHere: Bool {
+        studio.currentKey == studioJobKey
+    }
+
+    var studioWaitingHere: Bool {
+        studio.waitingKeys.contains(studioJobKey)
+    }
+
     func prepareStudio() {
-        guard let fullScene, !studio.running else {
+        guard let fullScene, !studioPreparingHere, !studioWaitingHere else {
             return
         }
-        studio.prepare(fullScene, scene, language: language, title: scriptTitle, script: castKey,
+        studioResumeScript = nil
+        // A little time to finish the line in hand when the user switches apps.
+        studioBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "studio-voices") { [weak self] in
+            self?.endStudioBackgroundTask()
+        }
+        studio.prepare(key: studioJobKey, fullScene, studioScene, language: language, title: scriptTitle, script: castKey,
                        casting: studioCasting()) { reason in
+            self.endStudioBackgroundTask()
+            if reason == .failed && (self.studioLeftWhileRunning || UIApplication.shared.applicationState != .active) {
+                // Cut off while the app was away: it goes on when the user is back.
+                self.studioResumeScript = self.castKey
+                self.objectWillChange.send()
+                return
+            }
             switch reason {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")
             case .scriptLimit: self.notifyKey("studio_script_limit")
+            case .partial: self.notify(L("studio_partial", self.studio.skippedLines))
             case .failed: self.notifyKey("studio_failed")
             default: break
             }

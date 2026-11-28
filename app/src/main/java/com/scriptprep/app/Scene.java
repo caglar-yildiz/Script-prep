@@ -101,6 +101,17 @@ final class Scene {
         return new Scene(lines.subList(section.start, section.end), Collections.emptyList());
     }
 
+    /** The lines that pass a test, in order, as a scene of their own. */
+    Scene only(java.util.function.Predicate<Line> keep) {
+        List<Line> kept = new ArrayList<>();
+        for (Line line : lines) {
+            if (keep.test(line)) {
+                kept.add(line);
+            }
+        }
+        return new Scene(kept, Collections.emptyList());
+    }
+
     static Scene parseSolo(String source, String narrator, boolean byLine) {
         String[] rows = source.replace('\u00a0', ' ').split("\\r\\n|[\\r\\n]", -1);
         List<Line> lines = new ArrayList<>();

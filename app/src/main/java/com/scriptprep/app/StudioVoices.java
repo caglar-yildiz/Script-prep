@@ -48,7 +48,10 @@ final class StudioVoices {
     private static final int LINES_PER_REQUEST = 60;
     private static final String REFRESH = "studio_refresh_token";
 
-    enum Stop { DONE, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
+    enum Stop { DONE, PARTIAL, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
+
+    /** Failures in a row after which preparing stops: the connection or the service is down. */
+    private static final int FAILURES_IN_A_ROW = 3;
 
     /** The Gemini voice of a character, from the script's cast. */
     interface Casting {
@@ -63,6 +66,10 @@ final class StudioVoices {
     }
 
     private static StudioVoices instance;
+    /** Also told of progress: the foreground service that keeps preparing while the app is away. */
+    private volatile Progress observer;
+    /** Lines the last preparation could not voice; they are tried again next time. */
+    private volatile int skippedLines;
 
     private final Context context;
     private final SharedPreferences preferences;
@@ -75,10 +82,13 @@ final class StudioVoices {
     private long idTokenExpires;
     private volatile boolean cancelled;
     private volatile boolean running;
+    /** Requests on the way, so stopping does not wait for them. */
+    private final java.util.Set<HttpURLConnection> openConnections = java.util.concurrent.ConcurrentHashMap.newKeySet();
     /** Headers of the last answer, read on the preparing thread only. */
-    private java.util.Map<String, List<String>> lastHeaders = java.util.Collections.emptyMap();
+    private final ThreadLocal<java.util.Map<String, List<String>>> lastHeaders =
+        ThreadLocal.withInitial(java.util.Collections::emptyMap);
     /** How the last line was voiced: model, route, style and text the voice was given. */
-    private JSONObject lastVoiced = new JSONObject();
+    private final ThreadLocal<JSONObject> lastVoiced = ThreadLocal.withInitial(JSONObject::new);
 
     private StudioVoices(Context context) {
         this.context = context.getApplicationContext();
@@ -98,8 +108,57 @@ final class StudioVoices {
         return running;
     }
 
+    /** Whether the scene being prepared was asked to stop and is finishing what is on the way. */
+    boolean isStopping() {
+        return running && cancelled;
+    }
+
+    /** Stops the scene being prepared and forgets the ones waiting; requests on the way are cut off. */
     void cancel() {
         cancelled = true;
+        for (HttpURLConnection connection : openConnections) {
+            new Thread(connection::disconnect).start();
+        }
+        List<Job> dropped;
+        synchronized (queue) {
+            dropped = new ArrayList<>(queue);
+            queue.clear();
+        }
+        for (Job job : dropped) {
+            main.post(() -> job.progress.finished(Stop.CANCELLED));
+        }
+    }
+
+    /** Whether this scene (a job key) is being prepared now. */
+    boolean isPreparing(String key) {
+        Job job = current;
+        return job != null && job.key.equals(key);
+    }
+
+    /** Whether this scene waits for another to finish. */
+    boolean isQueued(String key) {
+        synchronized (queue) {
+            for (Job job : queue) {
+                if (job.key.equals(key)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Lines ready of the scene being prepared, and its title, for the progress notification. */
+    int currentDone() {
+        return currentDone;
+    }
+
+    int currentTotal() {
+        return currentTotal;
+    }
+
+    String currentTitle() {
+        Job job = current;
+        return job == null ? "" : job.title;
     }
 
     // ---------------------------------------------------------------- What is ready
@@ -148,21 +207,67 @@ final class StudioVoices {
      * Prepares the partner lines of a scene in the background: notes first, a whole scene at a
      * time, then each line's audio. Stops at the first limit or lasting error; what is done stays.
      */
+    /** One scene to prepare: what it is, and who to tell how it goes. */
+    private static final class Job {
+        final String key;
+        final Scene fullScene;
+        final Scene scene;
+        final ScriptLanguage language;
+        final String title;
+        final String script;
+        final Casting casting;
+        final Progress progress;
+
+        Job(String key, Scene fullScene, Scene scene, ScriptLanguage language, String title, String script,
+            Casting casting, Progress progress) {
+            this.key = key;
+            this.fullScene = fullScene;
+            this.scene = scene;
+            this.language = language;
+            this.title = title;
+            this.script = script;
+            this.casting = casting;
+            this.progress = progress;
+        }
+    }
+
+    private final java.util.ArrayDeque<Job> queue = new java.util.ArrayDeque<>();
+    private volatile Job current;
+    private volatile int currentDone;
+    private volatile int currentTotal;
+
     /**
+     * Prepares a scene in the background: the play's reading first, then notes in parts, then
+     * each line's audio. A scene asked while another is being prepared waits its turn.
+     *
+     * @param key    the scene, so each screen shows its own progress (script, section, language)
      * @param script an id of the script, so the Worker can count the scripts of the month; made
      *               from the app's own id and not readable back to it
      */
-    void prepare(Scene fullScene, Scene scene, ScriptLanguage language, String title, String script, Casting casting,
-        Progress progress) {
-        if (running) {
-            return;
+    void prepare(String key, Scene fullScene, Scene scene, ScriptLanguage language, String title, String script,
+        Casting casting, Progress progress) {
+        Job job = new Job(key, fullScene, scene, language, title, sha(script), casting, progress);
+        synchronized (queue) {
+            if (current != null) {
+                if (!isPreparing(key) && !isQueued(key)) {
+                    queue.add(job);
+                }
+                return;
+            }
+            current = job;
+            running = true;
         }
-        running = true;
+        start(job);
+    }
+
+    private void start(Job job) {
         cancelled = false;
+        currentDone = 0;
+        currentTotal = job.scene.lines.size();
         worker.execute(() -> {
             Stop reason;
             try {
-                reason = run(fullScene, scene, language, title, sha(script), casting, progress);
+                reason = run(job.fullScene, job.scene, job.language, job.title, job.script, job.casting, job.progress);
             } catch (LimitException limit) {
                 reason = limit.reason;
             } catch (IOException | JSONException | RuntimeException error) {
@@ -173,10 +278,33 @@ final class StudioVoices {
                     reason = Stop.FAILED;
                 }
             }
-            running = false;
+            // The next scene starts before this one is reported, so the service sees work going on.
+            Job next;
+            synchronized (queue) {
+                next = reason == Stop.CANCELLED ? null : queue.poll();
+                current = next;
+                running = next != null;
+            }
             Stop result = reason;
-            main.post(() -> progress.finished(result));
+            main.post(() -> {
+                job.progress.finished(result);
+                Progress watching = observer;
+                if (watching != null) {
+                    watching.finished(result);
+                }
+            });
+            if (next != null) {
+                start(next);
+            }
         });
+    }
+
+    int skippedLines() {
+        return skippedLines;
+    }
+
+    void setObserver(Progress observer) {
+        this.observer = observer;
     }
 
     private Stop run(Scene fullScene, Scene scene, ScriptLanguage language, String title, String script,
@@ -197,54 +325,162 @@ final class StudioVoices {
             }
         }
 
-        // Notes: whole scenes, so the director sees what comes before and after each line.
-        for (int start = 0; start < lines.size(); start += LINES_PER_REQUEST) {
-            List<Scene.Line> chunk = lines.subList(start, Math.min(lines.size(), start + LINES_PER_REQUEST));
-            boolean missing = false;
-            for (Scene.Line line : chunk) {
-                missing |= note(line, language) == null;
-            }
-            if (!missing) {
-                continue;
-            }
-            if (cancelled) {
-                return Stop.CANCELLED;
-            }
-            direct(chunk, linesBefore(fullScene, chunk.get(0)), contextFor(analysis, chunk.get(0).section), language,
-                title, script);
+        // Parts and lines go several at a time. One that fails is skipped and tried again next time;
+        // only failures in a row stop preparing, as the connection or the service is then down.
+        skippedLines = 0;
+        Failures failures = new Failures();
+
+        // Notes: only lines that have none, in runs of up to a part, each with the lines before it for
+        // context. Lines already directed keep their notes, so their audio stays theirs.
+        List<java.util.concurrent.Callable<Void>> parts = new ArrayList<>();
+        JSONObject reading = analysis;
+        for (List<Scene.Line> chunk : undirected(lines, language)) {
+            parts.add(() -> {
+                failures.attempt(() -> direct(chunk, linesBefore(fullScene, chunk.get(0)),
+                    contextFor(reading, chunk.get(0).section), language, title, script), "A part could not be directed");
+                return null;
+            });
+        }
+        runAll(parts, PARTS_AT_ONCE);
+        failures.rethrow();
+        if (cancelled) {
+            return Stop.CANCELLED;
         }
 
-        // Voices: one line at a time.
+        // Voices: each line on its own.
+        java.util.concurrent.atomic.AtomicInteger ready = new java.util.concurrent.atomic.AtomicInteger(
+            readyCount(scene, language, casting));
+        List<java.util.concurrent.Callable<Void>> voices = new ArrayList<>();
         for (Scene.Line line : lines) {
-            if (cancelled) {
-                return Stop.CANCELLED;
-            }
             JSONObject note = note(line, language);
-            // Asked line by line: the director's genders can change the automatic cast.
+            // The director's genders can change the automatic cast, so the voice is asked now.
             String voice = casting.voice(line.role);
             if (note == null || audio(line, language, voice) != null) {
                 continue;
             }
-            File target = audioFile(line, language, voice, note, ".wav");
-            byte[] wav = speak(note, language, voice, script);
-            File partial = new File(target.getPath() + ".part");
-            try (OutputStream output = new FileOutputStream(partial)) {
-                output.write(wav);
-            }
-            if (!partial.renameTo(target)) {
-                throw new IOException("Could not save studio audio");
-            }
-            synchronized (this) {
-                notes().put(VOICED + target.getName(), lastVoiced);
-                saveNotes();
-            }
-            post(progress, readyCount(scene, language, casting), total);
+            voices.add(() -> {
+                boolean voiced = failures.attempt(() -> {
+                    File target = audioFile(line, language, voice, note, ".wav");
+                    byte[] wav = speak(note, language, voice, script);
+                    File partial = new File(target.getPath() + "." + Thread.currentThread().getId() + ".part");
+                    try (OutputStream output = new FileOutputStream(partial)) {
+                        output.write(wav);
+                    }
+                    if (!partial.renameTo(target)) {
+                        throw new IOException("Could not save studio audio");
+                    }
+                    synchronized (this) {
+                        notes().put(VOICED + target.getName(), lastVoiced.get());
+                        saveNotes();
+                    }
+                }, "A line could not be voiced");
+                if (voiced) {
+                    post(progress, ready.incrementAndGet(), total);
+                }
+                return null;
+            });
         }
-        return Stop.DONE;
+        runAll(voices, LINES_AT_ONCE);
+        failures.rethrow();
+        if (cancelled) {
+            return Stop.CANCELLED;
+        }
+        skippedLines = total - readyCount(scene, language, casting);
+        return skippedLines > 0 ? Stop.PARTIAL : Stop.DONE;
+    }
+
+    /** Runs of lines with no note yet, at most a part long. */
+    private List<List<Scene.Line>> undirected(List<Scene.Line> lines, ScriptLanguage language) {
+        List<List<Scene.Line>> runs = new ArrayList<>();
+        List<Scene.Line> run = new ArrayList<>();
+        for (Scene.Line line : lines) {
+            if (note(line, language) == null) {
+                run.add(line);
+                if (run.size() >= LINES_PER_REQUEST) {
+                    runs.add(run);
+                    run = new ArrayList<>();
+                }
+            } else if (!run.isEmpty()) {
+                runs.add(run);
+                run = new ArrayList<>();
+            }
+        }
+        if (!run.isEmpty()) {
+            runs.add(run);
+        }
+        return runs;
+    }
+
+    /** Requests at once: Google Cloud took six voices at a time without complaint on CI. */
+    private static final int LINES_AT_ONCE = 6;
+    private static final int PARTS_AT_ONCE = 3;
+
+    private interface Work {
+        void run() throws IOException, JSONException;
+    }
+
+    /** Failures of work done side by side: a limit or failures in a row end the run for all. */
+    private final class Failures {
+        private final java.util.concurrent.atomic.AtomicInteger inARow = new java.util.concurrent.atomic.AtomicInteger();
+        private volatile Exception fatal;
+
+        /** Runs one piece unless the run is over; true when it worked. */
+        boolean attempt(Work work, String what) {
+            if (fatal != null || cancelled) {
+                return false;
+            }
+            try {
+                work.run();
+                inARow.set(0);
+                return true;
+            } catch (LimitException limit) {
+                fatal = limit;
+            } catch (IOException | JSONException error) {
+                if (inARow.incrementAndGet() >= FAILURES_IN_A_ROW) {
+                    fatal = error;
+                } else {
+                    Log.w(TAG, what + "; going on", error);
+                }
+            }
+            return false;
+        }
+
+        void rethrow() throws IOException, JSONException {
+            Exception error = fatal;
+            if (error instanceof IOException io) {
+                throw io;
+            }
+            if (error instanceof JSONException json) {
+                throw json;
+            }
+        }
+    }
+
+    private static void runAll(List<java.util.concurrent.Callable<Void>> work, int atOnce) throws IOException {
+        if (work.isEmpty()) {
+            return;
+        }
+        ExecutorService pool = Executors.newFixedThreadPool(Math.min(atOnce, work.size()));
+        try {
+            pool.invokeAll(work);
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IOException(interrupted);
+        } finally {
+            pool.shutdownNow();
+        }
     }
 
     private void post(Progress progress, int done, int total) {
-        main.post(() -> progress.progress(done, total));
+        currentDone = done;
+        currentTotal = total;
+        main.post(() -> {
+            progress.progress(done, total);
+            Progress watching = observer;
+            if (watching != null) {
+                watching.progress(done, total);
+            }
+        });
     }
 
     private static JSONArray linesJson(List<Scene.Line> chunk) throws JSONException {
@@ -268,7 +504,10 @@ final class StudioVoices {
         JSONArray cast = answer.optJSONArray("cast");
         synchronized (this) {
             for (int i = 0; i < chunk.size() && i < directions.length(); i++) {
-                notes().put(noteKey(chunk.get(i), language), directions.getJSONObject(i));
+                // A note is never replaced here: the line's audio belongs to it.
+                if (!notes().has(noteKey(chunk.get(i), language))) {
+                    notes().put(noteKey(chunk.get(i), language), directions.getJSONObject(i));
+                }
             }
             for (int i = 0; cast != null && i < cast.length(); i++) {
                 JSONObject member = cast.getJSONObject(i);
@@ -475,6 +714,10 @@ final class StudioVoices {
     synchronized void forget(Scene fullScene, Scene scene, ScriptLanguage language, String castKey) {
         for (Scene.Line line : scene.lines) {
             JSONObject note = notes().optJSONObject(noteKey(line, language));
+            if (note != null && note.optBoolean("byActor")) {
+                // The actor's own fix stays, with its audio.
+                continue;
+            }
             if (note != null) {
                 for (String voice : CAST_VOICES) {
                     for (String extension : new String[] {".wav", ".m4a"}) {
@@ -493,6 +736,125 @@ final class StudioVoices {
             saveNotes();
         } catch (IOException error) {
             Log.w(TAG, "Studio notes could not be saved", error);
+        }
+    }
+
+    // ---------------------------------------------------------------- Fixing one line
+
+    /** Tries per line, so a line cannot be asked for again and again without end. */
+    static final int FIXES_PER_LINE = 5;
+    private static final String FIXES = "fixes:";
+    private final ExecutorService fixer = Executors.newSingleThreadExecutor();
+
+    /** A new take of one line: its direction and audio, kept aside until the actor chooses it. */
+    static final class Take {
+        final JSONObject note;
+        final File audio;
+        final String voice;
+        final JSONObject voiced;
+
+        Take(JSONObject note, File audio, String voice, JSONObject voiced) {
+            this.note = note;
+            this.audio = audio;
+            this.voice = voice;
+            this.voiced = voiced;
+        }
+    }
+
+    interface TakeResult {
+        void ready(Take take);
+
+        void failed(Stop reason);
+    }
+
+    synchronized int fixesLeft(Scene.Line line, ScriptLanguage language) {
+        return Math.max(0, FIXES_PER_LINE - notes().optInt(FIXES + noteKey(line, language)));
+    }
+
+    /**
+     * Has the director direct one line again the way the actor asked, and voices it, as a take
+     * the actor can listen to before keeping it. {@code result} runs on the main thread.
+     */
+    void fix(Scene fullScene, Scene.Line line, ScriptLanguage language, String title, String castKey, String voice,
+        List<String> wishes, String request, String word, String say, TakeResult result) {
+        String script = scriptId(castKey);
+        fixer.execute(() -> {
+            try {
+                if (!running) {
+                    cancelled = false;
+                }
+                synchronized (this) {
+                    String key = FIXES + noteKey(line, language);
+                    notes().put(key, notes().optInt(key) + 1);
+                    saveNotes();
+                }
+                JSONArray wished = new JSONArray();
+                for (String wish : wishes) {
+                    wished.put(wish);
+                }
+                JSONArray sayings = new JSONArray();
+                if (!word.isEmpty() && !say.isEmpty()) {
+                    sayings.put(new JSONObject().put("word", word).put("say", say));
+                }
+                JSONObject current = note(line, language);
+                JSONObject body = new JSONObject().put("language", language.code).put("title", title)
+                    .put("script", script).put("lines", linesJson(java.util.Collections.singletonList(line)))
+                    .put("before", linesJson(linesBefore(fullScene, line)))
+                    .put("context", contextFor(analysis(fullScene, language, script), line.section))
+                    .put("current", current == null ? new JSONObject() : current)
+                    .put("wishes", wished).put("request", request).put("pronunciations", sayings);
+                JSONObject answer = new JSONObject(new String(post("/v1/revise", body), StandardCharsets.UTF_8));
+                JSONObject note = answer.getJSONObject("line").put("byActor", true).put("request", request);
+                byte[] audio = speak(note, language, voice, script);
+                File take = new File(context.getCacheDir(), "studio-take-" + System.nanoTime() + ".wav");
+                try (OutputStream output = new FileOutputStream(take)) {
+                    output.write(audio);
+                }
+                Take made = new Take(note, take, voice, lastVoiced.get());
+                main.post(() -> result.ready(made));
+            } catch (LimitException limit) {
+                main.post(() -> result.failed(limit.reason));
+            } catch (IOException | JSONException | RuntimeException error) {
+                Log.w(TAG, "The line could not be fixed", error);
+                main.post(() -> result.failed(Stop.FAILED));
+            }
+        });
+    }
+
+    /** Keeps a take: it becomes the line's direction and audio, and the old audio goes. */
+    synchronized void keep(Take take, Scene.Line line, ScriptLanguage language) {
+        try {
+            JSONObject old = notes().optJSONObject(noteKey(line, language));
+            if (old != null) {
+                for (String extension : new String[] {".wav", ".m4a"}) {
+                    File previous = audioFile(line, language, take.voice, old, extension);
+                    notes().remove(VOICED + previous.getName());
+                    if (previous.isFile() && !previous.delete()) {
+                        Log.w(TAG, "Could not delete " + previous.getName());
+                    }
+                }
+            }
+            notes().put(noteKey(line, language), take.note);
+            if (!folder.isDirectory() && !folder.mkdirs()) {
+                throw new IOException("Could not create the studio folder");
+            }
+            File target = audioFile(line, language, take.voice, take.note, ".wav");
+            try (InputStream input = new java.io.FileInputStream(take.audio);
+                 OutputStream output = new FileOutputStream(target)) {
+                output.write(readAll(input));
+            }
+            notes().put(VOICED + target.getName(), take.voiced);
+            saveNotes();
+        } catch (IOException | JSONException error) {
+            Log.w(TAG, "The take could not be kept", error);
+        } finally {
+            discard(take);
+        }
+    }
+
+    void discard(Take take) {
+        if (take.audio.isFile() && !take.audio.delete()) {
+            Log.w(TAG, "Could not delete a take");
         }
     }
 
@@ -545,7 +907,7 @@ final class StudioVoices {
     }
 
     private String header(String name) {
-        for (java.util.Map.Entry<String, List<String>> entry : lastHeaders.entrySet()) {
+        for (java.util.Map.Entry<String, List<String>> entry : lastHeaders.get().entrySet()) {
             if (name.equalsIgnoreCase(entry.getKey()) && !entry.getValue().isEmpty()) {
                 try {
                     return java.net.URLDecoder.decode(entry.getValue().get(0), "UTF-8");
@@ -649,13 +1011,13 @@ final class StudioVoices {
             .put("pronunciations", note.optJSONArray("pronunciations") == null ? new JSONArray()
                 : note.getJSONArray("pronunciations"));
         JSONObject answer = new JSONObject(new String(post("/v1/speak", body), StandardCharsets.UTF_8));
-        lastVoiced = new JSONObject()
+        lastVoiced.set(new JSONObject()
             .put("model", answer.optString("modelVersion", answer.optString("model", "")))
             .put("source", header("X-Memo-Source"))
             .put("style", header("X-Memo-Style"))
             .put("text", header("X-Memo-Text"))
             .put("voice", voice)
-            .put("at", System.currentTimeMillis());
+            .put("at", System.currentTimeMillis()));
         // Gemini's interaction: steps of model output whose content holds the audio.
         JSONArray steps = answer.optJSONArray("steps");
         for (int i = 0; steps != null && i < steps.length(); i++) {
@@ -753,6 +1115,7 @@ final class StudioVoices {
                 throw new IOException("Cancelled");
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(WORKER + path).openConnection();
+            openConnections.add(connection);
             connection.setConnectTimeout(20_000);
             connection.setReadTimeout(240_000);
             connection.setRequestMethod("POST");
@@ -768,7 +1131,7 @@ final class StudioVoices {
                 }
                 int code = connection.getResponseCode();
                 if (code == 200) {
-                    lastHeaders = connection.getHeaderFields();
+                    lastHeaders.set(connection.getHeaderFields());
                     return readAll(connection.getInputStream());
                 }
                 String error = connection.getErrorStream() == null ? ""
@@ -780,6 +1143,9 @@ final class StudioVoices {
                 if (code == 401) {
                     idToken = null;
                     last = new IOException("Not signed in");
+                } else if (code >= 500 && error.contains("without audio")) {
+                    // The voice gave no audio for this line; asking again would not change that.
+                    throw new IOException("Refused: " + code + " " + error);
                 } else if (code >= 500) {
                     last = new IOException("Service busy: " + code);
                 } else {
@@ -793,6 +1159,7 @@ final class StudioVoices {
                     throw error;
                 }
             } finally {
+                openConnections.remove(connection);
                 connection.disconnect();
             }
             try {

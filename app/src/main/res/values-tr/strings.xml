@@ -541,6 +541,10 @@
     <string name="voice_engine_ai_detail">Bu telefonda çalışan doğal ses, internetsiz</string>
     <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
     <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
+    <string name="studio_waiting">Sırada: önce başka bir sahne hazırlanıyor</string>
+    <string name="studio_stopping">Durduruluyor… (%2$d replikten %1$d tanesi hazır)</string>
+    <string name="studio_notification_title">Stüdyo sesleri hazırlanıyor</string>
+    <string name="studio_notification_done">Stüdyo sesleri hazır. Prova için uygulamayı aç.</string>
     <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>
     <string name="cast_intro_studio">Her karakter için bir stüdyo sesi seç. Her repliğin hızını ve duygusunu yönetmen belirler. Dinlemek için oynat düğmesine dokun.</string>
     <string name="cast_check_title">Önce sesleri kontrol et</string>
@@ -566,6 +570,31 @@
     <string name="notes_no_reading">Henüz okunmadı: stüdyo sesleri bir sonraki hazırlanışta oyun baştan sona okunur.</string>
     <string name="notes_redirect">Yeniden yönet</string>
     <string name="notes_redirect_message">Yönetmen oyunu baştan sona yeniden okur ve bu sahnenin repliklerini bu okumayla yeniden yönetip seslendirir. Bu ayki stüdyo sesi hakkından kullanır.</string>
+    <string name="fix_title">Bu repliği düzelt</string>
+    <string name="fix_action">Düzelt</string>
+    <string name="fix_now">Şu anki yorum: %1$s</string>
+    <string name="fix_angrier">Daha öfkeli</string>
+    <string name="fix_calmer">Daha sakin</string>
+    <string name="fix_whisper">Fısıltıyla</string>
+    <string name="fix_shout">Bağırarak</string>
+    <string name="fix_tired">Daha yorgun</string>
+    <string name="fix_scared">Daha korkmuş</string>
+    <string name="fix_sadder">Daha üzgün</string>
+    <string name="fix_slower">Daha yavaş</string>
+    <string name="fix_faster">Daha hızlı</string>
+    <string name="fix_request_hint">Nasıl söylensin? (isteğe bağlı)</string>
+    <string name="fix_word_hint">Yanlış okunan kelime</string>
+    <string name="fix_say_hint">Şöyle okunsun</string>
+    <string name="fix_tries">Bu replik için %1$d deneme hakkın kaldı</string>
+    <string name="fix_go">Yeniden seslendir</string>
+    <string name="fix_working">Yönetmen ve ses hazırlıyor…</string>
+    <string name="fix_ready_title">Yeni hali hazır</string>
+    <string name="fix_listen">Dinle</string>
+    <string name="fix_keep">Bunu kullan</string>
+    <string name="fix_revert">Eskisi kalsın</string>
+    <string name="fix_failed">Bu replik yeniden seslendirilemedi. Biraz sonra tekrar dene.</string>
+    <string name="fix_no_tries">Bu replik için deneme hakkın doldu.</string>
+    <string name="fix_empty">Repliğin nasıl değişmesini istediğini seç ya da yaz.</string>
     <string name="cast_studio_voice_for">%1$s için stüdyo sesi</string>
     <string-array name="studio_voice_traits">
         <item>Kararlı</item>
@@ -588,5 +617,6 @@
     <string name="studio_playing">Stüdyo sesi repliği okuyor…</string>
     <string name="studio_daily_limit">Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.</string>
     <string name="studio_monthly_limit">Bu ayın stüdyo sesi sınırına ulaşıldı.</string>
-    <string name="studio_failed">Stüdyo sesleri hazırlanamadı. Bağlantını kontrol edip tekrar dene.</string>
+    <string name="studio_failed">Stüdyo sesleri hazırlanmaya devam edemedi. Hazırlanan replikler saklandı; biraz sonra tekrar dene.</string>
+    <string name="studio_partial">%1$d replik seslendirilemedi; onları diğer sesler okuyacak. Stüdyo seslerini tekrar hazırlarsan sadece onlar yeniden denenir.</string>
 </resources>
