@@ -542,6 +542,7 @@
     <string name="voice_engine_studio_detail">Yapay zekâ yönetmenin hazırladığı, oynanmış ve duygulu sesler</string>
     <string name="studio_allowance">Her ay 2 senaryo için stüdyo sesi hazırlanabilir.</string>
     <string name="studio_waiting">Sırada: önce başka bir sahne hazırlanıyor</string>
+    <string name="studio_stopping">Durduruluyor… (%2$d replikten %1$d tanesi hazır)</string>
     <string name="studio_notification_title">Stüdyo sesleri hazırlanıyor</string>
     <string name="studio_notification_done">Stüdyo sesleri hazır. Prova için uygulamayı aç.</string>
     <string name="studio_script_limit">Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.</string>

@@ -78,13 +78,49 @@ final class StudioVoices: ObservableObject {
         notesFile = folder.appendingPathComponent("notes.json")
     }
 
-    /// Stops the scene being prepared and forgets the ones waiting.
+    /// Runs of lines with no note yet, at most a part long.
+    private func undirected(_ lines: [ScriptScene.Line], _ language: ScriptLanguage) -> [[ScriptScene.Line]] {
+        var runs: [[ScriptScene.Line]] = []
+        var run: [ScriptScene.Line] = []
+        for line in lines {
+            if note(line, language) == nil {
+                run.append(line)
+                if run.count >= Self.linesPerRequest {
+                    runs.append(run)
+                    run = []
+                }
+            } else if !run.isEmpty {
+                runs.append(run)
+                run = []
+            }
+        }
+        if !run.isEmpty {
+            runs.append(run)
+        }
+        return runs
+    }
+
+    /// Whether the scene being prepared was asked to stop and is finishing what is on the way.
+    var stopping: Bool {
+        running && isCancelled
+    }
+
+    /// Requests on the way, so stopping does not wait for them.
+    private static let tasksLock = NSLock()
+    private static var openTasks: [Int: URLSessionTask] = [:]
+
+    /// Stops the scene being prepared and forgets the ones waiting; requests on the way are cut off.
     func cancel() {
         lock.lock()
         cancelled = true
         let dropped = queue
         queue = []
         lock.unlock()
+        Self.tasksLock.lock()
+        let open = Array(Self.openTasks.values)
+        Self.tasksLock.unlock()
+        open.forEach { $0.cancel() }
+        objectWillChange.send()
         DispatchQueue.main.async {
             self.waitingKeys = []
             dropped.forEach { $0.finished(.cancelled) }
@@ -205,13 +241,9 @@ final class StudioVoices: ObservableObject {
         let readingForParts = reading
         let parts = OperationQueue()
         parts.maxConcurrentOperationCount = Self.partsAtOnce
-        var start = 0
-        while start < lines.count {
-            let chunk = Array(lines[start..<min(lines.count, start + Self.linesPerRequest)])
-            start += Self.linesPerRequest
-            if !chunk.contains(where: { note($0, language) == nil }) {
-                continue
-            }
+        // Notes: only lines that have none, in runs of up to a part, each with the lines before it for
+        // context. Lines already directed keep their notes, so their audio stays theirs.
+        for chunk in undirected(lines, language) {
             parts.addOperation {
                 _ = failures.attempt(cancelled: { self.isCancelled }) {
                     try self.direct(chunk, before: Self.linesBefore(fullScene, chunk[0]),
@@ -295,7 +327,8 @@ final class StudioVoices: ObservableObject {
         }
         lock.lock()
         var stored = loadNotes()
-        for (line, direction) in zip(chunk, directions) {
+        for (line, direction) in zip(chunk, directions) where stored[Self.noteKey(line, language)] == nil {
+            // A note is never replaced here: the line's audio belongs to it.
             stored[Self.noteKey(line, language)] = direction
         }
         for member in answer["cast"] as? [[String: Any]] ?? [] {
@@ -792,7 +825,7 @@ final class StudioVoices: ObservableObject {
         let semaphore = DispatchSemaphore(value: 0)
         var result: (Data, Int, [AnyHashable: Any])?
         var failure: Error?
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             if let error {
                 failure = error
             } else {
@@ -800,8 +833,15 @@ final class StudioVoices: ObservableObject {
                 result = (data ?? Data(), http?.statusCode ?? 0, http?.allHeaderFields ?? [:])
             }
             semaphore.signal()
-        }.resume()
+        }
+        tasksLock.lock()
+        openTasks[task.taskIdentifier] = task
+        tasksLock.unlock()
+        task.resume()
         semaphore.wait()
+        tasksLock.lock()
+        openTasks.removeValue(forKey: task.taskIdentifier)
+        tasksLock.unlock()
         if let failure {
             throw failure
         }

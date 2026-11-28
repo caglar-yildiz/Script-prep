@@ -453,6 +453,7 @@
 "studio_script_limit" = "Ya usaste los 2 guiones de este mes con voces de estudio. Los guiones preparados siguen sonando; los nuevos se abren el mes que viene.";
 "studio_start" = "Preparar";
 "studio_stop" = "Detener";
+"studio_stopping" = "Deteniendo… (%1$d de %2$d frases listas)";
 "studio_title" = "Voces de estudio";
 "studio_value" = "Un director con IA lee la escena y da a cada frase del compañero una voz expresiva e interpretada.";
 "studio_voice_traits_0" = "Firme";

@@ -453,6 +453,7 @@
 "studio_script_limit" = "Du hast die 2 Texte dieses Monats für Studiostimmen genutzt. Vorbereitete Texte spielen weiter; neue gehen nächsten Monat.";
 "studio_start" = "Vorbereiten";
 "studio_stop" = "Stoppen";
+"studio_stopping" = "Wird gestoppt … (%1$d von %2$d Sätzen fertig)";
 "studio_title" = "Studiostimmen";
 "studio_value" = "Ein KI-Regisseur liest die Szene und gibt jedem Partnersatz eine ausdrucksstarke, gespielte Stimme.";
 "studio_voice_traits_0" = "Bestimmt";

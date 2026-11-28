@@ -265,8 +265,12 @@ struct VoiceRows: View {
                 }
             } else if model.studioPreparingHere {
                 // Only this scene's own preparation shows here; another scene's may run, or this one may wait.
-                ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
-                    MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+                if studio.stopping {
+                    ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_stopping", done, total), action: nil)
+                } else {
+                    ListRow(icon: "ic_star", title: L("studio_title"), value: L("studio_progress", done, total), action: nil) {
+                        MemoButton(L("studio_stop"), kind: .text) { studio.cancel() }
+                    }
                 }
                 RowDivider()
             } else if model.studioWaitingHere {

@@ -453,6 +453,7 @@
 "studio_script_limit" = "Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.";
 "studio_start" = "Préparer";
 "studio_stop" = "Arrêter";
+"studio_stopping" = "Arrêt en cours… (%1$d répliques prêtes sur %2$d)";
 "studio_title" = "Voix studio";
 "studio_value" = "Un metteur en scène IA lit la scène et donne à chaque réplique du partenaire une voix expressive et jouée.";
 "studio_voice_traits_0" = "Ferme";

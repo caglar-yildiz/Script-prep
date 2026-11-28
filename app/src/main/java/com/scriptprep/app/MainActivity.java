@@ -4483,9 +4483,13 @@ public final class MainActivity extends Activity {
         boolean preparing = studio.isPreparing(studioJobKey());
         boolean waiting = studio.isQueued(studioJobKey());
         if (preparing) {
+            boolean stopping = studio.isStopping();
             LinearLayout progressRow = ui.listRow(R.drawable.ic_star, getString(R.string.studio_title),
-                getString(R.string.studio_progress, done, total),
-                ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> studio.cancel()), null);
+                getString(stopping ? R.string.studio_stopping : R.string.studio_progress, done, total),
+                stopping ? null : ui.button(getString(R.string.studio_stop), 0, Kind.TEXT, view -> {
+                    studio.cancel();
+                    render();
+                }), null);
             studioProgressLabels.add(rowDetail(progressRow));
             extras.addView(progressRow, Ui.matchWidth());
             extras.addView(ui.divider(70));
@@ -4640,8 +4644,10 @@ public final class MainActivity extends Activity {
         for (TextView label : studioEngineLabels) {
             label.setText(getString(R.string.studio_title) + "\n" + getString(R.string.studio_ready, done, total));
         }
-        for (TextView label : studioProgressLabels) {
-            label.setText(getString(R.string.studio_progress, done, total));
+        if (!studio.isStopping()) {
+            for (TextView label : studioProgressLabels) {
+                label.setText(getString(R.string.studio_progress, done, total));
+            }
         }
     }
 

@@ -453,6 +453,7 @@
 "studio_script_limit" = "Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.";
 "studio_start" = "Preparar";
 "studio_stop" = "Parar";
+"studio_stopping" = "Parando… (%1$d de %2$d falas prontas)";
 "studio_title" = "Vozes de estúdio";
 "studio_value" = "Um diretor com IA lê a cena e dá a cada fala do parceiro uma voz expressiva e interpretada.";
 "studio_voice_traits_0" = "Firme";

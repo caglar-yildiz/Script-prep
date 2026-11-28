@@ -556,6 +556,7 @@
     <string name="voice_engine_studio_detail">Voci recitate ed espressive preparate da un regista IA</string>
     <string name="studio_allowance">Le voci da studio si possono preparare per 2 copioni al mese.</string>
     <string name="studio_waiting">In attesa: prima si prepara un’altra scena</string>
+    <string name="studio_stopping">Arresto in corso… (%1$d battute pronte su %2$d)</string>
     <string name="studio_notification_title">Preparazione delle voci da studio</string>
     <string name="studio_notification_done">Le voci da studio sono pronte. Apri l’app per provare.</string>
     <string name="studio_script_limit">Hai usato i 2 copioni di questo mese per le voci da studio. I copioni preparati continuano a suonare; i nuovi si aprono il mese prossimo.</string>

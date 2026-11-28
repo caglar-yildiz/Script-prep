@@ -82,6 +82,8 @@ final class StudioVoices {
     private long idTokenExpires;
     private volatile boolean cancelled;
     private volatile boolean running;
+    /** Requests on the way, so stopping does not wait for them. */
+    private final java.util.Set<HttpURLConnection> openConnections = java.util.concurrent.ConcurrentHashMap.newKeySet();
     /** Headers of the last answer, read on the preparing thread only. */
     private final ThreadLocal<java.util.Map<String, List<String>>> lastHeaders =
         ThreadLocal.withInitial(java.util.Collections::emptyMap);
@@ -106,9 +108,17 @@ final class StudioVoices {
         return running;
     }
 
-    /** Stops the scene being prepared and forgets the ones waiting. */
+    /** Whether the scene being prepared was asked to stop and is finishing what is on the way. */
+    boolean isStopping() {
+        return running && cancelled;
+    }
+
+    /** Stops the scene being prepared and forgets the ones waiting; requests on the way are cut off. */
     void cancel() {
         cancelled = true;
+        for (HttpURLConnection connection : openConnections) {
+            new Thread(connection::disconnect).start();
+        }
         List<Job> dropped;
         synchronized (queue) {
             dropped = new ArrayList<>(queue);
@@ -320,22 +330,16 @@ final class StudioVoices {
         skippedLines = 0;
         Failures failures = new Failures();
 
-        // Notes: whole parts, so the director sees what comes before and after each line.
+        // Notes: only lines that have none, in runs of up to a part, each with the lines before it for
+        // context. Lines already directed keep their notes, so their audio stays theirs.
         List<java.util.concurrent.Callable<Void>> parts = new ArrayList<>();
-        for (int start = 0; start < lines.size(); start += LINES_PER_REQUEST) {
-            List<Scene.Line> chunk = lines.subList(start, Math.min(lines.size(), start + LINES_PER_REQUEST));
-            boolean missing = false;
-            for (Scene.Line line : chunk) {
-                missing |= note(line, language) == null;
-            }
-            if (missing) {
-                JSONObject reading = analysis;
-                parts.add(() -> {
-                    failures.attempt(() -> direct(chunk, linesBefore(fullScene, chunk.get(0)),
-                        contextFor(reading, chunk.get(0).section), language, title, script), "A part could not be directed");
-                    return null;
-                });
-            }
+        JSONObject reading = analysis;
+        for (List<Scene.Line> chunk : undirected(lines, language)) {
+            parts.add(() -> {
+                failures.attempt(() -> direct(chunk, linesBefore(fullScene, chunk.get(0)),
+                    contextFor(reading, chunk.get(0).section), language, title, script), "A part could not be directed");
+                return null;
+            });
         }
         runAll(parts, PARTS_AT_ONCE);
         failures.rethrow();
@@ -383,6 +387,28 @@ final class StudioVoices {
         }
         skippedLines = total - readyCount(scene, language, casting);
         return skippedLines > 0 ? Stop.PARTIAL : Stop.DONE;
+    }
+
+    /** Runs of lines with no note yet, at most a part long. */
+    private List<List<Scene.Line>> undirected(List<Scene.Line> lines, ScriptLanguage language) {
+        List<List<Scene.Line>> runs = new ArrayList<>();
+        List<Scene.Line> run = new ArrayList<>();
+        for (Scene.Line line : lines) {
+            if (note(line, language) == null) {
+                run.add(line);
+                if (run.size() >= LINES_PER_REQUEST) {
+                    runs.add(run);
+                    run = new ArrayList<>();
+                }
+            } else if (!run.isEmpty()) {
+                runs.add(run);
+                run = new ArrayList<>();
+            }
+        }
+        if (!run.isEmpty()) {
+            runs.add(run);
+        }
+        return runs;
     }
 
     /** Requests at once: Google Cloud took six voices at a time without complaint on CI. */
@@ -478,7 +504,10 @@ final class StudioVoices {
         JSONArray cast = answer.optJSONArray("cast");
         synchronized (this) {
             for (int i = 0; i < chunk.size() && i < directions.length(); i++) {
-                notes().put(noteKey(chunk.get(i), language), directions.getJSONObject(i));
+                // A note is never replaced here: the line's audio belongs to it.
+                if (!notes().has(noteKey(chunk.get(i), language))) {
+                    notes().put(noteKey(chunk.get(i), language), directions.getJSONObject(i));
+                }
             }
             for (int i = 0; cast != null && i < cast.length(); i++) {
                 JSONObject member = cast.getJSONObject(i);
@@ -963,6 +992,7 @@ final class StudioVoices {
                 throw new IOException("Cancelled");
             }
             HttpURLConnection connection = (HttpURLConnection) new URL(WORKER + path).openConnection();
+            openConnections.add(connection);
             connection.setConnectTimeout(20_000);
             connection.setReadTimeout(240_000);
             connection.setRequestMethod("POST");
@@ -1006,6 +1036,7 @@ final class StudioVoices {
                     throw error;
                 }
             } finally {
+                openConnections.remove(connection);
                 connection.disconnect();
             }
             try {

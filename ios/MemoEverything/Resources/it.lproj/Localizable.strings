@@ -453,6 +453,7 @@
 "studio_script_limit" = "Hai usato i 2 copioni di questo mese per le voci da studio. I copioni preparati continuano a suonare; i nuovi si aprono il mese prossimo.";
 "studio_start" = "Prepara";
 "studio_stop" = "Interrompi";
+"studio_stopping" = "Arresto in corso… (%1$d battute pronte su %2$d)";
 "studio_title" = "Voci da studio";
 "studio_value" = "Un regista IA legge la scena e dà a ogni battuta del partner una voce espressiva e recitata.";
 "studio_voice_traits_0" = "Decisa";

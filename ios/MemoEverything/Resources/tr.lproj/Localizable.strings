@@ -453,6 +453,7 @@
 "studio_script_limit" = "Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.";
 "studio_start" = "Hazırla";
 "studio_stop" = "Durdur";
+"studio_stopping" = "Durduruluyor… (%2$d replikten %1$d tanesi hazır)";
 "studio_title" = "Stüdyo sesleri";
 "studio_value" = "Yapay zekâ yönetmen sahneyi okur ve her karşı repliğe duygulu, oynanmış bir ses verir.";
 "studio_voice_traits_0" = "Kararlı";
