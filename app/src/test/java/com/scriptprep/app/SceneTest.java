@@ -16,6 +16,16 @@ public class SceneTest {
     }
 
     @Test
+    public void keepsOnlyTheLinesThatPassATest() {
+        Scene scene = Scene.parse("AYŞE: Bir.\nMEHMET: İki.\nAYŞE: Üç.");
+        Scene ayse = scene.only(line -> line.role.equals("AYŞE"));
+
+        assertEquals(Arrays.asList("Bir.", "Üç."), Arrays.asList(ayse.lines.get(0).text, ayse.lines.get(1).text));
+        assertEquals(Arrays.asList("AYŞE"), ayse.roles);
+        assertEquals(scene.lines.get(2), ayse.lines.get(1));
+    }
+
+    @Test
     public void takesTheSampleSceneDirectionsAsNotes() {
         Scene scene = Scene.parse("ECE: (fısıldayarak) Mert! Uyanık mısın?\nMERT: (sessizce, utanarak) …Ha.\n"
             + "(Işıklar titrer. İkisi de donup kalır.)\nECE: Duydun mu?");

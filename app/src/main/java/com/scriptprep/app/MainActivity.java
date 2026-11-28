@@ -4444,9 +4444,10 @@ public final class MainActivity extends Activity {
     /** Practice options: the one choice of voice, then what that voice needs (download, preparing). */
     private void addVoiceRows(LinearLayout extras) {
         Engine engine = voiceEngine();
-        int total = scene == null ? 0 : scene.lines.size();
+        Scene voiced = studioScene();
+        int total = voiced == null ? 0 : voiced.lines.size();
         int done = engine != Engine.STUDIO || fullScene == null ? 0
-            : studio.isPreparing(studioJobKey()) ? studio.currentDone() : studio.readyCount(scene, language, studioCasting());
+            : studio.isPreparing(studioJobKey()) ? studio.currentDone() : studio.readyCount(voiced, language, studioCasting());
         String value = switch (engine) {
             case DEVICE -> getString(R.string.voice_engine_device) + "\n" + getString(R.string.voice_engine_device_detail);
             case AI -> getString(R.string.ai_voice_title) + "\n" + getString(R.string.voice_engine_ai_detail);
@@ -4651,6 +4652,14 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /**
+     * The lines studio voices are made for: in an ensemble, lines a cast member has recorded play
+     * that recording, so they are not voiced (nor paid for).
+     */
+    private Scene studioScene() {
+        return scene == null ? null : scene.only(line -> castRecording(line) == null);
+    }
+
     /** The scene on screen as studio voices see it: script, section and language. */
     private String studioJobKey() {
         return castKey() + "#" + sectionIndex + "#" + language.code;
@@ -4758,7 +4767,7 @@ public final class MainActivity extends Activity {
         if (fullScene == null || studio.isPreparing(key) || studio.isQueued(key)) {
             return;
         }
-        studio.prepare(key, fullScene, scene, language, scriptTitle, castKey(), studioCasting(),
+        studio.prepare(key, fullScene, studioScene(), language, scriptTitle, castKey(), studioCasting(),
             new StudioVoices.Progress() {
             @Override
             public void progress(int done, int total) {

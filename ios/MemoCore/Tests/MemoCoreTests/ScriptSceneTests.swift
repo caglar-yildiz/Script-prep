@@ -128,6 +128,14 @@ final class SceneTests: XCTestCase {
         XCTAssertEqual("Üç.", scene.lines[2].text)
     }
 
+    func testKeepsOnlyTheLinesThatPassATest() {
+        let scene = ScriptScene.parse("AYŞE: Bir.\nMEHMET: İki.\nAYŞE: Üç.")
+        let ayse = scene.only { $0.role == "AYŞE" }
+
+        XCTAssertEqual(["Bir.", "Üç."], ayse.lines.map(\.text))
+        XCTAssertEqual(["AYŞE"], ayse.roles)
+    }
+
     func testReadsTheSampleSceneOfEveryLanguage() {
         let sample = "ECE: Let’s check the lights once more before rehearsal.\nMERT: I’m ready. Where do I enter?\n"
             + "(Ece points to the left side of the stage.)\nECE: From the left. Come in when I close the curtain."

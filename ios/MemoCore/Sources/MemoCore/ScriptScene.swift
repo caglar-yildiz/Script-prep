@@ -49,6 +49,11 @@ public struct ScriptScene: Equatable, Sendable {
         return ScriptScene(lines: chosen, sections: [])
     }
 
+    /// The lines that pass a test, in order, as a scene of their own.
+    public func only(_ keep: (Line) -> Bool) -> ScriptScene {
+        ScriptScene(lines: lines.filter(keep), sections: [])
+    }
+
     public func forSection(_ index: Int) -> ScriptScene {
         guard index >= 0 && index < sections.count else {
             return self

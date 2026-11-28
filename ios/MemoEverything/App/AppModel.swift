@@ -1769,15 +1769,22 @@ final class AppModel: ObservableObject {
         }
     }
 
+    /// The lines studio voices are made for: in an ensemble, lines a cast member has recorded play that
+    /// recording, so they are not voiced (nor paid for).
+    var studioScene: ScriptScene {
+        scene.only { castRecording($0) == nil }
+    }
+
     var studioTotal: Int {
-        scene.lines.count
+        studioScene.lines.count
     }
 
     var studioReady: Int {
         guard fullScene != nil else {
             return 0
         }
-        return studio.currentKey == studioJobKey ? studio.done : studio.readyCount(scene, language, casting: studioCasting())
+        return studio.currentKey == studioJobKey ? studio.done
+            : studio.readyCount(studioScene, language, casting: studioCasting())
     }
 
     // MARK: - Director's notes
@@ -1935,7 +1942,7 @@ final class AppModel: ObservableObject {
         studioBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "studio-voices") { [weak self] in
             self?.endStudioBackgroundTask()
         }
-        studio.prepare(key: studioJobKey, fullScene, scene, language: language, title: scriptTitle, script: castKey,
+        studio.prepare(key: studioJobKey, fullScene, studioScene, language: language, title: scriptTitle, script: castKey,
                        casting: studioCasting()) { reason in
             self.endStudioBackgroundTask()
             if reason == .failed && (self.studioLeftWhileRunning || UIApplication.shared.applicationState != .active) {
