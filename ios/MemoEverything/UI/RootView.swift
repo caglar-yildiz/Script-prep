@@ -54,6 +54,10 @@ struct RootView: View {
             DialogSheet(item: item)
                 .environmentObject(model)
         }
+        .background(Color.clear.sheet(isPresented: Binding(get: { model.fixingLine != nil },
+                                                           set: { if !$0 { model.closeFix() } })) {
+            FixSheet().environmentObject(model)
+        })
         .photosPicker(isPresented: $model.pickingPhotos, selection: $photoSelection,
                       maxSelectionCount: PhotoOcr.maxPhotos + 1, matching: .images)
         .onChange(of: photoSelection) { items in

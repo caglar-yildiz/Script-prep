@@ -3,6 +3,7 @@ import { analyzePrompt, normalizeAnalysis, parseAnalyzeRequest } from "../src/an
 import { AuthError, verifyIdToken } from "../src/auth";
 import { castPrompt, directorPrompt, normalizeCast, normalizeDirections, parseDirectRequest, RequestError, scriptOf } from "../src/director";
 import { audioAnswer, generate, UpstreamError } from "../src/gemini";
+import { parseReviseRequest, revisedDirection, revisePrompt } from "../src/revise";
 import { legacyPrompt, parseSpeakRequest, voiceInput } from "../src/speak";
 import { accessToken, forgetToken, parseServiceAccount, signedAssertion } from "../src/vertex";
 
@@ -262,5 +263,40 @@ describe("voice answers", () => {
     expect(await audioAnswer(new Response(steps), "gemini")).toBe(steps);
     const empty = JSON.stringify({ candidates: [{ finishReason: "OTHER", content: { parts: [{ text: "Sorry" }] } }] });
     await expect(audioAnswer(new Response(empty), "vertex")).rejects.toThrow("The voice answered without audio (OTHER)");
+  });
+});
+
+describe("fixing one line", () => {
+  const body = {
+    language: "tr", lines: [{ role: "VERA", text: "İçki için biraz erken değil mi?", notes: [] }],
+    current: { emotion: "sarcastic", undertone: "" },
+    wishes: ["tired", "made-up", "calmer"], request: "Yorgun ama\nhâlâ iğneleyici",
+    pronunciations: [{ word: "İçki", say: "İçkı" }, { word: "Yok", say: "x" }],
+  };
+
+  it("takes known wishes, the actor's words and pronunciations of words in the line", () => {
+    const wish = parseReviseRequest(body);
+    expect(wish.wishes).toEqual(["tired", "calmer"]);
+    expect(wish.request).toBe("Yorgun ama hâlâ iğneleyici");
+    expect(wish.pronunciations).toEqual([{ word: "İçki", say: "İçkı" }]);
+    const prompt = revisePrompt(wish);
+    expect(prompt).toContain("1. VERA: İçki için biraz erken değil mi?");
+    expect(prompt).toContain('more tired and worn out; calmer and more controlled; in the actor\'s own words: "Yorgun ama hâlâ iğneleyici"');
+    expect(prompt).toContain('"emotion":"sarcastic"');
+  });
+
+  it("refuses a request that asks for nothing or more than one line", () => {
+    expect(() => parseReviseRequest({ ...body, wishes: [], request: " ", pronunciations: [] })).toThrow(RequestError);
+    expect(() => parseReviseRequest({ ...body, lines: [...body.lines, ...body.lines] })).toThrow(RequestError);
+  });
+
+  it("keeps the actor's pronunciations in the new direction", () => {
+    const wish = parseReviseRequest(body);
+    const direction = revisedDirection(wish, { lines: [{
+      emotion: "tired", pace: "slow", undertone: "worn out", note: "", pronunciations: [{ word: "İçki", say: "Ickey" }],
+      segments: [{ text: "İçki için biraz erken değil mi?", volume: "quiet", style: "weary, dry", pauseAfterMs: 0 }],
+    }] });
+    expect(direction.emotion).toBe("tired");
+    expect(direction.pronunciations).toEqual([{ word: "İçki", say: "İçkı" }]);
   });
 });

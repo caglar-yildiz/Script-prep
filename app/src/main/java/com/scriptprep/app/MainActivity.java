@@ -3734,6 +3734,15 @@ public final class MainActivity extends Activity {
             LinearLayout.LayoutParams playParams = new LinearLayout.LayoutParams(ui.dp(56), ui.dp(56));
             playParams.leftMargin = ui.dp(10);
             row.addView(play, playParams);
+            // A studio line that did not come out right can be fixed from here.
+            Scene.Line heard = position < scene.lines.size() ? scene.lines.get(position) : null;
+            if (heard != null && premium() && studioAudio(heard) != null) {
+                FrameLayout fix = ui.iconButton(R.drawable.ic_edit, getString(R.string.fix_title), TEXT_SECONDARY, 0, 48,
+                    view -> openFix(heard));
+                LinearLayout.LayoutParams fixParams = new LinearLayout.LayoutParams(ui.dp(48), ui.dp(48));
+                fixParams.leftMargin = ui.dp(4);
+                row.addView(fix, fixParams);
+            }
         }
         LinearLayout next = ui.button(getString(R.string.next_line), R.drawable.ic_next, Kind.PRIMARY,
             view -> moveTo(position + 1, true));
@@ -4536,6 +4545,10 @@ public final class MainActivity extends Activity {
             card.addView(ui.text(line.role, Type.LABEL, ACCENT));
             card.addView(ui.text(line.text, Type.BODY_LARGE, TEXT), ui.spaced(2));
             card.addView(ui.text(noteText(line), Type.CAPTION, TEXT_SECONDARY), ui.spaced(8));
+            if (premium() && studioAudio(line) != null) {
+                card.addView(ui.button(getString(R.string.fix_action), R.drawable.ic_edit, Kind.TEXT, view -> openFix(line)),
+                    ui.wrapSpaced(4));
+            }
             content.addView(card, ui.spaced(10));
         }
     }
@@ -4632,6 +4645,179 @@ public final class MainActivity extends Activity {
         }
         Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, all.toString());
         startActivity(Intent.createChooser(send, getString(R.string.notes_share)));
+    }
+
+    // ---------------------------------------------------------------- Fixing one line
+
+    private static final String[] FIX_WISHES = {"angrier", "calmer", "whisper", "shout", "tired", "scared", "sadder",
+        "slower", "faster"};
+    private static final int[] FIX_LABELS = {R.string.fix_angrier, R.string.fix_calmer, R.string.fix_whisper,
+        R.string.fix_shout, R.string.fix_tired, R.string.fix_scared, R.string.fix_sadder, R.string.fix_slower,
+        R.string.fix_faster};
+
+    /** How a line is played now, in a few words: mood, undertone and each part's style. */
+    private String currentReading(Scene.Line line) {
+        org.json.JSONObject note = studio.noteOf(line, language);
+        if (note == null) {
+            return "";
+        }
+        StringBuilder reading = new StringBuilder(note.optString("emotion"));
+        if (!note.optString("undertone").isEmpty()) {
+            reading.append(" · ").append(note.optString("undertone"));
+        }
+        org.json.JSONArray segments = note.optJSONArray("segments");
+        for (int i = 0; segments != null && i < segments.length(); i++) {
+            org.json.JSONObject segment = segments.optJSONObject(i);
+            if (segment != null && !segment.optString("style").isEmpty()) {
+                reading.append(" · ").append(segment.optString("style"));
+            }
+        }
+        return reading.toString();
+    }
+
+    /**
+     * "Fix this line": the actor says how a studio line should change (quick wishes, own words, a
+     * word said another way), hears the new take and keeps it or goes back to the old one.
+     */
+    private void openFix(Scene.Line line) {
+        cancelSpeech();
+        int left = studio.fixesLeft(line, language);
+        if (left == 0) {
+            notifyUser(R.string.fix_no_tries);
+            return;
+        }
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(ui.dp(24), ui.dp(8), ui.dp(24), 0);
+        box.addView(ui.text(line.role + ": " + line.text, Type.BODY, TEXT));
+        String reading = currentReading(line);
+        if (!reading.isEmpty()) {
+            box.addView(ui.text(getString(R.string.fix_now, reading), Type.CAPTION, TEXT_SECONDARY), ui.spaced(6));
+        }
+        boolean[] chosen = new boolean[FIX_WISHES.length];
+        LinearLayout wishRow = null;
+        for (int i = 0; i < FIX_WISHES.length; i++) {
+            if (i % 3 == 0) {
+                wishRow = horizontal();
+                box.addView(wishRow, ui.spaced(i == 0 ? 12 : 6));
+            }
+            int index = i;
+            TextView wish = ui.text(getString(FIX_LABELS[i]), Type.LABEL, TEXT_SECONDARY);
+            wish.setGravity(Gravity.CENTER);
+            wish.setMinHeight(ui.dp(38));
+            wish.setBackground(ui.shape(SURFACE_HIGH, 999));
+            wish.setOnClickListener(view -> {
+                chosen[index] = !chosen[index];
+                wish.setTextColor(chosen[index] ? Ui.ON_ACCENT : TEXT_SECONDARY);
+                wish.setBackground(ui.shape(chosen[index] ? ACCENT : SURFACE_HIGH, 999));
+            });
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, -2, 1);
+            params.rightMargin = ui.dp(6);
+            wishRow.addView(wish, params);
+        }
+        EditText request = field(R.string.fix_request_hint, "", android.text.InputType.TYPE_CLASS_TEXT
+            | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES, 300);
+        box.addView(request, ui.spaced(12));
+        LinearLayout sayRow = horizontal();
+        EditText word = field(R.string.fix_word_hint, "", android.text.InputType.TYPE_CLASS_TEXT, 40);
+        EditText say = field(R.string.fix_say_hint, "", android.text.InputType.TYPE_CLASS_TEXT, 60);
+        sayRow.addView(word, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout.LayoutParams sayParams = new LinearLayout.LayoutParams(0, -2, 1);
+        sayParams.leftMargin = ui.dp(8);
+        sayRow.addView(say, sayParams);
+        box.addView(sayRow, ui.spaced(8));
+        box.addView(ui.text(getString(R.string.fix_tries, left), Type.CAPTION, TEXT_TERTIARY), ui.spaced(8));
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(box);
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.fix_title).setView(scroll)
+            .setPositiveButton(R.string.fix_go, null).setNegativeButton(android.R.string.cancel, null).create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(view -> {
+            List<String> wishes = new ArrayList<>();
+            for (int i = 0; i < chosen.length; i++) {
+                if (chosen[i]) {
+                    wishes.add(FIX_WISHES[i]);
+                }
+            }
+            String asked = request.getText().toString().trim();
+            String spoken = word.getText().toString().trim();
+            String saidAs = say.getText().toString().trim();
+            if (wishes.isEmpty() && asked.isEmpty() && (spoken.isEmpty() || saidAs.isEmpty())) {
+                notifyUser(R.string.fix_empty);
+                return;
+            }
+            dialog.dismiss();
+            makeTake(line, wishes, asked, spoken, saidAs);
+        }));
+        dialog.show();
+    }
+
+    private void makeTake(Scene.Line line, List<String> wishes, String asked, String spoken, String saidAs) {
+        AlertDialog working = new AlertDialog.Builder(this).setTitle(R.string.fix_title)
+            .setMessage(R.string.fix_working).setNegativeButton(android.R.string.cancel, null).create();
+        working.show();
+        String voice = studioCasting().voice(line.role);
+        studio.fix(fullScene, line, language, scriptTitle, castKey(), voice, wishes, asked, spoken, saidAs,
+            new StudioVoices.TakeResult() {
+                @Override
+                public void ready(StudioVoices.Take take) {
+                    if (!working.isShowing() || isDestroyed()) {
+                        studio.discard(take);
+                        return;
+                    }
+                    working.dismiss();
+                    chooseTake(line, take);
+                }
+
+                @Override
+                public void failed(StudioVoices.Stop reason) {
+                    working.dismiss();
+                    if (!isDestroyed()) {
+                        notifyUser(reason == StudioVoices.Stop.FAILED ? R.string.fix_failed
+                            : reason == StudioVoices.Stop.SCRIPT_LIMIT ? R.string.studio_script_limit
+                            : R.string.studio_monthly_limit);
+                    }
+                }
+            });
+    }
+
+    /** The new take plays at once; the actor keeps it or keeps the old one. */
+    private void chooseTake(Scene.Line line, StudioVoices.Take take) {
+        playPreview(take.audio);
+        String reading = take.note.optString("emotion")
+            + (take.note.optString("undertone").isEmpty() ? "" : " · " + take.note.optString("undertone"));
+        AlertDialog dialog = new AlertDialog.Builder(this).setTitle(R.string.fix_ready_title)
+            .setMessage(getString(R.string.fix_now, reading))
+            .setPositiveButton(R.string.fix_keep, (shown, which) -> {
+                releasePreviewPlayer();
+                studio.keep(take, line, language);
+                render();
+            })
+            .setNegativeButton(R.string.fix_revert, (shown, which) -> {
+                releasePreviewPlayer();
+                studio.discard(take);
+            })
+            .setNeutralButton(R.string.fix_listen, null)
+            .setCancelable(false)
+            .create();
+        dialog.setOnShowListener(shown -> dialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+            .setOnClickListener(view -> playPreview(take.audio)));
+        dialog.show();
+    }
+
+    private void playPreview(java.io.File file) {
+        cancelSpeech();
+        releasePreviewPlayer();
+        android.media.MediaPlayer player = new android.media.MediaPlayer();
+        try {
+            player.setDataSource(file.getPath());
+            player.prepare();
+        } catch (java.io.IOException | RuntimeException error) {
+            player.release();
+            return;
+        }
+        player.setOnCompletionListener(done -> releasePreviewPlayer());
+        previewPlayer = player;
+        player.start();
     }
 
     /** The value text of a list row, to change it without drawing the screen again. */

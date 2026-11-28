@@ -554,6 +554,10 @@ final class StudioVoices: ObservableObject {
         lock.lock()
         var stored = loadNotes()
         for line in scene.lines {
+            if let note = stored[Self.noteKey(line, language)] as? [String: Any], note["byActor"] as? Bool == true {
+                // The actor's own fix stays, with its audio.
+                continue
+            }
             if let note = stored[Self.noteKey(line, language)] as? [String: Any] {
                 for voice in Self.castVoices {
                     for fileExtension in ["wav", "m4a"] {
@@ -570,6 +574,110 @@ final class StudioVoices: ObservableObject {
         let snapshot = stored
         lock.unlock()
         try? saveNotes(snapshot)
+    }
+
+    // MARK: - Fixing one line
+
+    /// Tries per line, so a line cannot be asked for again and again without end.
+    static let fixesPerLine = 5
+    private static let fixesPrefix = "fixes:"
+    private let fixer = DispatchQueue(label: "studio-fix")
+
+    /// A new take of one line: its direction and audio, kept aside until the actor chooses it.
+    struct Take {
+        let note: [String: Any]
+        let audio: URL
+        let voice: String
+        let voiced: [String: Any]
+    }
+
+    func fixesLeft(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        let used = (loadNotes()[Self.fixesPrefix + Self.noteKey(line, language)] as? NSNumber)?.intValue ?? 0
+        return max(0, Self.fixesPerLine - used)
+    }
+
+    /// Has the director direct one line again the way the actor asked, and voices it, as a take the
+    /// actor can hear before keeping it. `done` runs on the main thread, with the take or why it failed.
+    func fix(_ fullScene: ScriptScene, _ line: ScriptScene.Line, _ language: ScriptLanguage, title: String,
+             castKey: String, voice: String, wishes: [String], request: String, word: String, say: String,
+             done: @escaping (Result<Take, Error>) -> Void) {
+        let script = Self.scriptId(castKey)
+        fixer.async {
+            do {
+                if !self.running {
+                    self.lock.lock()
+                    self.cancelled = false
+                    self.lock.unlock()
+                }
+                self.lock.lock()
+                var stored = self.loadNotes()
+                let key = Self.fixesPrefix + Self.noteKey(line, language)
+                stored[key] = ((stored[key] as? NSNumber)?.intValue ?? 0) + 1
+                self.notes = stored
+                self.lock.unlock()
+                try self.saveNotes(stored)
+                let sayings: [[String: String]] = word.isEmpty || say.isEmpty ? [] : [["word": word, "say": say]]
+                let body: [String: Any] = [
+                    "language": language.code, "title": title, "script": script,
+                    "lines": Self.linesJson([line]), "before": Self.linesJson(Self.linesBefore(fullScene, line)),
+                    "context": Self.contextFor(self.analysis(fullScene, language, script: script), section: line.section),
+                    "current": self.note(line, language) ?? [:],
+                    "wishes": wishes, "request": request, "pronunciations": sayings,
+                ]
+                let data = try self.post("/v1/revise", body)
+                guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      var note = answer["line"] as? [String: Any] else {
+                    throw Failure.busy
+                }
+                note["byActor"] = true
+                note["request"] = request
+                let audio = try self.speak(note, language, voice, script)
+                let take = FileManager.default.temporaryDirectory.appendingPathComponent("studio-take-\(UUID().uuidString).wav")
+                try audio.write(to: take, options: [.atomic])
+                let made = Take(note: note, audio: take, voice: voice, voiced: self.lastVoiced)
+                DispatchQueue.main.async { done(.success(made)) }
+            } catch {
+                DispatchQueue.main.async { done(.failure(error)) }
+            }
+        }
+    }
+
+    /// Why a fix failed, as the message key to show.
+    static func fixFailureKey(_ error: Error) -> String {
+        if let failure = error as? Failure, case .limit(let stop) = failure {
+            return stop == .scriptLimit ? "studio_script_limit" : "studio_monthly_limit"
+        }
+        return "fix_failed"
+    }
+
+    /// Keeps a take: it becomes the line's direction and audio, and the old audio goes.
+    func keep(_ take: Take, _ line: ScriptScene.Line, _ language: ScriptLanguage) {
+        lock.lock()
+        var stored = loadNotes()
+        if let old = stored[Self.noteKey(line, language)] as? [String: Any] {
+            for fileExtension in ["wav", "m4a"] {
+                let previous = audioFile(line, language, take.voice, old, fileExtension)
+                stored.removeValue(forKey: Self.voicedPrefix + previous.lastPathComponent)
+                try? FileManager.default.removeItem(at: previous)
+            }
+        }
+        stored[Self.noteKey(line, language)] = take.note
+        let target = audioFile(line, language, take.voice, take.note, "wav")
+        stored[Self.voicedPrefix + target.lastPathComponent] = take.voiced
+        notes = stored
+        lock.unlock()
+        try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        try? FileManager.default.removeItem(at: target)
+        try? FileManager.default.copyItem(at: take.audio, to: target)
+        try? saveNotes(stored)
+        discard(take)
+        objectWillChange.send()
+    }
+
+    func discard(_ take: Take) {
+        try? FileManager.default.removeItem(at: take.audio)
     }
 
     /// Whether the director has given a gender for every character.

@@ -162,6 +162,10 @@ final class AppModel: ObservableObject {
     @Published var recordingSpeaking = false
     /// The character voices screen was opened to check the cast before studio voices are prepared.
     @Published var castCheck = false
+    /// "Fix this line": the line being fixed, the fix being made, and the new take to choose.
+    @Published var fixingLine: ScriptScene.Line?
+    @Published var fixWorking = false
+    @Published var fixTake: StudioVoices.Take?
     /// iOS stops an app's work soon after it leaves the screen: preparing studio voices that was cut
     /// off there starts again by itself when the user comes back to the same script.
     private var studioLeftWhileRunning = false
@@ -1854,6 +1858,92 @@ final class AppModel: ObservableObject {
             },
             DialogButton(label: L("cancel"), role: .cancel),
         ])
+    }
+
+    // MARK: - Fixing one line
+
+    static let fixWishes = ["angrier", "calmer", "whisper", "shout", "tired", "scared", "sadder", "slower", "faster"]
+
+    /// How a line is played now, in a few words: mood, undertone and each part's style.
+    func currentReading(_ note: [String: Any]?) -> String {
+        guard let note else {
+            return ""
+        }
+        var parts = [note["emotion"] as? String ?? ""]
+        if let undertone = note["undertone"] as? String, !undertone.isEmpty {
+            parts.append(undertone)
+        }
+        for segment in note["segments"] as? [[String: Any]] ?? [] {
+            if let style = segment["style"] as? String, !style.isEmpty {
+                parts.append(style)
+            }
+        }
+        return parts.filter { !$0.isEmpty }.joined(separator: " · ")
+    }
+
+    func openFix(_ line: ScriptScene.Line) {
+        cancelSpeech()
+        guard studio.fixesLeft(line, language) > 0 else {
+            notifyKey("fix_no_tries")
+            return
+        }
+        fixTake = nil
+        fixWorking = false
+        fixingLine = line
+    }
+
+    func makeTake(wishes: [String], request: String, word: String, say: String) {
+        guard let line = fixingLine, let fullScene else {
+            return
+        }
+        guard !wishes.isEmpty || !request.isEmpty || (!word.isEmpty && !say.isEmpty) else {
+            notifyKey("fix_empty")
+            return
+        }
+        fixWorking = true
+        studio.fix(fullScene, line, language, title: scriptTitle, castKey: castKey, voice: studioCasting()(line.role),
+                   wishes: wishes, request: request, word: word, say: say) { result in
+            self.fixWorking = false
+            switch result {
+            case .success(let take):
+                guard self.fixingLine == line else {
+                    self.studio.discard(take)
+                    return
+                }
+                self.fixTake = take
+                self.playTake()
+            case .failure(let error):
+                self.fixingLine = nil
+                self.notifyKey(StudioVoices.fixFailureKey(error))
+            }
+        }
+    }
+
+    func playTake() {
+        guard let take = fixTake, let player = try? AVAudioPlayer(contentsOf: take.audio) else {
+            return
+        }
+        previewPlayer = player
+        player.play()
+    }
+
+    func keepTake() {
+        previewPlayer?.stop()
+        if let take = fixTake, let line = fixingLine {
+            studio.keep(take, line, language)
+        }
+        fixTake = nil
+        fixingLine = nil
+    }
+
+    /// Closes the fix; a take not kept is thrown away.
+    func closeFix() {
+        previewPlayer?.stop()
+        if let take = fixTake {
+            studio.discard(take)
+        }
+        fixTake = nil
+        fixingLine = nil
     }
 
     /// Every line's note, to share.

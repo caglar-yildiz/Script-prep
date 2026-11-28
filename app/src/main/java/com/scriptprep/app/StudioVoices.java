@@ -714,6 +714,10 @@ final class StudioVoices {
     synchronized void forget(Scene fullScene, Scene scene, ScriptLanguage language, String castKey) {
         for (Scene.Line line : scene.lines) {
             JSONObject note = notes().optJSONObject(noteKey(line, language));
+            if (note != null && note.optBoolean("byActor")) {
+                // The actor's own fix stays, with its audio.
+                continue;
+            }
             if (note != null) {
                 for (String voice : CAST_VOICES) {
                     for (String extension : new String[] {".wav", ".m4a"}) {
@@ -732,6 +736,125 @@ final class StudioVoices {
             saveNotes();
         } catch (IOException error) {
             Log.w(TAG, "Studio notes could not be saved", error);
+        }
+    }
+
+    // ---------------------------------------------------------------- Fixing one line
+
+    /** Tries per line, so a line cannot be asked for again and again without end. */
+    static final int FIXES_PER_LINE = 5;
+    private static final String FIXES = "fixes:";
+    private final ExecutorService fixer = Executors.newSingleThreadExecutor();
+
+    /** A new take of one line: its direction and audio, kept aside until the actor chooses it. */
+    static final class Take {
+        final JSONObject note;
+        final File audio;
+        final String voice;
+        final JSONObject voiced;
+
+        Take(JSONObject note, File audio, String voice, JSONObject voiced) {
+            this.note = note;
+            this.audio = audio;
+            this.voice = voice;
+            this.voiced = voiced;
+        }
+    }
+
+    interface TakeResult {
+        void ready(Take take);
+
+        void failed(Stop reason);
+    }
+
+    synchronized int fixesLeft(Scene.Line line, ScriptLanguage language) {
+        return Math.max(0, FIXES_PER_LINE - notes().optInt(FIXES + noteKey(line, language)));
+    }
+
+    /**
+     * Has the director direct one line again the way the actor asked, and voices it, as a take
+     * the actor can listen to before keeping it. {@code result} runs on the main thread.
+     */
+    void fix(Scene fullScene, Scene.Line line, ScriptLanguage language, String title, String castKey, String voice,
+        List<String> wishes, String request, String word, String say, TakeResult result) {
+        String script = scriptId(castKey);
+        fixer.execute(() -> {
+            try {
+                if (!running) {
+                    cancelled = false;
+                }
+                synchronized (this) {
+                    String key = FIXES + noteKey(line, language);
+                    notes().put(key, notes().optInt(key) + 1);
+                    saveNotes();
+                }
+                JSONArray wished = new JSONArray();
+                for (String wish : wishes) {
+                    wished.put(wish);
+                }
+                JSONArray sayings = new JSONArray();
+                if (!word.isEmpty() && !say.isEmpty()) {
+                    sayings.put(new JSONObject().put("word", word).put("say", say));
+                }
+                JSONObject current = note(line, language);
+                JSONObject body = new JSONObject().put("language", language.code).put("title", title)
+                    .put("script", script).put("lines", linesJson(java.util.Collections.singletonList(line)))
+                    .put("before", linesJson(linesBefore(fullScene, line)))
+                    .put("context", contextFor(analysis(fullScene, language, script), line.section))
+                    .put("current", current == null ? new JSONObject() : current)
+                    .put("wishes", wished).put("request", request).put("pronunciations", sayings);
+                JSONObject answer = new JSONObject(new String(post("/v1/revise", body), StandardCharsets.UTF_8));
+                JSONObject note = answer.getJSONObject("line").put("byActor", true).put("request", request);
+                byte[] audio = speak(note, language, voice, script);
+                File take = new File(context.getCacheDir(), "studio-take-" + System.nanoTime() + ".wav");
+                try (OutputStream output = new FileOutputStream(take)) {
+                    output.write(audio);
+                }
+                Take made = new Take(note, take, voice, lastVoiced.get());
+                main.post(() -> result.ready(made));
+            } catch (LimitException limit) {
+                main.post(() -> result.failed(limit.reason));
+            } catch (IOException | JSONException | RuntimeException error) {
+                Log.w(TAG, "The line could not be fixed", error);
+                main.post(() -> result.failed(Stop.FAILED));
+            }
+        });
+    }
+
+    /** Keeps a take: it becomes the line's direction and audio, and the old audio goes. */
+    synchronized void keep(Take take, Scene.Line line, ScriptLanguage language) {
+        try {
+            JSONObject old = notes().optJSONObject(noteKey(line, language));
+            if (old != null) {
+                for (String extension : new String[] {".wav", ".m4a"}) {
+                    File previous = audioFile(line, language, take.voice, old, extension);
+                    notes().remove(VOICED + previous.getName());
+                    if (previous.isFile() && !previous.delete()) {
+                        Log.w(TAG, "Could not delete " + previous.getName());
+                    }
+                }
+            }
+            notes().put(noteKey(line, language), take.note);
+            if (!folder.isDirectory() && !folder.mkdirs()) {
+                throw new IOException("Could not create the studio folder");
+            }
+            File target = audioFile(line, language, take.voice, take.note, ".wav");
+            try (InputStream input = new java.io.FileInputStream(take.audio);
+                 OutputStream output = new FileOutputStream(target)) {
+                output.write(readAll(input));
+            }
+            notes().put(VOICED + target.getName(), take.voiced);
+            saveNotes();
+        } catch (IOException | JSONException error) {
+            Log.w(TAG, "The take could not be kept", error);
+        } finally {
+            discard(take);
+        }
+    }
+
+    void discard(Take take) {
+        if (take.audio.isFile() && !take.audio.delete()) {
+            Log.w(TAG, "Could not delete a take");
         }
     }
 

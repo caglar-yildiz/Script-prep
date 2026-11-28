@@ -5,6 +5,7 @@
  *   POST /v1/analyze the whole play     -> the director's reading: story, characters, relationships, scenes
  *   POST /v1/cast    a scene        -> the characters' likely genders, before the cast is chosen
  *   POST /v1/direct  a scene        -> performance notes per line and the characters' likely genders
+ *   POST /v1/revise  one line and how the actor wants it -> that line's new direction
  *   POST /v1/speak   one noted line -> Gemini's answer: candidates with base64 WAV (Google Cloud) or
  *                                      PCM (older voices), or an interaction whose steps hold WAV
  *   GET  /v1/usage                  -> this month's counts and limits
@@ -15,6 +16,7 @@ import { CAST_SCHEMA, castPrompt, DIRECTION_SCHEMA, directorPrompt, normalizeCas
 import { answerText, audioAnswer, DIRECTOR_MODELS, generate, interact, LEGACY_VOICE_MODELS, UpstreamError, VERTEX_VOICE_MODELS,
   vertexGenerate, VOICE_MODELS } from "./gemini";
 import { Quota, QuotaKind } from "./quota";
+import { parseReviseRequest, revisedDirection, revisePrompt } from "./revise";
 import { legacyPrompt, parseSpeakRequest, SpeakRequest, VoiceInput, voiceInput } from "./speak";
 import { accessToken, parseServiceAccount } from "./vertex";
 
@@ -131,6 +133,32 @@ async function analyze(request: Request, env: Env, quota: DurableObjectStub<Quot
   }
 }
 
+/** One line directed again the way the actor asked; counts as one directed line. */
+async function revise(request: Request, env: Env, quota: DurableObjectStub<Quota>): Promise<Response> {
+  const body = await readBody(request);
+  const wish = parseReviseRequest(body);
+  const refused = await openScript(body, env, quota);
+  if (refused) {
+    return refused;
+  }
+  const limit = limitFor(env, "directed");
+  if (!(await quota.check("directed", 1, limit)).allowed) {
+    return problem(429, "monthly_limit", "Monthly limit for performance notes reached", 86_400);
+  }
+  const response = await generate(DIRECTOR_MODELS, {
+    contents: [{ parts: [{ text: revisePrompt(wish) }] }],
+    generationConfig: { responseMimeType: "application/json", responseSchema: DIRECTION_SCHEMA, temperature: 0.7 },
+  }, env.GEMINI_API_KEY);
+  let line;
+  try {
+    line = revisedDirection(wish, JSON.parse(await answerText(response)));
+  } catch (error) {
+    throw error instanceof UpstreamError ? error : new UpstreamError("The director's answer could not be used", 502);
+  }
+  await quota.add("directed", 1);
+  return json({ line });
+}
+
 /** The characters' genders only; cheap, so it counts against no allowance. */
 async function cast(request: Request, env: Env): Promise<Response> {
   const scene = parseDirectRequest(await readBody(request));
@@ -222,7 +250,7 @@ export default {
     if (url.pathname === "/" || url.pathname === "/health") {
       return json({ ok: true });
     }
-    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
+    const routes: Record<string, string> = { "/v1/analyze": "POST", "/v1/cast": "POST", "/v1/revise": "POST", "/v1/direct": "POST", "/v1/speak": "POST",
       "/v1/usage": "GET" };
     const method = routes[url.pathname];
     if (!method) {
@@ -245,6 +273,9 @@ export default {
       }
       if (url.pathname === "/v1/analyze") {
         return await analyze(request, env, quota);
+      }
+      if (url.pathname === "/v1/revise") {
+        return await revise(request, env, quota);
       }
       if (url.pathname === "/v1/cast") {
         return await cast(request, env);
