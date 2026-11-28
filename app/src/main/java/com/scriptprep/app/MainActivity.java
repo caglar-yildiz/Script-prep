@@ -4515,9 +4515,10 @@ public final class MainActivity extends Activity {
         // of being tried again by every Prepare.
         int blocked = idle ? studio.blockedCount(voiced, language, studioCasting()) : 0;
         if (idle && (done > 0 || blocked > 0)) {
-            String value = blocked > 0 ? getResources().getQuantityString(R.plurals.studio_blocked, blocked, blocked)
+            String notesValue = blocked > 0
+                ? getResources().getQuantityString(R.plurals.studio_blocked, blocked, blocked)
                 : getString(R.string.notes_value);
-            extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title), value,
+            extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title), notesValue,
                 view -> show(Screen.NOTES)), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
