@@ -409,6 +409,9 @@
 "record_upload_failed" = "Yüklenemedi. Kayıt bu telefonda duruyor; internete bağlanınca gönderilecek.";
 "record_uploading" = "Yükleniyor…";
 "record_your_line" = "Sen · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Prova";
+"rehearsal_notification_stop" = "Durdur";
+"rehearsal_notification_title" = "Prova sürüyor";
 "restart" = "Baştan prova yap";
 "results_clean" = "Bu sefer hiç takılmadın. Tebrikler!";
 "results_practice" = "Bu replikleri çalış (%1$d)";

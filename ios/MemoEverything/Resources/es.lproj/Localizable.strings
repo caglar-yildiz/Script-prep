@@ -409,6 +409,9 @@
 "record_upload_failed" = "No se pudo subir. Está guardada en este teléfono y se enviará cuando vuelvas a tener conexión.";
 "record_uploading" = "Subiendo…";
 "record_your_line" = "Tú · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Ensayo";
+"rehearsal_notification_stop" = "Detener";
+"rehearsal_notification_title" = "Ensayo en curso";
 "restart" = "Empezar de nuevo";
 "results_clean" = "Esta vez no te has trabado. ¡Bien hecho!";
 "results_practice" = "Ensayar estas réplicas (%1$d)";

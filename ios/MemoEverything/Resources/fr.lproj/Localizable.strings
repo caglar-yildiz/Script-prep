@@ -409,6 +409,9 @@
 "record_upload_failed" = "Envoi impossible. La prise est gardée sur ce téléphone et sera envoyée quand tu seras de nouveau en ligne.";
 "record_uploading" = "Envoi…";
 "record_your_line" = "Toi · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Répétition";
+"rehearsal_notification_stop" = "Arrêter";
+"rehearsal_notification_title" = "Répétition en cours";
 "restart" = "Recommencer";
 "results_clean" = "Aucun accroc cette fois. Bravo !";
 "results_practice" = "Travailler ces répliques (%1$d)";

@@ -566,6 +566,9 @@
     <string name="studio_stopping">Arrêt en cours… (%1$d répliques prêtes sur %2$d)</string>
     <string name="studio_notification_title">Préparation des voix studio</string>
     <string name="studio_notification_done">Les voix studio sont prêtes. Ouvre l’app pour répéter.</string>
+    <string name="rehearsal_notification_channel">Répétition</string>
+    <string name="rehearsal_notification_title">Répétition en cours</string>
+    <string name="rehearsal_notification_stop">Arrêter</string>
     <string name="studio_script_limit">Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.</string>
     <string name="cast_intro_studio">Choisis une voix studio pour chaque personnage. Le metteur en scène règle le rythme et le ton de chaque réplique. Touche lecture pour les écouter.</string>
     <string name="cast_check_title">Vérifie d’abord les voix</string>

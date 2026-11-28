@@ -566,6 +566,9 @@
     <string name="studio_stopping">Arresto in corso… (%1$d battute pronte su %2$d)</string>
     <string name="studio_notification_title">Preparazione delle voci da studio</string>
     <string name="studio_notification_done">Le voci da studio sono pronte. Apri l’app per provare.</string>
+    <string name="rehearsal_notification_channel">Prova</string>
+    <string name="rehearsal_notification_title">Prova in corso</string>
+    <string name="rehearsal_notification_stop">Ferma</string>
     <string name="studio_script_limit">Hai usato i 2 copioni di questo mese per le voci da studio. I copioni preparati continuano a suonare; i nuovi si aprono il mese prossimo.</string>
     <string name="cast_intro_studio">Scegli una voce da studio per ogni personaggio. Il regista decide ritmo e tono di ogni battuta. Tocca riproduci per ascoltarle.</string>
     <string name="cast_check_title">Controlla prima le voci</string>

@@ -3,6 +3,9 @@
     <!-- Studio voices keep preparing under a foreground service with a progress notification. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <!-- A rehearsal keeps playing and listening while the user is in another app. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
@@ -44,6 +47,7 @@
         </provider>
         <activity
             android:name=".MainActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -51,6 +55,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:name=".RehearsalService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback|microphone" />
         <service
             android:name=".StudioService"
             android:exported="false"

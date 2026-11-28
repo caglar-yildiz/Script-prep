@@ -566,6 +566,9 @@
     <string name="studio_stopping">Parando… (%1$d de %2$d falas prontas)</string>
     <string name="studio_notification_title">Preparando vozes de estúdio</string>
     <string name="studio_notification_done">As vozes de estúdio estão prontas. Abra o app para ensaiar.</string>
+    <string name="rehearsal_notification_channel">Ensaio</string>
+    <string name="rehearsal_notification_title">Ensaio em andamento</string>
+    <string name="rehearsal_notification_stop">Parar</string>
     <string name="studio_script_limit">Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.</string>
     <string name="cast_intro_studio">Escolha uma voz de estúdio para cada personagem. O diretor define o ritmo e o tom de cada fala. Toque em reproduzir para ouvir.</string>
     <string name="cast_check_title">Confira as vozes primeiro</string>

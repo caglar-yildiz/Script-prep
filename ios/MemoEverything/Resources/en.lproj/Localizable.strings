@@ -409,6 +409,9 @@
 "record_upload_failed" = "Couldn’t upload. It’s saved on this phone and will be sent when you’re back online.";
 "record_uploading" = "Uploading…";
 "record_your_line" = "You · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Rehearsal";
+"rehearsal_notification_stop" = "Stop";
+"rehearsal_notification_title" = "Rehearsal in progress";
 "restart" = "Start over";
 "results_clean" = "No stumbles this time. Well done!";
 "results_practice" = "Practise these lines (%1$d)";

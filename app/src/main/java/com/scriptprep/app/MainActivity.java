@@ -258,6 +258,14 @@ public final class MainActivity extends Activity {
         neural.setProgressListener(this::updateDownloadProgress);
         billing = new Billing(this, preferences);
         billing.setListener(this::onBillingChanged);
+        // The rehearsal notification's Stop: end the rehearsal and its sound and listening.
+        RehearsalService.onStop = () -> main.post(() -> {
+            cancelSpeech();
+            stopListening();
+            if (screen == Screen.REHEARSAL && !isDestroyed()) {
+                render();
+            }
+        });
         billing.setExtraListener(this::onExtraPaid);
         drawBehindSystemBars();
         if (state != null) {
@@ -392,10 +400,13 @@ public final class MainActivity extends Activity {
     @Override
     protected void onStop() {
         visible = false;
-        cancelSpeech();
-        stopListening();
-        if (screen == Screen.REHEARSAL) {
-            render();
+        // A rehearsal goes on in the background while its service runs; anything else stops.
+        if (!rehearsalActive()) {
+            cancelSpeech();
+            stopListening();
+            if (screen == Screen.REHEARSAL) {
+                render();
+            }
         }
         super.onStop();
     }
@@ -409,7 +420,9 @@ public final class MainActivity extends Activity {
         billing.end();
         if (isFinishing()) {
             neural.unload();
+            RehearsalService.stop(this);
         }
+        RehearsalService.onStop = null;
         if (handsFree != null) {
             handsFree.destroy();
         }
@@ -833,7 +846,7 @@ public final class MainActivity extends Activity {
     }
 
     private void playCurrent() {
-        if (!visible || screen != Screen.REHEARSAL || position >= scene.lines.size()) {
+        if (!rehearsalActive() || screen != Screen.REHEARSAL || position >= scene.lines.size()) {
             return;
         }
         Scene.Line line = scene.lines.get(position);
@@ -966,7 +979,7 @@ public final class MainActivity extends Activity {
 
     /** Beeps when the rehearsal reaches one of the actor's own lines. */
     private boolean cueTurn() {
-        if (mode != Mode.PRACTICE || !visible || screen != Screen.REHEARSAL || !isMyTurn()
+        if (mode != Mode.PRACTICE || !rehearsalActive() || screen != Screen.REHEARSAL || !isMyTurn()
             || !preferences.getBoolean(TURN_CUE_PREFERENCE, true)) {
             return false;
         }
@@ -1000,6 +1013,27 @@ public final class MainActivity extends Activity {
             castCheck = false;
         }
         screen = target;
+        // The rehearsal keeps going while the user is in another app (see RehearsalService).
+        if (target == Screen.REHEARSAL) {
+            RehearsalService.start(this, scriptTitle);
+        } else {
+            RehearsalService.stop(this);
+        }
+        render();
+    }
+
+    /**
+     * Whether the rehearsal runs: on screen, or in the background while the rehearsal service
+     * keeps the app alive (another app, the screen off).
+     */
+    private boolean rehearsalActive() {
+        return visible || (screen == Screen.REHEARSAL && RehearsalService.isRunning());
+    }
+
+    /** Turning the phone redraws the screen; the rehearsal is not interrupted. */
+    @Override
+    public void onConfigurationChanged(android.content.res.Configuration config) {
+        super.onConfigurationChanged(config);
         render();
     }
 
@@ -5377,7 +5411,7 @@ public final class MainActivity extends Activity {
     }
 
     private void listenIfNeeded() {
-        if (!handsFreeEnabled() || !visible || screen != Screen.REHEARSAL || !isMyTurn()) {
+        if (!handsFreeEnabled() || !rehearsalActive() || screen != Screen.REHEARSAL || !isMyTurn()) {
             return;
         }
         heardSoFar = "";
@@ -5393,7 +5427,7 @@ public final class MainActivity extends Activity {
         int target = position;
         handsFree.start(new HandsFree.Listener() {
             private boolean stale() {
-                return target != position || screen != Screen.REHEARSAL || !handsFreeEnabled() || !visible;
+                return target != position || screen != Screen.REHEARSAL || !handsFreeEnabled() || !rehearsalActive();
             }
 
             @Override

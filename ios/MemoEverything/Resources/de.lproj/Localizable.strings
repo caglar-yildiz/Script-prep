@@ -409,6 +409,9 @@
 "record_upload_failed" = "Hochladen fehlgeschlagen. Die Aufnahme ist auf diesem Telefon gespeichert und wird gesendet, sobald du wieder online bist.";
 "record_uploading" = "Wird hochgeladen…";
 "record_your_line" = "Du · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Probe";
+"rehearsal_notification_stop" = "Stoppen";
+"rehearsal_notification_title" = "Probe läuft";
 "restart" = "Von vorn beginnen";
 "results_clean" = "Diesmal ohne Hänger. Gut gemacht!";
 "results_practice" = "Diese Repliken üben (%1$d)";

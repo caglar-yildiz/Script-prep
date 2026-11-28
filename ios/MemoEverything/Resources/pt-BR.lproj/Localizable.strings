@@ -409,6 +409,9 @@
 "record_upload_failed" = "Não foi possível enviar. A gravação está salva neste celular e será enviada quando você voltar a ficar online.";
 "record_uploading" = "Enviando…";
 "record_your_line" = "Você · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Ensaio";
+"rehearsal_notification_stop" = "Parar";
+"rehearsal_notification_title" = "Ensaio em andamento";
 "restart" = "Recomeçar";
 "results_clean" = "Nenhum tropeço desta vez. Muito bem!";
 "results_practice" = "Praticar estas falas (%1$d)";

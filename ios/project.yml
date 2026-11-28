@@ -53,6 +53,8 @@ targets:
       path: MemoEverything/Info.plist
       properties:
         CFBundleDisplayName: Memo Everything
+        # A rehearsal keeps playing and listening while the user is in another app.
+        UIBackgroundModes: [audio]
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         CFBundleDevelopmentRegion: en

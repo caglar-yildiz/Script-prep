@@ -409,6 +409,9 @@
 "record_upload_failed" = "Caricamento non riuscito. La registrazione è salvata su questo telefono e verrà inviata quando sarai di nuovo online.";
 "record_uploading" = "Caricamento…";
 "record_your_line" = "Tu · %1$@ · %2$d/%3$d";
+"rehearsal_notification_channel" = "Prova";
+"rehearsal_notification_stop" = "Ferma";
+"rehearsal_notification_title" = "Prova in corso";
 "restart" = "Ricomincia";
 "results_clean" = "Nessun inciampo questa volta. Bravo!";
 "results_practice" = "Ripassa queste battute (%1$d)";

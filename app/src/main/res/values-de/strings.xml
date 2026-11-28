@@ -552,6 +552,9 @@
     <string name="studio_stopping">Wird gestoppt … (%1$d von %2$d Sätzen fertig)</string>
     <string name="studio_notification_title">Studiostimmen werden vorbereitet</string>
     <string name="studio_notification_done">Die Studiostimmen sind fertig. Öffne die App zum Proben.</string>
+    <string name="rehearsal_notification_channel">Probe</string>
+    <string name="rehearsal_notification_title">Probe läuft</string>
+    <string name="rehearsal_notification_stop">Stoppen</string>
     <string name="studio_script_limit">Du hast die 2 Texte dieses Monats für Studiostimmen genutzt. Vorbereitete Texte spielen weiter; neue gehen nächsten Monat.</string>
     <string name="cast_intro_studio">Wähle für jede Figur eine Studiostimme. Tempo und Stimmung jeder Replik bestimmt die Regie. Tippe auf Abspielen, um sie zu hören.</string>
     <string name="cast_check_title">Prüfe zuerst die Stimmen</string>

@@ -258,9 +258,17 @@ final class AppModel: ObservableObject {
 
     func onBackground() {
         visible = false
-        cancelSpeech()
-        stopListening()
+        // A rehearsal keeps playing and listening in the background (audio background mode).
+        if screen != .rehearsal {
+            cancelSpeech()
+            stopListening()
+        }
         updateIdleTimer()
+    }
+
+    /// Whether the rehearsal runs: on screen, or in the background on the rehearsal screen.
+    var rehearsalActive: Bool {
+        visible || screen == .rehearsal
     }
 
     func refreshPremium() {
@@ -2201,7 +2209,7 @@ final class AppModel: ObservableObject {
     }
 
     func playCurrent() {
-        guard visible, screen == .rehearsal, position < scene.lines.count else {
+        guard rehearsalActive, screen == .rehearsal, position < scene.lines.count else {
             return
         }
         let line = scene.lines[position]
@@ -2361,7 +2369,7 @@ final class AppModel: ObservableObject {
 
     /// Beeps when the rehearsal reaches one of the actor's own lines.
     private func cueTurn() -> Bool {
-        guard mode == .practice, visible, screen == .rehearsal, isMyTurn, turnCueOn else {
+        guard mode == .practice, rehearsalActive, screen == .rehearsal, isMyTurn, turnCueOn else {
             return false
         }
         turnCue.play(millis: Self.turnCueMillis)
@@ -2507,7 +2515,7 @@ final class AppModel: ObservableObject {
     }
 
     func listenIfNeeded() {
-        guard handsFreeEnabled, visible, screen == .rehearsal, isMyTurn else {
+        guard handsFreeEnabled, rehearsalActive, screen == .rehearsal, isMyTurn else {
             return
         }
         heardSoFar = ""
@@ -2523,7 +2531,7 @@ final class AppModel: ObservableObject {
     }
 
     fileprivate func listenerStale(_ target: Int) -> Bool {
-        target != position || screen != .rehearsal || !handsFreeEnabled || !visible
+        target != position || screen != .rehearsal || !handsFreeEnabled || !rehearsalActive
     }
 
     fileprivate func onListening(_ target: Int) {
