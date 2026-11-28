@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Memo Everything – studio voices promo</title>
+<style>
+  /* App palette (Ui.java) */
+  :root {
+    --bg: #111015; --surface: #1B1A21; --surface-high: #25232D; --surface-highest: #312E3A;
+    --text: #F5F2F8; --text2: #B4ADBF; --text3: #827B8D;
+    --accent: #F4A98A; --on-accent: #2B1610; --accent-c: #3B2924; --on-accent-c: #FFD8C9;
+    --violet: #C9B6F2; --violet-c: #2C2640; --teal: #8FD3C1; --teal-c: #1C312D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+  body { font-family: "Inter", "DejaVu Sans", sans-serif; color: var(--text); position: relative; }
+  .layer { position: absolute; inset: 0; }
+  .glow { position: absolute; width: 1400px; height: 1400px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(244,169,138,0.22), rgba(244,169,138,0) 62%); }
+  .glow.v { background: radial-gradient(circle, rgba(201,182,242,0.18), rgba(201,182,242,0) 62%); }
+
+  #hook { display: flex; flex-direction: column; justify-content: center; padding: 0 110px; }
+  #hook .big { font-size: 112px; font-weight: 800; line-height: 1.06; letter-spacing: -2px; }
+  #hook .big div { opacity: 0; }
+  #hook .answer { margin-top: 60px; font-size: 140px; font-weight: 800; color: var(--accent); letter-spacing: -3px; }
+
+  .caption { position: absolute; left: 90px; right: 90px; top: 110px; }
+  .caption h2 { font-size: 74px; font-weight: 800; line-height: 1.06; letter-spacing: -1.5px; }
+  .caption p { margin-top: 22px; font-size: 36px; color: var(--text2); line-height: 1.3; }
+
+  #phone { position: absolute; left: 160px; top: 480px; width: 760px; height: 1380px;
+    border-radius: 86px; background: #000; padding: 22px;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 3px #2a2731; }
+  #screen { position: relative; width: 100%; height: 100%; border-radius: 66px; overflow: hidden; background: var(--bg); }
+  .notch { position: absolute; top: 22px; left: 50%; width: 30px; height: 30px; margin-left: -15px;
+    border-radius: 50%; background: #000; z-index: 5; }
+  .page { position: absolute; inset: 0; padding: 104px 44px 40px; }
+  .bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+  .bar .t { font-size: 30px; font-weight: 700; }
+  .bar .mode { font-size: 24px; font-weight: 600; color: var(--on-accent-c); background: var(--accent-c);
+    padding: 10px 20px; border-radius: 999px; }
+  .progress { height: 8px; border-radius: 4px; background: var(--surface-high); overflow: hidden; margin-bottom: 40px; }
+  .progress div { height: 100%; background: var(--accent); width: 0; }
+  .prev { font-size: 28px; color: var(--text3); line-height: 1.35; min-height: 120px; }
+  .prev b { display: block; font-size: 22px; letter-spacing: 2px; color: var(--text3); margin-bottom: 6px; }
+  .line { margin-top: 30px; background: var(--surface); border: 2px solid #292631; border-radius: 40px;
+    padding: 40px 38px 36px; }
+  .who { display: flex; align-items: center; gap: 18px; }
+  .avatar { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 800; }
+  .who .name { font-size: 30px; font-weight: 800; letter-spacing: 1px; }
+  .who .voice { font-size: 22px; color: var(--text2); margin-top: 2px; }
+  .said { margin-top: 30px; font-family: "DejaVu Serif", serif; font-size: 46px; line-height: 1.32; min-height: 190px; }
+  .wave { display: flex; align-items: center; gap: 8px; height: 90px; margin-top: 26px; }
+  .wave i { display: block; width: 12px; border-radius: 6px; background: var(--accent); height: 12px; }
+  .director { margin-top: 30px; background: var(--violet-c); border-radius: 30px; padding: 28px 30px; }
+  .director .over { font-size: 21px; font-weight: 700; letter-spacing: 3px; color: var(--violet); }
+  .chips { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; }
+  .chip { height: 54px; padding: 0 24px; border-radius: 999px; display: inline-flex; align-items: center;
+    font-size: 26px; font-weight: 700; background: var(--violet); color: #1d1730; }
+  .chip.soft { background: rgba(201,182,242,0.16); color: var(--violet); font-weight: 600; }
+  .controls { position: absolute; left: 44px; right: 44px; bottom: 50px; display: flex; gap: 18px; align-items: center; }
+  .round { width: 110px; height: 110px; border-radius: 50%; background: var(--accent-c); display: flex;
+    align-items: center; justify-content: center; }
+  .round svg { width: 50px; height: 50px; fill: var(--accent); }
+  .next { flex: 1; height: 110px; border-radius: 55px; background: var(--accent); color: var(--on-accent);
+    font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+
+  #end { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px; }
+  #end .mark { width: 300px; height: 300px; border-radius: 80px; background: #241D2B;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 30px 90px rgba(0,0,0,0.5); }
+  #end .mark svg { width: 300px; height: 300px; }
+  #end h1 { font-size: 100px; font-weight: 800; letter-spacing: -2px; margin-top: 70px; }
+  #end .tag { font-size: 54px; color: var(--accent); font-weight: 700; margin-top: 22px; line-height: 1.15; }
+  #end .facts { margin-top: 64px; display: flex; flex-direction: column; gap: 22px; font-size: 36px; color: var(--text2); }
+  #end .store { margin-top: 84px; height: 120px; padding: 0 60px; border-radius: 60px; background: var(--text);
+    color: var(--bg); font-size: 40px; font-weight: 700; display: flex; align-items: center; }
+</style>
+</head>
+<body>
+<div class="glow" id="glow1"></div>
+<div class="glow v" id="glow2"></div>
+
+<div class="layer" id="hook">
+  <div class="big"><div>Your scene partner</div><div>doesn’t just read.</div></div>
+  <div class="answer" id="answer">It acts.</div>
+</div>
+
+<div class="layer" id="scene">
+  <div class="caption" id="cap1"><h2>Studio voices</h2>
+    <p>An AI director reads your whole play, then gives every line a real performance.</p></div>
+  <div class="caption" id="cap2"><h2>Whispers. Panic. Sarcasm.</h2>
+    <p>Every line played the way the scene needs it.</p></div>
+  <div id="phone"><div id="screen"><div class="notch"></div>
+    <div class="page">
+      <div class="bar"><div class="t">Opening Night</div><div class="mode">★ Studio voices</div></div>
+      <div class="progress"><div id="progress"></div></div>
+      <div class="prev" id="prev"></div>
+      <div class="line">
+        <div class="who"><div class="avatar" id="avatar"></div>
+          <div><div class="name" id="name"></div><div class="voice" id="voice"></div></div></div>
+        <div class="said" id="said"></div>
+        <div class="wave" id="wave"></div>
+      </div>
+      <div class="director"><div class="over">DIRECTOR’S NOTE</div><div class="chips" id="chips"></div></div>
+    </div>
+    <div class="controls">
+      <div class="round"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg></div>
+      <div class="round"><svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg></div>
+      <div class="next">Next line</div>
+    </div>
+  </div></div>
+</div>
+
+<div class="layer" id="end">
+  <div class="mark"><svg viewBox="0 0 108 108"><path fill="#F3BDA4" d="M28,49 C27,43 31,36 38,32 C42,30 46,29 48,31 C50,33 49,35 46,36 C42,38 40,41 40,45 C45,44 50,47 54,51 C54,43 59,35 67,31 C71,29 75,29 76,32 C78,34 76,36 73,37 C69,39 67,42 66,45 C75,44 83,53 83,63 L83,74 C83,77 81,79 78,79 L73,79 C70,79 68,77 68,74 L68,65 C68,62 66,60 64,60 C61,60 59,62 59,65 L59,74 C59,77 57,79 54,79 L51,79 C48,79 46,77 46,74 L46,65 C46,62 44,60 42,60 C39,60 37,62 37,65 L37,74 C37,77 35,79 32,79 L28,79 C25,79 23,77 23,74 L23,62 C23,56 25,52 28,49 Z"/></svg></div>
+  <h1>Memo Everything</h1>
+  <div class="tag">Rehearse with a cast that acts</div>
+  <div class="facts"><div>Studio voices for every character</div><div>Reads your whole script first</div></div>
+  <div class="store">Get it on Google Play</div>
+</div>
+
+<script>
+  // The English sample scene's first ten lines with the studio voice pack's notes and audio lengths
+  // (app/src/main/assets/studio-sample/en.json). render-studio.js plays the same audio at STARTS.
+  const LINES = [
+ {
+  "role": "ECE",
+  "text": "Mert! Are you awake? The curtain goes up in ten minutes.",
+  "voice": "Kore",
+  "emotion": "nervous",
+  "volume": "whisper",
+  "style": "urgent, quiet whisper",
+  "audio": "en-1.m4a",
+  "duration": 5.01
+ },
+ {
+  "role": "MERT",
+  "text": "Ten minutes? I was just resting my eyes.",
+  "voice": "Charon",
+  "emotion": "tired",
+  "volume": "normal",
+  "style": "sleepy, confused tone",
+  "audio": "en-2.m4a",
+  "duration": 5.26
+ },
+ {
+  "role": "ECE",
+  "text": "The director just told me. We’re completely sold out!",
+  "voice": "Kore",
+  "emotion": "excited",
+  "volume": "loud",
+  "style": "excited and energetic",
+  "audio": "en-3.m4a",
+  "duration": 4.02
+ },
+ {
+  "role": "MERT",
+  "text": "Sold out? Every single seat?",
+  "voice": "Charon",
+  "emotion": "excited",
+  "volume": "loud",
+  "style": "shocked and abrupt",
+  "audio": "en-4.m4a",
+  "duration": 2.87
+ },
+ {
+  "role": "ECE",
+  "text": "Every single seat. Even the balcony.",
+  "voice": "Kore",
+  "emotion": "happy",
+  "volume": "normal",
+  "style": "bright and reassuring",
+  "audio": "en-5.m4a",
+  "duration": 3.21
+ },
+ {
+  "role": "MERT",
+  "text": "Then where’s my hat? I can’t go on without my hat!",
+  "voice": "Charon",
+  "emotion": "afraid",
+  "volume": "loud",
+  "style": "frantic, high-pitched panic",
+  "audio": "en-6.m4a",
+  "duration": 3.52
+ },
+ {
+  "role": "ECE",
+  "text": "Oh, of course. The whole play depends on your hat.",
+  "voice": "Kore",
+  "emotion": "sarcastic",
+  "volume": "normal",
+  "style": "dry and mocking",
+  "audio": "en-7.m4a",
+  "duration": 4.49
+ },
+ {
+  "role": "MERT",
+  "text": "It does! The second act is all about the hat!",
+  "voice": "Charon",
+  "emotion": "angry",
+  "volume": "shout",
+  "style": "defensive and loud",
+  "audio": "en-8.m4a",
+  "duration": 3.65
+ },
+ {
+  "role": "ECE",
+  "text": "Mert. Breathe. It’s on your head.",
+  "voice": "Kore",
+  "emotion": "neutral",
+  "volume": "normal",
+  "style": "firm and steady",
+  "audio": "en-9.m4a",
+  "duration": 4.37
+ },
+ {
+  "role": "MERT",
+  "text": "…Oh.",
+  "voice": "Charon",
+  "emotion": "hurt",
+  "volume": "quiet",
+  "style": "embarrassed, sheepish murmur",
+  "audio": "en-10.m4a",
+  "duration": 1.79
+ }
+];
+  const HOOK = 3.6;
+  const GAP = 0.45;
+  const STARTS = [];
+  let clock = HOOK + 0.5;
+  for (const line of LINES) {
+    STARTS.push(clock);
+    clock += line.duration + GAP;
+  }
+  const SCENE_END = clock + 0.5;
+  const DURATION = SCENE_END + 5.5;
+  window.LINES = LINES;
+  window.STARTS = STARTS;
+  window.DURATION = DURATION;
+
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+  const ease = t => 1 - Math.pow(1 - clamp(t), 3);
+  const ramp = (t, start, d) => ease((t - start) / d);
+  const window_ = (t, a, b, d = 0.4) => Math.min(ramp(t, a, d), 1 - ramp(t, b - d, d));
+  const $ = id => document.getElementById(id);
+  const VOLUME = { whisper: "whispering", quiet: "quiet", normal: "", loud: "loud", shout: "shouting" };
+  const COLORS = { ECE: ["#3B2924", "#F4A98A"], MERT: ["#1C312D", "#8FD3C1"] };
+
+  const bars = [];
+  for (let i = 0; i < 26; i++) {
+    const bar = document.createElement("i");
+    $("wave").appendChild(bar);
+    bars.push(bar);
+  }
+
+  function render(t) {
+    $("glow1").style.transform = `translate(${-300 + 120 * Math.sin(t / 3)}px, ${-200 + 900 * clamp(t / DURATION)}px)`;
+    $("glow2").style.transform = `translate(${200 - 120 * Math.cos(t / 4)}px, ${900 - 500 * clamp(t / DURATION)}px)`;
+
+    const hook = $("hook");
+    hook.style.opacity = 1 - ramp(t, HOOK - 0.4, 0.4);
+    hook.querySelectorAll(".big div").forEach((d, i) => {
+      d.style.opacity = ramp(t, 0.2 + i * 0.5, 0.4);
+      d.style.transform = `translateY(${30 * (1 - ramp(t, 0.2 + i * 0.5, 0.4))}px)`;
+    });
+    $("answer").style.opacity = ramp(t, 1.7, 0.3);
+    $("answer").style.transform = `scale(${0.85 + 0.15 * ramp(t, 1.7, 0.4)})`;
+
+    const scene = $("scene");
+    const sceneShown = window_(t, HOOK - 0.2, SCENE_END + 0.2, 0.5);
+    scene.style.opacity = sceneShown;
+    $("phone").style.transform = `translateY(${80 * (1 - ramp(t, HOOK - 0.2, 0.7))}px)`;
+    const half = STARTS[5];
+    $("cap1").style.opacity = window_(t, HOOK, half - 0.1, 0.35);
+    $("cap2").style.opacity = window_(t, half - 0.1, SCENE_END + 0.5, 0.35);
+
+    let index = 0;
+    for (let i = 0; i < STARTS.length; i++) {
+      if (t >= STARTS[i] - 0.3) index = i;
+    }
+    const line = LINES[index];
+    const shown = ramp(t, STARTS[index] - 0.3, 0.3);
+    const [bg, fg] = COLORS[line.role] || ["#2C2640", "#C9B6F2"];
+    $("avatar").style.background = bg;
+    $("avatar").style.color = fg;
+    $("avatar").textContent = line.role[0];
+    $("name").textContent = line.role;
+    $("name").style.color = fg;
+    $("voice").textContent = `Studio voice · ${line.voice}`;
+    $("said").textContent = line.text;
+    $("said").style.opacity = shown;
+    $("said").style.transform = `translateY(${20 * (1 - shown)}px)`;
+    const prev = index > 0 ? LINES[index - 1] : null;
+    $("prev").innerHTML = prev ? `<b>${prev.role}</b>${prev.text}` : "";
+    const chips = [line.emotion, VOLUME[line.volume]].filter(Boolean)
+      .map(c => `<span class="chip">${c}</span>`).join("")
+      + `<span class="chip soft">${line.style}</span>`;
+    if ($("chips").innerHTML !== chips) $("chips").innerHTML = chips;
+    $("chips").style.opacity = ramp(t, STARTS[index] - 0.1, 0.35);
+
+    const speaking = t >= STARTS[index] && t <= STARTS[index] + line.duration;
+    const loudness = { whisper: 0.35, quiet: 0.45, normal: 0.7, loud: 0.95, shout: 1 }[line.volume] || 0.7;
+    bars.forEach((bar, i) => {
+      const wave = Math.abs(Math.sin(t * 9 + i * 0.7) * Math.sin(t * 4.3 + i * 1.9));
+      bar.style.height = `${12 + (speaking ? wave * 76 * loudness : 0)}px`;
+      bar.style.background = fg;
+      bar.style.opacity = speaking ? 1 : 0.35;
+    });
+    const done = index + clamp((t - STARTS[index]) / line.duration);
+    $("progress").style.width = `${100 * clamp(done / LINES.length)}%`;
+
+    const end = $("end");
+    end.style.opacity = ramp(t, SCENE_END - 0.1, 0.5);
+    end.style.transform = `scale(${0.95 + 0.05 * ramp(t, SCENE_END - 0.1, 0.8)})`;
+  }
+  window.render = render;
+  render(0);
+</script>
+</body>
+</html>
