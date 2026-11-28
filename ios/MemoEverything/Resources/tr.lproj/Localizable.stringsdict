@@ -242,6 +242,22 @@
 			<string>%d taranmış sayfa metin tanıma ile okundu. Provadan önce karakter adlarını ve replikleri kontrol et.</string>
 		</dict>
 	</dict>
+	<key>studio_blocked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d replik seslendirilemedi; nedeni Yönetmen notlarında</string>
+			<key>other</key>
+			<string>%d replik seslendirilemedi; nedeni Yönetmen notlarında</string>
+		</dict>
+	</dict>
 	<key>trial_days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

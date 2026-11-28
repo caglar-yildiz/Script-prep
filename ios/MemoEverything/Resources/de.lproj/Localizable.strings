@@ -469,6 +469,8 @@
 "studio_allowance" = "Studiostimmen lassen sich für 2 Texte im Monat vorbereiten.";
 "studio_daily_limit" = "Das heutige Limit für Studiostimmen ist erreicht. Die vorbereiteten Sätze bleiben; mach morgen weiter.";
 "studio_failed" = "Die Studiostimmen konnten nicht weiter vorbereitet werden. Fertige Repliken bleiben erhalten; versuch es gleich noch einmal.";
+"studio_failed_lasting" = "Nicht vertont: Die Stimme gab für diese Replik zweimal keine brauchbare Antwort. Versuch es erneut oder korrigiere sie.";
+"studio_failed_network" = "Noch nicht vertont: Die Verbindung brach ab. Erneutes Vorbereiten versucht es wieder.";
 "studio_monthly_limit" = "Das Monatslimit für Studiostimmen ist erreicht.";
 "studio_none" = "Nicht vorbereitet · bis dahin lesen die anderen Stimmen";
 "studio_notification_done" = "Die Studiostimmen sind fertig. Öffne die App zum Proben.";
@@ -481,6 +483,7 @@
 "studio_privacy" = "Die Sätze werden an Google Gemini gesendet, um die Stimmen vorzubereiten. Jeder Satz wird einmal vorbereitet und bleibt dann auf diesem Telefon.";
 "studio_progress" = "Wird vorbereitet… %1$d von %2$d Sätzen fertig";
 "studio_ready" = "%1$d von %2$d Sätzen fertig";
+"studio_retry" = "Erneut versuchen";
 "studio_sample" = "Hör dir die Studiostimmen in dieser Beispielszene an. Premium bereitet sie für deine Texte vor.";
 "studio_script_limit" = "Du hast die 2 Texte dieses Monats für Studiostimmen genutzt. Vorbereitete Texte spielen weiter; neue gehen nächsten Monat.";
 "studio_start" = "Vorbereiten";

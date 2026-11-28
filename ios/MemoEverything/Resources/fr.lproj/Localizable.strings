@@ -469,6 +469,8 @@
 "studio_allowance" = "Les voix studio peuvent être préparées pour 2 textes par mois.";
 "studio_daily_limit" = "La limite quotidienne des voix studio est atteinte. Les répliques préparées sont gardées ; continue demain.";
 "studio_failed" = "Impossible de continuer à préparer les voix studio. Les répliques déjà prêtes sont gardées ; réessaie dans un moment.";
+"studio_failed_lasting" = "Pas de voix : le service n’a pas donné de réponse utilisable pour cette réplique, deux fois. Réessaie ou corrige-la.";
+"studio_failed_network" = "Pas encore de voix : la connexion a coupé. Préparer à nouveau la réessaie.";
 "studio_monthly_limit" = "La limite mensuelle des voix studio est atteinte.";
 "studio_none" = "Non préparées · les autres voix lisent en attendant";
 "studio_notification_done" = "Les voix studio sont prêtes. Ouvre l’app pour répéter.";
@@ -481,6 +483,7 @@
 "studio_privacy" = "Les répliques sont envoyées à Google Gemini pour préparer les voix. Chaque réplique est préparée une fois puis reste sur ce téléphone.";
 "studio_progress" = "Préparation… %1$d répliques prêtes sur %2$d";
 "studio_ready" = "%1$d répliques prêtes sur %2$d";
+"studio_retry" = "Réessayer";
 "studio_sample" = "Écoutez les voix studio dans cette scène d’exemple. Premium les prépare pour vos textes.";
 "studio_script_limit" = "Tu as utilisé les 2 textes de ce mois pour les voix studio. Les textes préparés restent jouables ; les nouveaux s’ouvrent le mois prochain.";
 "studio_start" = "Préparer";

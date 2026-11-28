@@ -549,6 +549,13 @@
     <string name="voice_engine_ai_detail">A natural voice that runs on this phone, offline</string>
     <string name="voice_engine_studio_detail">Acted, expressive voices prepared by an AI director</string>
     <string name="studio_allowance">Studio voices can be prepared for 2 scripts a month.</string>
+    <plurals name="studio_blocked">
+        <item quantity="one">%d line couldn’t be voiced; see why in Director’s notes</item>
+        <item quantity="other">%d lines couldn’t be voiced; see why in Director’s notes</item>
+    </plurals>
+    <string name="studio_failed_lasting">Not voiced: the voice gave no usable answer for this line, twice. Try again, or fix it.</string>
+    <string name="studio_failed_network">Not voiced yet: the connection dropped. Preparing again tries it.</string>
+    <string name="studio_retry">Try again</string>
     <string name="extra_title">Extra script</string>
     <string name="extra_message">This month’s scripts are used. Add this script for %1$s: you buy it once and it stays ready to prepare.</string>
     <string name="extra_buy">Buy</string>

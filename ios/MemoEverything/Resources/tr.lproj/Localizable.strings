@@ -469,6 +469,8 @@
 "studio_allowance" = "Her ay 2 senaryo için stüdyo sesi hazırlanabilir.";
 "studio_daily_limit" = "Bugünkü stüdyo sesi sınırına ulaşıldı. Hazırlanan replikler saklandı; yarın devam et.";
 "studio_failed" = "Stüdyo sesleri hazırlanmaya devam edemedi. Hazırlanan replikler saklandı; biraz sonra tekrar dene.";
+"studio_failed_lasting" = "Seslendirilemedi: ses servisi bu replik için iki kez kullanılabilir bir cevap vermedi. Tekrar dene ya da düzelt.";
+"studio_failed_network" = "Henüz seslendirilmedi: bağlantı koptu. Tekrar hazırlayınca denenir.";
 "studio_monthly_limit" = "Bu ayın stüdyo sesi sınırına ulaşıldı.";
 "studio_none" = "Hazırlanmadı · o zamana kadar diğer sesler okur";
 "studio_notification_done" = "Stüdyo sesleri hazır. Prova için uygulamayı aç.";
@@ -481,6 +483,7 @@
 "studio_privacy" = "Sesleri hazırlamak için replikler Google Gemini’ye gönderilir. Her replik bir kez hazırlanır, sonra bu telefonda kalır.";
 "studio_progress" = "Hazırlanıyor… %2$d replikten %1$d tanesi hazır";
 "studio_ready" = "%2$d replikten %1$d tanesi hazır";
+"studio_retry" = "Tekrar dene";
 "studio_sample" = "Bu örnek sahnede stüdyo seslerini dinleyin. Premium, kendi metinleriniz için de hazırlar.";
 "studio_script_limit" = "Bu ayki 2 senaryoluk stüdyo sesi hakkını kullandın. Hazırlanan senaryolar çalmaya devam eder; yenileri gelecek ay açılır.";
 "studio_start" = "Hazırla";

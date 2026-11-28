@@ -1787,6 +1787,18 @@ final class AppModel: ObservableObject {
         studioScene.lines.count
     }
 
+    /// Lines preparing no longer tries: their answer could not be used twice; the actor decides.
+    var studioBlocked: Int {
+        studio.running ? 0 : studio.blockedCount(studioScene, language, casting: studioCasting())
+    }
+
+    /// Lets preparing try one line again, and prepares.
+    func retryStudioLine(_ line: ScriptScene.Line) {
+        studio.retry(line, language)
+        show(.setup)
+        prepareStudio()
+    }
+
     var studioReady: Int {
         guard fullScene != nil else {
             return 0

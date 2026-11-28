@@ -242,6 +242,22 @@
 			<string>%d gescannte Seiten wurden mit Texterkennung gelesen. Prüfe die Rollennamen und Repliken vor der Probe.</string>
 		</dict>
 	</dict>
+	<key>studio_blocked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d Replik konnte nicht vertont werden; den Grund zeigen die Regienotizen</string>
+			<key>other</key>
+			<string>%d Repliken konnten nicht vertont werden; den Grund zeigen die Regienotizen</string>
+		</dict>
+	</dict>
 	<key>trial_days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

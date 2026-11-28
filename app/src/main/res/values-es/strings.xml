@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Una voz natural que funciona en este teléfono, sin conexión</string>
     <string name="voice_engine_studio_detail">Voces interpretadas y expresivas preparadas por un director con IA</string>
     <string name="studio_allowance">Se pueden preparar voces de estudio para 2 guiones al mes.</string>
+    <plurals name="studio_blocked">
+        <item quantity="one">%d frase no se pudo grabar; el motivo está en las notas del director</item>
+        <item quantity="other">%d frases no se pudieron grabar; el motivo está en las notas del director</item>
+    </plurals>
+    <string name="studio_failed_lasting">Sin voz: el servicio no dio una respuesta útil para esta frase, dos veces. Inténtalo de nuevo o corrígela.</string>
+    <string name="studio_failed_network">Aún sin voz: se cortó la conexión. Al preparar de nuevo se intenta otra vez.</string>
+    <string name="studio_retry">Reintentar</string>
     <string name="extra_title">Guion extra</string>
     <string name="extra_message">Ya usaste los guiones de este mes. Añade este guion por %1$s: se compra una vez y siempre se puede preparar.</string>
     <string name="extra_buy">Comprar</string>

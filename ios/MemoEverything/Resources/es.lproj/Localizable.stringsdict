@@ -264,6 +264,22 @@
 			<string>Se leyeron %d páginas escaneadas con reconocimiento de texto. Revisa los nombres de los personajes y las réplicas antes de ensayar.</string>
 		</dict>
 	</dict>
+	<key>studio_blocked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d frase no se pudo grabar; el motivo está en las notas del director</string>
+			<key>other</key>
+			<string>%d frases no se pudieron grabar; el motivo está en las notas del director</string>
+		</dict>
+	</dict>
 	<key>trial_days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

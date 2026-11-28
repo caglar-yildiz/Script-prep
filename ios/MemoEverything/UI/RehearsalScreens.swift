@@ -278,14 +278,23 @@ struct VoiceRows: View {
                 RowDivider()
             }
             let idle = !model.studioPreparingHere && !model.studioWaitingHere
-            if model.premium && idle && done > 0 {
-                ListRow(icon: "ic_list", title: L("notes_title"), value: L("notes_value"), action: { model.show(.notes) })
+            // Lines whose answer could not be used twice wait for the actor (Director's notes) instead
+            // of being tried again by every Prepare.
+            let blocked = idle && model.premium ? model.studioBlocked : 0
+            if model.premium && idle && (done > 0 || blocked > 0) {
+                ListRow(icon: "ic_list", title: L("notes_title"),
+                        value: blocked > 0 ? P("studio_blocked", blocked) : L("notes_value"), action: { model.show(.notes) })
                 RowDivider()
             }
-            if model.premium && idle && done < total {
-                ListRow(icon: "ic_star", title: L("studio_prepare"),
-                        value: (done == 0 ? L("studio_none") : L("studio_ready", done, total)) + "\n" + L("studio_allowance"),
-                        action: model.startStudio)
+            if model.premium && idle && done + blocked < total {
+                VStack(alignment: .leading, spacing: 4) {
+                    Styled(done == 0 ? L("studio_none") : L("studio_ready", done, total), .body, Palette.textSecondary)
+                    Styled(L("studio_allowance"), .caption, Palette.textTertiary)
+                    MemoButton(L("studio_prepare"), icon: "ic_star", kind: .primary, fill: true, height: 52,
+                               action: model.startStudio)
+                        .padding(.top, 8)
+                }
+                .padding(EdgeInsets(top: 14, leading: 16, bottom: 16, trailing: 16))
                 RowDivider()
             }
         }
@@ -807,6 +816,12 @@ struct NotesScreen: View {
                         .textSelection(.enabled)
                     if model.premium && model.studioAudio(line) != nil {
                         MemoButton(L("fix_action"), icon: "ic_edit", kind: .text) { model.openFix(line) }
+                            .padding(.top, 4)
+                    }
+                    if let failed = model.studio.failure(line, model.language), model.studioAudio(line) == nil {
+                        Styled(L(failed ? "studio_failed_lasting" : "studio_failed_network"), .caption, Palette.accent)
+                            .padding(.top, 8)
+                        MemoButton(L("studio_retry"), icon: "ic_replay", kind: .text) { model.retryStudioLine(line) }
                             .padding(.top, 4)
                     }
                 }

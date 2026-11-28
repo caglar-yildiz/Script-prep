@@ -469,6 +469,8 @@
 "studio_allowance" = "Dá para preparar vozes de estúdio para 2 roteiros por mês.";
 "studio_daily_limit" = "O limite diário de vozes de estúdio foi atingido. As falas preparadas ficam guardadas; continue amanhã.";
 "studio_failed" = "Não foi possível continuar preparando as vozes de estúdio. As falas prontas ficam guardadas; tente de novo daqui a pouco.";
+"studio_failed_lasting" = "Sem voz: o serviço não deu uma resposta utilizável para esta fala, duas vezes. Tente de novo ou corrija.";
+"studio_failed_network" = "Ainda sem voz: a conexão caiu. Preparar de novo tenta outra vez.";
 "studio_monthly_limit" = "O limite mensal de vozes de estúdio foi atingido.";
 "studio_none" = "Não preparado · até lá as outras vozes leem";
 "studio_notification_done" = "As vozes de estúdio estão prontas. Abra o app para ensaiar.";
@@ -481,6 +483,7 @@
 "studio_privacy" = "As falas são enviadas ao Google Gemini para preparar as vozes. Cada fala é preparada uma vez e depois fica neste telefone.";
 "studio_progress" = "Preparando… %1$d de %2$d falas prontas";
 "studio_ready" = "%1$d de %2$d falas prontas";
+"studio_retry" = "Tentar de novo";
 "studio_sample" = "Ouça as vozes de estúdio nesta cena de exemplo. O Premium as prepara para seus textos.";
 "studio_script_limit" = "Você já usou os 2 roteiros deste mês com vozes de estúdio. Os roteiros preparados continuam tocando; novos abrem no mês que vem.";
 "studio_start" = "Preparar";

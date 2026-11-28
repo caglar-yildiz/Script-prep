@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Uma voz natural que funciona neste celular, offline</string>
     <string name="voice_engine_studio_detail">Vozes interpretadas e expressivas preparadas por um diretor com IA</string>
     <string name="studio_allowance">Dá para preparar vozes de estúdio para 2 roteiros por mês.</string>
+    <plurals name="studio_blocked">
+        <item quantity="one">%d fala não pôde ser gravada; o motivo está nas notas do diretor</item>
+        <item quantity="other">%d falas não puderam ser gravadas; o motivo está nas notas do diretor</item>
+    </plurals>
+    <string name="studio_failed_lasting">Sem voz: o serviço não deu uma resposta utilizável para esta fala, duas vezes. Tente de novo ou corrija.</string>
+    <string name="studio_failed_network">Ainda sem voz: a conexão caiu. Preparar de novo tenta outra vez.</string>
+    <string name="studio_retry">Tentar de novo</string>
     <string name="extra_title">Roteiro extra</string>
     <string name="extra_message">Você já usou os roteiros deste mês. Adicione este roteiro por %1$s: compra uma vez e ele fica sempre pronto para preparar.</string>
     <string name="extra_buy">Comprar</string>

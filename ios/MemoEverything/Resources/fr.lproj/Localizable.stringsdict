@@ -264,6 +264,22 @@
 			<string>%d pages numérisées ont été lues par reconnaissance de texte. Vérifie les noms des personnages et les répliques avant de répéter.</string>
 		</dict>
 	</dict>
+	<key>studio_blocked</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@count@</string>
+		<key>count</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>d</string>
+			<key>one</key>
+			<string>%d réplique n’a pas pu être enregistrée ; la raison est dans les notes du metteur en scène</string>
+			<key>other</key>
+			<string>%d répliques n’ont pas pu être enregistrées ; la raison est dans les notes du metteur en scène</string>
+		</dict>
+	</dict>
 	<key>trial_days</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

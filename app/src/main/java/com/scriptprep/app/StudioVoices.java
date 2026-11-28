@@ -357,7 +357,7 @@ final class StudioVoices {
             JSONObject note = note(line, language);
             // The director's genders can change the automatic cast, so the voice is asked now.
             String voice = casting.voice(line.role);
-            if (note == null || audio(line, language, voice) != null) {
+            if (note == null || audio(line, language, voice) != null || isBlocked(line, language)) {
                 continue;
             }
             voices.add(() -> {
@@ -375,7 +375,7 @@ final class StudioVoices {
                         notes().put(VOICED + target.getName(), lastVoiced.get());
                         saveNotes();
                     }
-                }, "A line could not be voiced");
+                }, "A line could not be voiced", line, language);
                 if (voiced) {
                     post(progress, ready.incrementAndGet(), total);
                 }
@@ -389,6 +389,69 @@ final class StudioVoices {
         }
         skippedLines = total - readyCount(scene, language, casting);
         return skippedLines > 0 ? Stop.PARTIAL : Stop.DONE;
+    }
+
+    // ---------------------------------------------------------------- Lines that could not be voiced
+
+    private static final String FAILED = "failed:";
+    /** Tries for a line whose answer could not be used, before preparing leaves it to the actor. */
+    private static final int LASTING_TRIES = 2;
+
+    /** Whether a failure is the answer's (no audio, refused, unreadable) rather than the network's. */
+    static boolean lasting(Exception error) {
+        String message = error.getMessage() == null ? "" : error.getMessage();
+        return error instanceof JSONException || message.startsWith("Refused") || message.startsWith("No audio");
+    }
+
+    private synchronized void recordFailure(Scene.Line line, ScriptLanguage language, boolean lasting) {
+        try {
+            String key = FAILED + noteKey(line, language);
+            JSONObject old = notes().optJSONObject(key);
+            int tries = old != null && old.optBoolean("lasting") == lasting ? old.optInt("tries") + 1 : 1;
+            notes().put(key, new JSONObject().put("lasting", lasting).put("tries", tries)
+                .put("at", System.currentTimeMillis()));
+            saveNotes();
+        } catch (IOException | JSONException error) {
+            Log.w(TAG, "A failure could not be kept", error);
+        }
+    }
+
+    private synchronized void clearFailure(Scene.Line line, ScriptLanguage language) {
+        if (notes().remove(FAILED + noteKey(line, language)) != null) {
+            try {
+                saveNotes();
+            } catch (IOException error) {
+                Log.w(TAG, "Studio notes could not be saved", error);
+            }
+        }
+    }
+
+    /** Why a line has no studio audio after preparing: null, or whether the failure was lasting. */
+    synchronized Boolean failure(Scene.Line line, ScriptLanguage language) {
+        JSONObject failed = notes().optJSONObject(FAILED + noteKey(line, language));
+        return failed == null ? null : failed.optBoolean("lasting");
+    }
+
+    /** A line preparing no longer tries: its answer could not be used, twice. */
+    synchronized boolean isBlocked(Scene.Line line, ScriptLanguage language) {
+        JSONObject failed = notes().optJSONObject(FAILED + noteKey(line, language));
+        return failed != null && failed.optBoolean("lasting") && failed.optInt("tries") >= LASTING_TRIES;
+    }
+
+    /** Lines of a scene preparing no longer tries, without audio. */
+    int blockedCount(Scene scene, ScriptLanguage language, Casting casting) {
+        int blocked = 0;
+        for (Scene.Line line : scene.lines) {
+            if (isBlocked(line, language) && audio(line, language, casting.voice(line.role)) == null) {
+                blocked++;
+            }
+        }
+        return blocked;
+    }
+
+    /** Lets preparing try a line again (the actor asked). */
+    void retry(Scene.Line line, ScriptLanguage language) {
+        clearFailure(line, language);
     }
 
     /** Runs of lines with no note yet, at most a part long. */
@@ -428,17 +491,36 @@ final class StudioVoices {
 
         /** Runs one piece unless the run is over; true when it worked. */
         boolean attempt(Work work, String what) {
+            return attempt(work, what, null, null);
+        }
+
+        /**
+         * As above for one line, whose failure is kept: a network failure is tried again next time;
+         * an answer that cannot be used (no audio, refused, unreadable) only once more. Only
+         * network failures in a row stop the run, as the connection or the service is then down.
+         */
+        boolean attempt(Work work, String what, Scene.Line line, ScriptLanguage language) {
             if (fatal != null || cancelled) {
                 return false;
             }
             try {
                 work.run();
                 inARow.set(0);
+                if (line != null) {
+                    clearFailure(line, language);
+                }
                 return true;
             } catch (LimitException limit) {
                 fatal = limit;
             } catch (IOException | JSONException error) {
-                if (inARow.incrementAndGet() >= FAILURES_IN_A_ROW) {
+                if (cancelled) {
+                    return false;
+                }
+                boolean lasting = lasting(error);
+                if (line != null) {
+                    recordFailure(line, language, lasting);
+                }
+                if (!lasting && inARow.incrementAndGet() >= FAILURES_IN_A_ROW) {
                     fatal = error;
                 } else {
                     Log.w(TAG, what + "; going on", error);
@@ -889,6 +971,7 @@ final class StudioVoices {
                 }
             }
             notes().put(noteKey(line, language), take.note);
+            notes().remove(FAILED + noteKey(line, language));
             if (!folder.isDirectory() && !folder.mkdirs()) {
                 throw new IOException("Could not create the studio folder");
             }

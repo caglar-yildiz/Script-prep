@@ -541,6 +541,13 @@
     <string name="voice_engine_ai_detail">Eine natürliche Stimme, die offline auf diesem Handy läuft</string>
     <string name="voice_engine_studio_detail">Gespielte, ausdrucksstarke Stimmen, vorbereitet von einer KI-Regie</string>
     <string name="studio_allowance">Studiostimmen lassen sich für 2 Texte im Monat vorbereiten.</string>
+    <plurals name="studio_blocked">
+        <item quantity="one">%d Replik konnte nicht vertont werden; den Grund zeigen die Regienotizen</item>
+        <item quantity="other">%d Repliken konnten nicht vertont werden; den Grund zeigen die Regienotizen</item>
+    </plurals>
+    <string name="studio_failed_lasting">Nicht vertont: Die Stimme gab für diese Replik zweimal keine brauchbare Antwort. Versuch es erneut oder korrigiere sie.</string>
+    <string name="studio_failed_network">Noch nicht vertont: Die Verbindung brach ab. Erneutes Vorbereiten versucht es wieder.</string>
+    <string name="studio_retry">Erneut versuchen</string>
     <string name="extra_title">Zusätzlicher Text</string>
     <string name="extra_message">Die Texte dieses Monats sind verbraucht. Füge diesen Text für %1$s hinzu: einmal gekauft, bleibt er immer vorbereitbar.</string>
     <string name="extra_buy">Kaufen</string>

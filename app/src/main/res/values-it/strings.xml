@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Una voce naturale che funziona su questo telefono, offline</string>
     <string name="voice_engine_studio_detail">Voci recitate ed espressive preparate da un regista IA</string>
     <string name="studio_allowance">Le voci da studio si possono preparare per 2 copioni al mese.</string>
+    <plurals name="studio_blocked">
+        <item quantity="one">%d battuta non è stata registrata; il motivo è nelle note del regista</item>
+        <item quantity="other">%d battute non sono state registrate; il motivo è nelle note del regista</item>
+    </plurals>
+    <string name="studio_failed_lasting">Senza voce: il servizio non ha dato una risposta utilizzabile per questa battuta, due volte. Riprova o correggila.</string>
+    <string name="studio_failed_network">Non ancora registrata: la connessione è caduta. Preparando di nuovo si riprova.</string>
+    <string name="studio_retry">Riprova</string>
     <string name="extra_title">Copione extra</string>
     <string name="extra_message">Hai usato i copioni di questo mese. Aggiungi questo copione per %1$s: si compra una volta e resta sempre preparabile.</string>
     <string name="extra_buy">Acquista</string>

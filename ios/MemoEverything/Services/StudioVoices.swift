@@ -23,7 +23,7 @@ final class StudioVoices: ObservableObject {
     }
 
     private enum Failure: Error {
-        case limit(Stop), refused(String), busy, notSignedIn, cancelled
+        case limit(Stop), refused(String), busy, notSignedIn, cancelled, noAudio
     }
 
     @Published private(set) var running = false
@@ -268,11 +268,12 @@ final class StudioVoices: ObservableObject {
             }
             // The director's genders can change the automatic cast, so the voice is asked now.
             let voice = casting(line.role)
-            if audio(line, language, voice: voice) != nil {
+            if audio(line, language, voice: voice) != nil || isBlocked(line, language) {
                 continue
             }
             voices.addOperation {
-                let voiced = failures.attempt(cancelled: { self.isCancelled }) {
+                let voiced = failures.attempt(cancelled: { self.isCancelled },
+                                              record: { self.record(line, language, lasting: $0) }) {
                     let target = self.audioFile(line, language, voice, note, "wav")
                     let audio = try self.speak(note, language, voice, script)
                     try FileManager.default.createDirectory(at: self.folder, withIntermediateDirectories: true)
@@ -703,6 +704,7 @@ final class StudioVoices: ObservableObject {
             }
         }
         stored[Self.noteKey(line, language)] = take.note
+        stored.removeValue(forKey: Self.failedPrefix + Self.noteKey(line, language))
         let target = audioFile(line, language, take.voice, take.note, "wav")
         stored[Self.voicedPrefix + target.lastPathComponent] = take.voiced
         notes = stored
@@ -834,7 +836,7 @@ final class StudioVoices: ObservableObject {
         ]
         let data = try post("/v1/speak", body)
         guard let answer = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            throw Failure.busy
+            throw Failure.noAudio
         }
         lastVoiced = ["model": answer["modelVersion"] as? String ?? answer["model"] as? String ?? "",
                       "source": header("X-Memo-Source"), "style": header("X-Memo-Style"),
@@ -857,7 +859,7 @@ final class StudioVoices: ObservableObject {
                 return Self.wav(audio, rate: rate)
             }
         }
-        throw Failure.busy
+        throw Failure.noAudio
     }
 
     /// Raw 16-bit mono PCM wrapped as a WAV file, so the audio player can play it.
@@ -1022,6 +1024,68 @@ final class StudioVoices: ObservableObject {
         language.code + ":" + EnsembleRules.lineKey(role: line.role, text: line.text)
     }
 
+    /// Whether a failure is the answer's (no audio, refused, unreadable) rather than the network's.
+    static func isLasting(_ error: Error) -> Bool {
+        if let failure = error as? Failure {
+            switch failure {
+            case .refused, .noAudio: return true
+            default: return false
+            }
+        }
+        return (error as NSError).domain == NSCocoaErrorDomain
+    }
+
+    // MARK: - Lines that could not be voiced
+
+    private static let failedPrefix = "failed:"
+    /// Tries for a line whose answer could not be used, before preparing leaves it to the actor.
+    private static let lastingTries = 2
+
+    /// Keeps a line's failure (true: lasting, false: network), or clears it (nil) when it worked.
+    fileprivate func record(_ line: ScriptScene.Line, _ language: ScriptLanguage, lasting: Bool?) {
+        lock.lock()
+        var stored = loadNotes()
+        let key = Self.failedPrefix + Self.noteKey(line, language)
+        if let lasting {
+            let old = stored[key] as? [String: Any]
+            let tries = (old?["lasting"] as? Bool) == lasting ? ((old?["tries"] as? NSNumber)?.intValue ?? 0) + 1 : 1
+            stored[key] = ["lasting": lasting, "tries": tries, "at": Date().timeIntervalSince1970]
+        } else if stored.removeValue(forKey: key) == nil {
+            lock.unlock()
+            return
+        }
+        notes = stored
+        lock.unlock()
+        try? saveNotes(stored)
+    }
+
+    /// Why a line has no studio audio after preparing: nil, or whether the failure was lasting.
+    func failure(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> Bool? {
+        lock.lock()
+        defer { lock.unlock() }
+        return (loadNotes()[Self.failedPrefix + Self.noteKey(line, language)] as? [String: Any])?["lasting"] as? Bool
+    }
+
+    /// A line preparing no longer tries: its answer could not be used, twice.
+    func isBlocked(_ line: ScriptScene.Line, _ language: ScriptLanguage) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        guard let failed = loadNotes()[Self.failedPrefix + Self.noteKey(line, language)] as? [String: Any] else {
+            return false
+        }
+        return failed["lasting"] as? Bool == true && ((failed["tries"] as? NSNumber)?.intValue ?? 0) >= Self.lastingTries
+    }
+
+    /// Lines of a scene preparing no longer tries, without audio.
+    func blockedCount(_ scene: ScriptScene, _ language: ScriptLanguage, casting: Casting) -> Int {
+        scene.lines.filter { isBlocked($0, language) && audio($0, language, voice: casting($0.role)) == nil }.count
+    }
+
+    /// Lets preparing try a line again (the actor asked).
+    func retry(_ line: ScriptScene.Line, _ language: ScriptLanguage) {
+        record(line, language, lasting: nil)
+    }
+
     static func isLimit(_ error: Error) -> Bool {
         if let failure = error as? Failure, case .limit(_) = failure {
             return true
@@ -1051,8 +1115,10 @@ private final class Failures {
     private var fatal: Error?
     private static let limit = 3
 
-    /// Runs one piece unless the run is over; true when it worked.
-    func attempt(cancelled: () -> Bool, _ work: () throws -> Void) -> Bool {
+    /// Runs one piece unless the run is over; true when it worked. `record` is told how a line went
+    /// (nil: it worked; true: its answer could not be used; false: the network failed). Only network
+    /// failures in a row stop the run, as the connection or the service is then down.
+    func attempt(cancelled: () -> Bool, record: ((Bool?) -> Void)? = nil, _ work: () throws -> Void) -> Bool {
         lock.lock()
         let over = fatal != nil
         lock.unlock()
@@ -1064,10 +1130,20 @@ private final class Failures {
             lock.lock()
             inARow = 0
             lock.unlock()
+            record?(nil)
             return true
         } catch {
+            if cancelled() {
+                return false
+            }
+            let lasting = StudioVoices.isLasting(error)
+            if !StudioVoices.isLimit(error) {
+                record?(lasting)
+            }
             lock.lock()
-            inARow += 1
+            if !lasting {
+                inARow += 1
+            }
             if StudioVoices.isLimit(error) || inARow >= Self.limit {
                 fatal = fatal ?? error
             }

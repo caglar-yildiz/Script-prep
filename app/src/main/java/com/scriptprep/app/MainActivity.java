@@ -4511,15 +4511,28 @@ public final class MainActivity extends Activity {
             extras.addView(ui.divider(70));
         }
         boolean idle = !preparing && !waiting;
-        if (idle && done > 0) {
-            extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title),
-                getString(R.string.notes_value), view -> show(Screen.NOTES)), Ui.matchWidth());
+        // Lines whose answer could not be used twice wait for the actor (Director's notes) instead
+        // of being tried again by every Prepare.
+        int blocked = idle ? studio.blockedCount(voiced, language, studioCasting()) : 0;
+        if (idle && (done > 0 || blocked > 0)) {
+            String value = blocked > 0 ? getResources().getQuantityString(R.plurals.studio_blocked, blocked, blocked)
+                : getString(R.string.notes_value);
+            extras.addView(ui.listRow(R.drawable.ic_list, getString(R.string.notes_title), value,
+                view -> show(Screen.NOTES)), Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
-        if (idle && done < total) {
+        if (idle && done + blocked < total) {
             String detail = done == 0 ? getString(R.string.studio_none) : getString(R.string.studio_ready, done, total);
-            extras.addView(ui.listRow(R.drawable.ic_star, getString(R.string.studio_prepare),
-                detail + "\n" + getString(R.string.studio_allowance), view -> startStudio()), Ui.matchWidth());
+            LinearLayout box = new LinearLayout(this);
+            box.setOrientation(LinearLayout.VERTICAL);
+            box.setPadding(ui.dp(16), ui.dp(14), ui.dp(16), ui.dp(16));
+            box.addView(ui.text(detail, Type.BODY, TEXT_SECONDARY));
+            box.addView(ui.text(getString(R.string.studio_allowance), Type.CAPTION, TEXT_TERTIARY), ui.spaced(4));
+            LinearLayout prepare = ui.button(getString(R.string.studio_prepare), R.drawable.ic_star, Kind.PRIMARY,
+                view -> startStudio());
+            prepare.setMinimumHeight(ui.dp(52));
+            box.addView(prepare, ui.spaced(12));
+            extras.addView(box, Ui.matchWidth());
             extras.addView(ui.divider(70));
         }
     }
@@ -4550,6 +4563,16 @@ public final class MainActivity extends Activity {
             if (premium() && studioAudio(line) != null) {
                 card.addView(ui.button(getString(R.string.fix_action), R.drawable.ic_edit, Kind.TEXT, view -> openFix(line)),
                     ui.wrapSpaced(4));
+            }
+            Boolean failed = studio.failure(line, language);
+            if (failed != null && studioAudio(line) == null) {
+                card.addView(ui.text(getString(failed ? R.string.studio_failed_lasting : R.string.studio_failed_network),
+                    Type.CAPTION, ACCENT), ui.spaced(8));
+                card.addView(ui.button(getString(R.string.studio_retry), R.drawable.ic_replay, Kind.TEXT, view -> {
+                    studio.retry(line, language);
+                    show(Screen.SETUP);
+                    prepareStudio();
+                }), ui.wrapSpaced(4));
             }
             content.addView(card, ui.spaced(10));
         }
