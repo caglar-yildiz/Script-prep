@@ -541,6 +541,13 @@
     <string name="voice_engine_ai_detail">Eine natürliche Stimme, die offline auf diesem Handy läuft</string>
     <string name="voice_engine_studio_detail">Gespielte, ausdrucksstarke Stimmen, vorbereitet von einer KI-Regie</string>
     <string name="studio_allowance">Studiostimmen lassen sich für 2 Texte im Monat vorbereiten.</string>
+    <string name="extra_title">Zusätzlicher Text</string>
+    <string name="extra_message">Die Texte dieses Monats sind verbraucht. Füge diesen Text für %1$s hinzu: einmal gekauft, bleibt er immer vorbereitbar.</string>
+    <string name="extra_buy">Kaufen</string>
+    <string name="extra_price">49,99 TL</string>
+    <string name="extra_unavailable">Der Store konnte gerade nicht geöffnet werden. Versuch es gleich noch einmal.</string>
+    <string name="extra_added">Zusätzlicher Text hinzugefügt; die Vorbereitung beginnt.</string>
+    <string name="extra_not_counted">Der Kauf konnte noch nicht geprüft werden. Die App versucht es beim nächsten Öffnen erneut.</string>
     <string name="studio_waiting">Wartet: zuerst wird eine andere Szene vorbereitet</string>
     <string name="studio_stopping">Wird gestoppt … (%1$d von %2$d Sätzen fertig)</string>
     <string name="studio_notification_title">Studiostimmen werden vorbereitet</string>

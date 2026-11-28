@@ -555,6 +555,13 @@
     <string name="voice_engine_ai_detail">Une voix naturelle qui fonctionne sur ce téléphone, hors ligne</string>
     <string name="voice_engine_studio_detail">Des voix jouées et expressives préparées par un metteur en scène IA</string>
     <string name="studio_allowance">Les voix studio peuvent être préparées pour 2 textes par mois.</string>
+    <string name="extra_title">Texte supplémentaire</string>
+    <string name="extra_message">Les textes de ce mois sont utilisés. Ajoute ce texte pour %1$s : acheté une fois, il reste toujours préparable.</string>
+    <string name="extra_buy">Acheter</string>
+    <string name="extra_price">49,99 TL</string>
+    <string name="extra_unavailable">Impossible d’ouvrir la boutique pour l’instant. Réessaie dans un moment.</string>
+    <string name="extra_added">Texte supplémentaire ajouté ; la préparation commence.</string>
+    <string name="extra_not_counted">L’achat n’a pas encore pu être vérifié. L’app réessaiera à la prochaine ouverture.</string>
     <string name="studio_waiting">En attente : une autre scène est préparée d’abord</string>
     <string name="studio_stopping">Arrêt en cours… (%1$d répliques prêtes sur %2$d)</string>
     <string name="studio_notification_title">Préparation des voix studio</string>

@@ -258,6 +258,7 @@ public final class MainActivity extends Activity {
         neural.setProgressListener(this::updateDownloadProgress);
         billing = new Billing(this, preferences);
         billing.setListener(this::onBillingChanged);
+        billing.setExtraListener(this::onExtraPaid);
         drawBehindSystemBars();
         if (state != null) {
             script = state.getString("script", "");
@@ -4098,6 +4099,7 @@ public final class MainActivity extends Activity {
     }
 
     private void onBillingChanged() {
+        studio.setSubscriptionTokens(billing.subscriptionTokens());
         if (!premium()) {
             stopListening();
         }
@@ -4772,9 +4774,13 @@ public final class MainActivity extends Activity {
                 public void failed(StudioVoices.Stop reason) {
                     working.dismiss();
                     if (!isDestroyed()) {
+                        if (reason == StudioVoices.Stop.PREMIUM_REQUIRED) {
+                            showPaywall(R.string.studio_title);
+                            return;
+                        }
                         notifyUser(reason == StudioVoices.Stop.FAILED ? R.string.fix_failed
-                            : reason == StudioVoices.Stop.SCRIPT_LIMIT ? R.string.studio_script_limit
-                            : R.string.studio_monthly_limit);
+                            : reason == StudioVoices.Stop.SCRIPT_LIMIT || reason == StudioVoices.Stop.EXTRA_SCRIPT
+                            ? R.string.studio_script_limit : R.string.studio_monthly_limit);
                     }
                 }
             });
@@ -4844,6 +4850,47 @@ public final class MainActivity extends Activity {
      */
     private Scene studioScene() {
         return scene == null ? null : scene.only(line -> castRecording(line) == null);
+    }
+
+    // ---------------------------------------------------------------- Extra scripts
+
+    /** The scene waiting for an extra script to be bought, to prepare it once it is counted. */
+    private String extraFor;
+
+    /** This month's scripts are used: this script can be added for good with a one-time purchase. */
+    private void offerExtraScript(String key) {
+        String price = billing.extraPrice();
+        new AlertDialog.Builder(this)
+            .setTitle(R.string.extra_title)
+            .setMessage(getString(R.string.extra_message, price == null ? getString(R.string.extra_price) : price))
+            .setPositiveButton(R.string.extra_buy, (dialog, which) -> {
+                extraFor = key;
+                if (!billing.buyExtra(this)) {
+                    extraFor = null;
+                    notifyUser(R.string.extra_unavailable);
+                }
+            })
+            .setNegativeButton(android.R.string.cancel, null)
+            .show();
+    }
+
+    /** A paid extra script: the Worker checks and counts it, then the purchase is consumed. */
+    private void onExtraPaid(List<String> tokens) {
+        studio.redeemExtras(tokens, accepted -> {
+            for (String token : accepted) {
+                billing.consume(token);
+            }
+            if (accepted.isEmpty()) {
+                notifyUser(R.string.extra_not_counted);
+                return;
+            }
+            String waiting = extraFor;
+            extraFor = null;
+            notifyUser(R.string.extra_added);
+            if (waiting != null && waiting.equals(studioJobKey()) && !isDestroyed()) {
+                prepareStudio();
+            }
+        });
     }
 
     /** The scene on screen as studio voices see it: script, section and language. */
@@ -4969,6 +5016,8 @@ public final class MainActivity extends Activity {
                     case DAILY_LIMIT -> notifyUser(R.string.studio_daily_limit);
                     case MONTHLY_LIMIT -> notifyUser(R.string.studio_monthly_limit);
                     case SCRIPT_LIMIT -> notifyUser(R.string.studio_script_limit);
+                    case EXTRA_SCRIPT -> offerExtraScript(key);
+                    case PREMIUM_REQUIRED -> showPaywall(R.string.studio_title);
                     case PARTIAL -> notifyUser(getString(R.string.studio_partial, studio.skippedLines()));
                     case FAILED -> notifyUser(R.string.studio_failed);
                     default -> { }

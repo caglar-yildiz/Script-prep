@@ -14,6 +14,8 @@ type Fetcher = (input: string, init: RequestInit) => Promise<Response>;
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/cloud-platform";
+/** Google Play's purchase records, for checking what a user bought. */
+export const PLAY_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
 
 /** The service account from its JSON key, or null when the Worker has none. */
 export function parseServiceAccount(json: string | undefined): ServiceAccount | null {
@@ -42,24 +44,26 @@ async function privateKey(pem: string): Promise<CryptoKey> {
 }
 
 /** The signed request for an access token (RFC 7523), valid for an hour. */
-export async function signedAssertion(account: ServiceAccount, nowSeconds: number): Promise<string> {
+export async function signedAssertion(account: ServiceAccount, nowSeconds: number, scope = SCOPE): Promise<string> {
   const head = base64Url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
   const claims = base64Url(JSON.stringify({
-    iss: account.client_email, scope: SCOPE, aud: TOKEN_URL, iat: nowSeconds, exp: nowSeconds + 3600,
+    iss: account.client_email, scope, aud: TOKEN_URL, iat: nowSeconds, exp: nowSeconds + 3600,
   }));
   const signature = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", await privateKey(account.private_key),
     new TextEncoder().encode(`${head}.${claims}`));
   return `${head}.${claims}.${base64Url(new Uint8Array(signature))}`;
 }
 
-let cached: { email: string; token: string; expires: number } | null = null;
+const cached = new Map<string, { token: string; expires: number }>();
 
 export async function accessToken(account: ServiceAccount, fetcher: Fetcher = fetch,
-  nowSeconds = Math.floor(Date.now() / 1000)): Promise<string> {
-  if (cached && cached.email === account.client_email && nowSeconds < cached.expires - 120) {
-    return cached.token;
+  nowSeconds = Math.floor(Date.now() / 1000), scope = SCOPE): Promise<string> {
+  const key = `${account.client_email} ${scope}`;
+  const kept = cached.get(key);
+  if (kept && nowSeconds < kept.expires - 120) {
+    return kept.token;
   }
-  const assertion = await signedAssertion(account, nowSeconds);
+  const assertion = await signedAssertion(account, nowSeconds, scope);
   const response = await fetcher(TOKEN_URL, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -72,11 +76,11 @@ export async function accessToken(account: ServiceAccount, fetcher: Fetcher = fe
   if (!answer.access_token) {
     throw new Error("No access token");
   }
-  cached = { email: account.client_email, token: answer.access_token, expires: nowSeconds + (answer.expires_in ?? 3600) };
+  cached.set(key, { token: answer.access_token, expires: nowSeconds + (answer.expires_in ?? 3600) });
   return answer.access_token;
 }
 
 /** Forgets the kept token, for tests. */
 export function forgetToken(): void {
-  cached = null;
+  cached.clear();
 }

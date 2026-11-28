@@ -148,7 +148,8 @@ public final class StudioService extends Service implements StudioVoices.Progres
             case DONE -> R.string.studio_notification_done;
             case DAILY_LIMIT -> R.string.studio_daily_limit;
             case MONTHLY_LIMIT -> R.string.studio_monthly_limit;
-            case SCRIPT_LIMIT -> R.string.studio_script_limit;
+            case SCRIPT_LIMIT, EXTRA_SCRIPT -> R.string.studio_script_limit;
+            case PREMIUM_REQUIRED -> R.string.studio_value;
             default -> R.string.studio_failed;
         });
         return new NotificationCompat.Builder(this, CHANNEL)

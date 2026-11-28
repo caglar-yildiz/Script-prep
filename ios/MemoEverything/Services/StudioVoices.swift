@@ -19,7 +19,7 @@ final class StudioVoices: ObservableObject {
     private static let refreshKey = "studio_refresh_token"
 
     enum Stop {
-        case done, partial, cancelled, dailyLimit, monthlyLimit, scriptLimit, failed
+        case done, partial, cancelled, dailyLimit, monthlyLimit, scriptLimit, extraScript, premiumRequired, failed
     }
 
     private enum Failure: Error {
@@ -224,6 +224,7 @@ final class StudioVoices: ObservableObject {
     private func run(_ fullScene: ScriptScene, _ scene: ScriptScene, language: ScriptLanguage, title: String,
                      script: String, casting: Casting) throws -> Stop {
         let lines = scene.lines
+        sendSubscription()
         // The director first reads the whole play once; each part is then directed knowing it.
         var reading = analysis(fullScene, language, script: script)
         if reading == nil {
@@ -576,6 +577,43 @@ final class StudioVoices: ObservableObject {
         try? saveNotes(snapshot)
     }
 
+    // MARK: - What the user bought
+
+    /// The App Store transaction ids of the user's Premium, sent to the Worker before preparing.
+    var subscriptionTransactions: [String] = [] {
+        didSet {
+            if subscriptionTransactions != oldValue {
+                entitlementSentAt = .distantPast
+            }
+        }
+    }
+    private var entitlementSentAt = Date.distantPast
+
+    /// Tells the Worker about the user's Premium at most every hour; it checks with the App Store.
+    private func sendSubscription() {
+        let transactions = subscriptionTransactions
+        guard !transactions.isEmpty, Date().timeIntervalSince(entitlementSentAt) > 3600 else {
+            return
+        }
+        if (try? post("/v1/entitlement", ["platform": "ios", "subscriptions": transactions, "extras": [String]()])) != nil {
+            entitlementSentAt = Date()
+        }
+    }
+
+    /// Has the Worker check and count paid extra scripts; `done` gets the ids it counted, on the main thread.
+    func redeemExtras(_ ids: [String], done: @escaping ([String]) -> Void) {
+        let subscriptions = subscriptionTransactions
+        fixer.async {
+            var accepted: [String] = []
+            if let data = try? self.post("/v1/entitlement", ["platform": "ios", "subscriptions": subscriptions,
+                                                             "extras": ids]),
+               let answer = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any] {
+                accepted = answer["accepted"] as? [String] ?? []
+            }
+            DispatchQueue.main.async { done(accepted) }
+        }
+    }
+
     // MARK: - Fixing one line
 
     /// Tries per line, so a line cannot be asked for again and again without end.
@@ -647,7 +685,8 @@ final class StudioVoices: ObservableObject {
     /// Why a fix failed, as the message key to show.
     static func fixFailureKey(_ error: Error) -> String {
         if let failure = error as? Failure, case .limit(let stop) = failure {
-            return stop == .scriptLimit ? "studio_script_limit" : "studio_monthly_limit"
+            return stop == .scriptLimit || stop == .extraScript ? "studio_script_limit"
+                : stop == .premiumRequired ? "studio_value" : "studio_monthly_limit"
         }
         return "fix_failed"
     }
@@ -876,6 +915,9 @@ final class StudioVoices: ObservableObject {
             case 401:
                 idToken = nil
                 last = Failure.notSignedIn
+            case 402:
+                throw Failure.limit(String(decoding: data, as: UTF8.self).contains("extra_script_needed")
+                    ? .extraScript : .premiumRequired)
             case 500... where String(decoding: data, as: UTF8.self).contains("without audio"):
                 // The voice gave no audio for this line; asking again would not change that.
                 throw Failure.refused(String(decoding: data, as: UTF8.self))

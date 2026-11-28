@@ -48,7 +48,7 @@ final class StudioVoices {
     private static final int LINES_PER_REQUEST = 60;
     private static final String REFRESH = "studio_refresh_token";
 
-    enum Stop { DONE, PARTIAL, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, FAILED }
+    enum Stop { DONE, PARTIAL, CANCELLED, DAILY_LIMIT, MONTHLY_LIMIT, SCRIPT_LIMIT, EXTRA_SCRIPT, PREMIUM_REQUIRED, FAILED }
 
     /** Failures in a row after which preparing stops: the connection or the service is down. */
     private static final int FAILURES_IN_A_ROW = 3;
@@ -312,6 +312,8 @@ final class StudioVoices {
         List<Scene.Line> lines = scene.lines;
         int total = lines.size();
         post(progress, readyCount(scene, language, casting), total);
+
+        sendSubscription();
 
         // The director first reads the whole play once; each part is then directed knowing it.
         JSONObject analysis = analysis(fullScene, language, script);
@@ -739,6 +741,58 @@ final class StudioVoices {
         }
     }
 
+    // ---------------------------------------------------------------- What the user bought
+
+    private volatile List<String> subscriptionTokens = java.util.Collections.emptyList();
+    private volatile long entitlementSentAt;
+
+    /** The Play purchase tokens of the user's Premium, sent to the Worker before preparing. */
+    void setSubscriptionTokens(List<String> tokens) {
+        if (!tokens.equals(subscriptionTokens)) {
+            subscriptionTokens = new ArrayList<>(tokens);
+            entitlementSentAt = 0;
+        }
+    }
+
+    /** Tells the Worker about the user's Premium at most every hour; it checks with Google Play. */
+    private void sendSubscription() {
+        List<String> tokens = subscriptionTokens;
+        if (tokens.isEmpty() || System.currentTimeMillis() - entitlementSentAt < 3_600_000L) {
+            return;
+        }
+        try {
+            post("/v1/entitlement", new JSONObject().put("platform", "android")
+                .put("subscriptions", new JSONArray(tokens)).put("extras", new JSONArray()));
+            entitlementSentAt = System.currentTimeMillis();
+        } catch (IOException | JSONException error) {
+            Log.w(TAG, "Premium could not be sent to the Worker", error);
+        }
+    }
+
+    interface Redeemed {
+        /** The purchase tokens the Worker counted; those may be consumed. */
+        void accepted(List<String> tokens);
+    }
+
+    /** Has the Worker check and count paid extra scripts. {@code done} runs on the main thread. */
+    void redeemExtras(List<String> tokens, Redeemed done) {
+        fixer.execute(() -> {
+            List<String> accepted = new ArrayList<>();
+            try {
+                JSONObject answer = new JSONObject(new String(post("/v1/entitlement", new JSONObject()
+                    .put("platform", "android").put("subscriptions", new JSONArray(subscriptionTokens))
+                    .put("extras", new JSONArray(tokens))), StandardCharsets.UTF_8));
+                JSONArray counted = answer.optJSONArray("accepted");
+                for (int i = 0; counted != null && i < counted.length(); i++) {
+                    accepted.add(counted.getString(i));
+                }
+            } catch (IOException | JSONException error) {
+                Log.w(TAG, "Extra scripts could not be counted", error);
+            }
+            main.post(() -> done.accepted(accepted));
+        });
+    }
+
     // ---------------------------------------------------------------- Fixing one line
 
     /** Tries per line, so a line cannot be asked for again and again without end. */
@@ -1136,6 +1190,10 @@ final class StudioVoices {
                 }
                 String error = connection.getErrorStream() == null ? ""
                     : new String(readAll(connection.getErrorStream()), StandardCharsets.UTF_8);
+                if (code == 402) {
+                    throw new LimitException(error.contains("extra_script_needed") ? Stop.EXTRA_SCRIPT
+                        : Stop.PREMIUM_REQUIRED);
+                }
                 if (code == 429) {
                     throw new LimitException(error.contains("script_limit") ? Stop.SCRIPT_LIMIT
                         : error.contains("monthly_limit") ? Stop.MONTHLY_LIMIT : Stop.DAILY_LIMIT);

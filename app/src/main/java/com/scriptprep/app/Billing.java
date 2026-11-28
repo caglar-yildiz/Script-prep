@@ -28,9 +28,18 @@ import java.util.regex.Pattern;
  * Premium subscription through Google Play Billing. The Play Console needs a subscription with
  * the product id {@link #PRODUCT} and two auto-renewing base plans, {@link #MONTHLY} and
  * {@link #YEARLY}; an optional free-trial offer on either plan is picked up automatically.
+ * An extra studio voice script is the one-time, consumable product {@link #EXTRA}: it is consumed
+ * once the studio Worker has counted it, so it can be bought again.
  */
 final class Billing implements PurchasesUpdatedListener {
     static final String PRODUCT = "memo_premium";
+    static final String EXTRA = "memo_extra_script";
+    private static final String TOKENS = "premium_tokens";
+
+    /** Told of extra scripts paid for and not yet counted by the Worker. */
+    interface ExtraListener {
+        void onExtraPaid(List<String> purchaseTokens);
+    }
     static final String MONTHLY = "monthly";
     static final String YEARLY = "yearly";
 
@@ -67,6 +76,8 @@ final class Billing implements PurchasesUpdatedListener {
     private Listener listener;
     private volatile Status status = Status.CONNECTING;
     private volatile ProductDetails product;
+    private volatile ProductDetails extraProduct;
+    private ExtraListener extraListener;
     private volatile boolean pending;
 
     Billing(Context context, SharedPreferences preferences) {
@@ -80,6 +91,45 @@ final class Billing implements PurchasesUpdatedListener {
 
     void setListener(Listener value) {
         listener = value;
+    }
+
+    void setExtraListener(ExtraListener value) {
+        extraListener = value;
+    }
+
+    /** The extra script's price as the store shows it, or null until it is known. */
+    String extraPrice() {
+        ProductDetails details = extraProduct;
+        return details == null || details.getOneTimePurchaseOfferDetails() == null ? null
+            : details.getOneTimePurchaseOfferDetails().getFormattedPrice();
+    }
+
+    /** Opens Google Play's purchase sheet for an extra script. */
+    boolean buyExtra(Activity activity) {
+        ProductDetails details = extraProduct;
+        if (details == null || !client.isReady()) {
+            return false;
+        }
+        BillingFlowParams.ProductDetailsParams item = BillingFlowParams.ProductDetailsParams.newBuilder()
+            .setProductDetails(details).build();
+        return client.launchBillingFlow(activity, BillingFlowParams.newBuilder()
+            .setProductDetailsParamsList(Collections.singletonList(item)).build()).getResponseCode()
+            == BillingClient.BillingResponseCode.OK;
+    }
+
+    /** Consumes an extra script the Worker has counted, so another can be bought. */
+    void consume(String purchaseToken) {
+        client.consumeAsync(com.android.billingclient.api.ConsumeParams.newBuilder().setPurchaseToken(purchaseToken)
+            .build(), (result, token) -> {
+                if (result.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                    Log.w(TAG, "Consuming an extra script failed: " + result.getDebugMessage());
+                }
+            });
+    }
+
+    /** The purchase tokens of the active Premium subscription, for the studio Worker to check. */
+    List<String> subscriptionTokens() {
+        return new java.util.ArrayList<>(preferences.getStringSet(TOKENS, Collections.emptySet()));
     }
 
     Status status() {
@@ -142,6 +192,38 @@ final class Billing implements PurchasesUpdatedListener {
                     apply(purchases, true);
                 }
             });
+        client.queryProductDetailsAsync(QueryProductDetailsParams.newBuilder()
+            .setProductList(Collections.singletonList(QueryProductDetailsParams.Product.newBuilder()
+                .setProductId(EXTRA).setProductType(BillingClient.ProductType.INAPP).build())).build(),
+            (result, details) -> {
+                List<ProductDetails> found = details == null ? null : details.getProductDetailsList();
+                extraProduct = result.getResponseCode() == BillingClient.BillingResponseCode.OK
+                    && found != null && !found.isEmpty() ? found.get(0) : null;
+            });
+        // Extra scripts paid for earlier but not yet counted (the app closed, the network failed).
+        client.queryPurchasesAsync(QueryPurchasesParams.newBuilder()
+            .setProductType(BillingClient.ProductType.INAPP).build(), (result, purchases) -> {
+                if (result.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    paidExtras(purchases);
+                }
+            });
+    }
+
+    private void paidExtras(List<Purchase> purchases) {
+        List<String> tokens = new java.util.ArrayList<>();
+        for (Purchase purchase : purchases) {
+            if (purchase.getProducts().contains(EXTRA)
+                && purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+                tokens.add(purchase.getPurchaseToken());
+            }
+        }
+        if (!tokens.isEmpty()) {
+            main.post(() -> {
+                if (extraListener != null) {
+                    extraListener.onExtraPaid(tokens);
+                }
+            });
+        }
     }
 
     /** Looks the subscription up again, for the "Restore purchases" action. */
@@ -217,6 +299,7 @@ final class Billing implements PurchasesUpdatedListener {
     public void onPurchasesUpdated(BillingResult result, List<Purchase> purchases) {
         int code = result.getResponseCode();
         if (code == BillingClient.BillingResponseCode.OK && purchases != null) {
+            paidExtras(purchases);
             apply(purchases, false);
         } else if (code == BillingClient.BillingResponseCode.ITEM_ALREADY_OWNED) {
             restore();
@@ -232,12 +315,14 @@ final class Billing implements PurchasesUpdatedListener {
     private void apply(List<Purchase> purchases, boolean complete) {
         boolean owned = false;
         boolean waiting = false;
+        java.util.Set<String> tokens = new java.util.HashSet<>();
         for (Purchase purchase : purchases) {
             if (!purchase.getProducts().contains(PRODUCT)) {
                 continue;
             }
             if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
                 owned = true;
+                tokens.add(purchase.getPurchaseToken());
                 if (!purchase.isAcknowledged()) {
                     acknowledge(purchase);
                 }
@@ -248,6 +333,7 @@ final class Billing implements PurchasesUpdatedListener {
         pending = waiting;
         if (owned || complete) {
             Premium.setPurchased(preferences, owned);
+            preferences.edit().putStringSet(TOKENS, tokens).apply();
         }
         changed();
     }

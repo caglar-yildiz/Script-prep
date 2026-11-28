@@ -221,6 +221,9 @@ final class AppModel: ObservableObject {
         billing.onChange = { [weak self] _ in
             self?.onBillingChanged()
         }
+        billing.onExtraPaid = { [weak self] ids in
+            self?.onExtraPaid(ids)
+        }
         NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)
             .sink { [weak self] _ in self?.studioLeftWhileRunning = self?.studio.running ?? false }
             .store(in: &cancellables)
@@ -1650,6 +1653,7 @@ final class AppModel: ObservableObject {
     }
 
     private func onBillingChanged() {
+        studio.subscriptionTransactions = billing.subscriptionTransactions
         refreshPremium()
         if !premium {
             stopListening()
@@ -2010,6 +2014,44 @@ final class AppModel: ObservableObject {
         ])
     }
 
+    // MARK: - Extra scripts
+
+    /// The scene waiting for an extra script to be bought, to prepare it once it is counted.
+    private var extraFor: String?
+
+    /// This month's scripts are used: this script can be added for good with a one-time purchase.
+    func offerExtraScript(_ key: String) {
+        alert(L("extra_title"), L("extra_message", billing.extra?.displayPrice ?? L("extra_price")), [
+            DialogButton(label: L("extra_buy")) {
+                self.extraFor = key
+                Task { @MainActor in
+                    if !(await self.billing.buyExtra()) {
+                        self.extraFor = nil
+                        self.notifyKey("extra_unavailable")
+                    }
+                }
+            },
+            DialogButton(label: L("cancel"), role: .cancel),
+        ])
+    }
+
+    /// A paid extra script: the Worker checks and counts it, then the transaction is finished.
+    private func onExtraPaid(_ ids: [String]) {
+        studio.redeemExtras(ids) { accepted in
+            self.billing.finishExtras(accepted)
+            guard !accepted.isEmpty else {
+                self.notifyKey("extra_not_counted")
+                return
+            }
+            let waiting = self.extraFor
+            self.extraFor = nil
+            self.notifyKey("extra_added")
+            if waiting == self.studioJobKey {
+                self.prepareStudio()
+            }
+        }
+    }
+
     /// The scene on screen as studio voices see it: script, section and language.
     var studioJobKey: String {
         "\(castKey)#\(sectionIndex)#\(language.code)"
@@ -2032,7 +2074,8 @@ final class AppModel: ObservableObject {
         studioBackgroundTask = UIApplication.shared.beginBackgroundTask(withName: "studio-voices") { [weak self] in
             self?.endStudioBackgroundTask()
         }
-        studio.prepare(key: studioJobKey, fullScene, studioScene, language: language, title: scriptTitle, script: castKey,
+        let jobKey = studioJobKey
+        studio.prepare(key: jobKey, fullScene, studioScene, language: language, title: scriptTitle, script: castKey,
                        casting: studioCasting()) { reason in
             self.endStudioBackgroundTask()
             if reason == .failed && (self.studioLeftWhileRunning || UIApplication.shared.applicationState != .active) {
@@ -2045,6 +2088,8 @@ final class AppModel: ObservableObject {
             case .dailyLimit: self.notifyKey("studio_daily_limit")
             case .monthlyLimit: self.notifyKey("studio_monthly_limit")
             case .scriptLimit: self.notifyKey("studio_script_limit")
+            case .extraScript: self.offerExtraScript(jobKey)
+            case .premiumRequired: self.showPaywall("studio_title")
             case .partial: self.notify(L("studio_partial", self.studio.skippedLines))
             case .failed: self.notifyKey("studio_failed")
             default: break
